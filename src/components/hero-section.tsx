@@ -22,16 +22,16 @@ function HeroSection () {
           ¿Por qué FullStyle?
         </h2>
         <div className='flex justify-between md:flex-row flex-col gap-5'>
-          <p className='border-t-2 border-l-2 border-gray-primary p-5'>
+          <p className='border-t-2 border-l-2 border-primary p-5'>
             Optimización de la gestión
           </p>
-          <p className='border-b-2 border-r-2 border-gray-primary p-5'>
+          <p className='border-b-2 border-r-2 border-primary p-5'>
             Incremento de ingresos
           </p>
-          <p className='border-t-2 border-l-2 border-gray-primary p-5'>
+          <p className='border-t-2 border-l-2 border-primary p-5'>
             Experiencia del cliente
           </p>
-          <p className='border-b-2 border-r-2 border-gray-primary p-5'>
+          <p className='border-b-2 border-r-2 border-primary p-5'>
             Facilidad de uso
           </p>
         </div>

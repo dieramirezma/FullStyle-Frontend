@@ -1,6 +1,4 @@
-interface SvgProps {
-  width?: string
-}
+import { type SvgProps } from './svg-interface'
 
 function Fullstyle ({ width = '300' }: SvgProps) {
   return (
