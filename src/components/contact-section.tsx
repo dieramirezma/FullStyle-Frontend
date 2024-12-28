@@ -41,12 +41,27 @@ function ContactSection () {
   })
 
   // 2. Define a submit handler.
-  function onSubmit (values: z.infer<typeof formSchema>) {
-    // Do something with the form values.
-    // ✅ This will be type-safe and validated.
-    alert(JSON.stringify(values, null, 2))
-    console.log(values)
+  async function onSubmit (values: z.infer<typeof formSchema>) {
+    try {
+      const response = await fetch('/api/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(values)
+      })
+
+      if (!response.ok) {
+        form.reset()
+      }
+
+      alert('Mensaje enviado correctamente')
+    } catch (error) {
+      console.error(error)
+      alert('Ocurrió un error al enviar el mensaje')
+    }
   }
+
   return (
     <section id='contact' className='flex my-10 gap-20 items-center w-full md:flex-row flex-col-reverse'>
       <article className='flex flex-col gap-5 w-full'>
