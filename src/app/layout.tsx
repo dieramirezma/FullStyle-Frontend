@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono, Roboto, Merriweather_Sans, Raleway } from 'next/font/google'
+import { Toaster } from '@/components/ui/toaster'
 import './globals.css'
 
 const geistSans = Geist({
@@ -46,6 +47,7 @@ export default function RootLayout ({
         className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${merriweatherSans.variable} ${raleway.variable} antialiased`}
       >
         {children}
+        <Toaster />
       </body>
     </html>
   )

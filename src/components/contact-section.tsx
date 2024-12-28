@@ -3,6 +3,7 @@
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
+import { useToast } from '@/hooks/use-toast'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -30,6 +31,8 @@ const formSchema = z.object({
 })
 
 function ContactSection () {
+  const { toast } = useToast()
+
   // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -55,10 +58,16 @@ function ContactSection () {
         form.reset()
       }
 
-      alert('Mensaje enviado correctamente')
+      toast({
+        title: 'Mensaje enviado con éxito',
+        description: new Date().toLocaleString()
+      })
     } catch (error) {
-      console.error(error)
-      alert('Ocurrió un error al enviar el mensaje')
+      toast({
+        title: 'Error al enviar el mensaje',
+        description: 'Por favor intenta más tarde.',
+        variant: 'destructive'
+      })
     }
   }
 
