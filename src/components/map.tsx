@@ -1,29 +1,24 @@
 'use client'
 
-import React from 'react'
-import { GoogleMap, LoadScript, Marker } from '@react-google-maps/api'
+import { AdvancedMarker, APIProvider, Map } from '@vis.gl/react-google-maps'
 
-const containerStyle = {
-  width: '100%',
-  height: '400px'
-}
+function GoogleMapComponent () {
+  const position = {
+    lat: 4.637379162836954,
+    lng: -74.08382826724461
+  }
 
-const center = {
-  lat: 4.637379162836954,
-  lng: -74.08382826724461
-}
-
-const GoogleMapComponent = () => {
   return (
-    <LoadScript googleMapsApiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
-      <GoogleMap
-        mapContainerStyle={containerStyle}
-        center={center}
-        zoom={15}
+    <APIProvider apiKey={process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY}>
+      <Map
+        defaultCenter={position}
+        defaultZoom={15}
+        mapId="fullstyle location"
+        style={{ width: '100%', height: '400px' }}
       >
-        <Marker position={center} />
-      </GoogleMap>
-    </LoadScript>
+        <AdvancedMarker position={position} />
+      </Map>
+    </APIProvider>
   )
 }
 

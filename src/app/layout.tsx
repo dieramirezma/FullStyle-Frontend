@@ -33,7 +33,8 @@ const raleway = Raleway({
 
 export const metadata: Metadata = {
   title: 'FullStyle',
-  description: 'Gestión de sitios de estética y belleza'
+  description: 'Gestión de sitios de estética y belleza',
+  keywords: ['estética', 'belleza', 'peluquería', 'salón de belleza']
 }
 
 export default function RootLayout ({
