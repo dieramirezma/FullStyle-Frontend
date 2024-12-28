@@ -5,7 +5,7 @@ import { RankingIcon } from './icons/ranking-icon'
 
 function BenefitsSection () {
   return (
-    <section id='services' className='flex pt-20 gap-20 items-center w-full md:flex-row flex-col-reverse'>
+    <section id='services' className='flex mt-10 gap-20 items-center w-full md:flex-row flex-col-reverse'>
       <article className='flex flex-col gap-5 w-full items-center'>
         <h2 className='subtitle text-left w-full'>
           ¿Qué le ofrecemos a tu negocio?

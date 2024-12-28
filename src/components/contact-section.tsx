@@ -48,7 +48,7 @@ function ContactSection () {
     console.log(values)
   }
   return (
-    <section id='services' className='flex mb-10 pt-20 gap-20 items-center w-full md:flex-row flex-col-reverse'>
+    <section id='contact' className='flex my-10 gap-20 items-center w-full md:flex-row flex-col-reverse'>
       <article className='flex flex-col gap-5 w-full'>
         <h2 className='subtitle text-left w-full'>
           Contáctanos

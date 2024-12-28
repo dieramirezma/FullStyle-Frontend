@@ -3,20 +3,41 @@
 import Link from 'next/link'
 import { Button } from './ui/button'
 import BurgerIcon from './icons/burger-icon'
-import { useState } from 'react'
-import Fullstyle from './icons/fullstyle'
+import { useEffect, useState } from 'react'
 
 function NavBar () {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  // Show header on scroll
+  const [hidden, setHidden] = useState(false)
+
+  useEffect(() => {
+    let lastScrollY = window.scrollY
+
+    const handleScroll = () => {
+      if (window.scrollY > lastScrollY) {
+        // Scrolling down
+        setHidden(true)
+      } else {
+        // Scrolling up
+        setHidden(false)
+      }
+      lastScrollY = window.scrollY
+    }
+
+    window.addEventListener('scroll', handleScroll)
+
+    // Clean up event listener on unmount
+    return () => { window.removeEventListener('scroll', handleScroll) }
+  }, [])
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen)
   }
 
   return (
-    <header className='flex justify-between items-center bg-background rounded-lg mx-4 my-4 px-8'>
+    <header className={`flex sticky top-0 w-full justify-between items-center bg-background rounded-lg mx-4 mt-4 px-8 transition-transform duration-700 ease-in-out ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
       <div className='hidden md:block'>
-        <Fullstyle width='50'/>
+        <h1 className='title'>FullStyle</h1>
       </div>
       <div className='md:hidden'>
         <button onClick={toggleMenu}>

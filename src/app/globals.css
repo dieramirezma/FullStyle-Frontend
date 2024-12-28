@@ -47,6 +47,10 @@ body {
   }
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 .title {
   font-family: var(--font-merriweather-sans), sans-serif;
   font-size: 40px;
@@ -62,4 +66,5 @@ body {
 .subtitle2 {
   font-family: var(--font-raleway), sans-serif;
   font-size: 24px;
+  color: hsl(var(--secondary));
 }

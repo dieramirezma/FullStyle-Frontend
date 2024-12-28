@@ -1,6 +1,6 @@
-import { type SvgProps } from './svg-interface'
+import { type IconProps } from './svg-interface'
 
-function Fullstyle ({ width = '300' }: SvgProps) {
+function Fullstyle ({ width = '300' }: IconProps) {
   return (
     <svg
       width={width}

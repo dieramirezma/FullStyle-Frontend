@@ -2,6 +2,7 @@ import BenefitsSection from '@/components/services-section'
 import HeroSection from '@/components/hero-section'
 import NavBar from '@/components/nav-bar'
 import ContactSection from '@/components/contact-section'
+import Footer from '@/components/footer'
 
 export default function Home () {
   return (
@@ -12,6 +13,7 @@ export default function Home () {
         <BenefitsSection />
         <ContactSection />
       </main>
+      <Footer />
     </>
   )
 }
