@@ -1,16 +1,16 @@
-'use client'
-
 import BenefitsSection from '@/components/services-section'
 import HeroSection from '@/components/hero-section'
 import NavBar from '@/components/nav-bar'
+import ContactSection from '@/components/contact-section'
 
 export default function Home () {
   return (
     <>
       <NavBar />
-      <main className='px-10 md:px-28'>
+      <main className='flex flex-col gap-20 px-10 md:px-28'>
         <HeroSection />
         <BenefitsSection />
+        <ContactSection />
       </main>
     </>
   )
