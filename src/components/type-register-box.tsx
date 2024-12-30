@@ -8,7 +8,7 @@ export default function TypeRegisterBox () {
       </h2>
       <p className="font-black">Te estás registrando como:</p>
       <div className="flex flex-col gap-6 my-10">
-        <Link href={'/register/client'}>
+        <Link href={'/register/customer'}>
           <div>
             <span className="text-2xl hover:text-blue-700">Cliente</span>
             <p className="text-gray-500">Buscas algún servicio o centro de estética</p>
