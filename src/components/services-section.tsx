@@ -3,7 +3,7 @@ import EmployeesIcon from './icons/employees-icon'
 import PaymentIcon from './icons/payment-icon'
 import { RankingIcon } from './icons/ranking-icon'
 
-function BenefitsSection () {
+function ServicesSection () {
   return (
     <section id='services' className='flex mt-10 gap-20 items-center w-full md:flex-row flex-col-reverse'>
       <article className='flex flex-col gap-5 w-full items-center'>
@@ -33,4 +33,4 @@ function BenefitsSection () {
   )
 }
 
-export default BenefitsSection
+export default ServicesSection
