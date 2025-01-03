@@ -15,7 +15,7 @@ export default function TypeRegisterBox () {
           </div>
         </Link>
 
-        <Link href={'/register/admin'} >
+        <Link href={'/register/owner'} >
           <div>
             <span className="text-2xl hover:text-blue-700">Dueño de estética</span>
             <p className="text-gray-500">Buscas gestionar tu centro de estética</p>
