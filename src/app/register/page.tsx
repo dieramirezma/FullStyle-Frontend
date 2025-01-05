@@ -6,7 +6,7 @@ export default function registerPage () {
   return (
     <div>
       <RegisterNavBar />
-      <div className="h-full flex items-center place-content-around px-20 pt-40">
+      <div className="h-full flex items-center place-content-around px-20 py-20">
         <Fullstyle />
         <TypeRegisterBox />
       </div>
