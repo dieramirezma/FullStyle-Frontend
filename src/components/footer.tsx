@@ -28,14 +28,14 @@ function Footer () {
         </ul>
       </div>
       <div className='flex gap-1 items-start'>
-        <Link href='https://www.linkedin.com/' target='_blank'>
+        <Link href='https://www.linkedin.com/' target='_blank' aria-label='LinkedIn Fullstyle'>
           <LinkedIn width={30}/>
         </Link>
-        <Link href='https://www.facebook.com/' target='_blank'>
+        <Link href='https://www.facebook.com/' target='_blank' aria-label='Facebook Fullstyle'>
           <Facebook width={30}/>
         </Link>
-        <Link href='https://www.x.com/' target='_blank'>
-          <Twitter width={30}/>
+        <Link href='https://www.x.com/' target='_blank' aria-label='Twitter Fullstyle'>
+          <Twitter width={30} />
         </Link>
       </div>
     </footer>

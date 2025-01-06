@@ -32,6 +32,7 @@ function BlogCard ({ id, title, description, publishedAt, image }: BlogCardProps
             alt={title}
             className="rounded-t-xl object-cover"
             fill
+            priority
           />
         </div>
       </CardHeader>

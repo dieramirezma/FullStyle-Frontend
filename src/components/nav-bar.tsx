@@ -45,7 +45,7 @@ function NavBar () {
         </Link>
       </div>
       <div className='md:hidden'>
-        <button onClick={toggleMenu}>
+        <button onClick={toggleMenu} aria-label='Abrir menú'>
           <BurgerIcon />
         </button>
       </div>
