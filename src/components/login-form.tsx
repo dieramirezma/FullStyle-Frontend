@@ -5,10 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
+import axios from 'axios'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import Link from 'next/link'
 import { GoogleIcon } from './icons/LogosGoogleIcon'
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 const userSchema = z.object({
   email: z.string({
@@ -24,6 +27,9 @@ const userSchema = z.object({
 })
 
 export default function LoginForm () {
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -32,11 +38,18 @@ export default function LoginForm () {
     }
   })
 
-  function onSubmit (values: z.infer<typeof userSchema>) {
-    console.log(values)
+  async function onSubmit (values: z.infer<typeof userSchema>) {
+    setLoading(true)
+    setError('')
+    try {
+      await axios.post('http://localhost:5000/api/login', values)
+      router.push('/')
+    } catch (err) {
+      setError('Credenciales inválidas')
+    } finally {
+      setLoading(false)
+    }
   }
-
-  console.log(form.formState.errors)
 
   return (
     <Card className='w-full max-w-md'>
@@ -85,17 +98,20 @@ export default function LoginForm () {
                 </FormItem>
               )}
             />
+            {(error !== '') && <p className="text-red-500 text-sm">{error}</p>}
             <div className="mt-2 text-center text-sm">
               ¿No tienes cuenta?{' '}
               <Link href="#" className="underline underline-offset-4">
                 ¡Registrate!
               </Link>
             </div>
-            <Button type="submit">
-              Iniciar Sesion</Button>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Cargando...' : 'Iniciar Sesión'}
+            </Button>
             <Button variant='outline'>
               <GoogleIcon></GoogleIcon>
-              Iniciar con Google</Button>
+              Iniciar con Google
+            </Button>
           </form>
         </Form>
       </CardContent>
