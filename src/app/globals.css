@@ -63,6 +63,12 @@ html {
   color: hsl(var(--secondary));
 }
 
+.subtitle-blog {
+  font-family: var(--font-merriweather-sans), sans-serif;
+  font-size: 20px;
+  color: hsl(var(--secondary));
+}
+
 .subtitle2 {
   font-family: var(--font-raleway), sans-serif;
   font-size: 24px;
