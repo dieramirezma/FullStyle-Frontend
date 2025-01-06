@@ -35,7 +35,7 @@ function NavBar () {
   }
 
   return (
-    <header className={`flex sticky top-0 w-full justify-between items-center bg-background rounded-lg mx-4 mt-4 px-8 border-b-2 transition-transform duration-700 ease-in-out ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
+    <header className={`flex z-10 sticky top-0 w-full justify-between items-center bg-background rounded-lg mx-4 mt-4 px-8 border-b-2 transition-transform duration-700 ease-in-out ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
       <div className='hidden md:block'>
         <Link
           href='/'
@@ -75,9 +75,7 @@ function NavBar () {
           </Link>
         </ul>
       </nav>
-      <Button
-        variant='outline'
-      >
+      <Button >
         SOLICITA UNA DEMO
       </Button>
     </header>

@@ -40,9 +40,7 @@ function HeroSection () {
         <h2 className='subtitle mb-5'>
           ¿Listo para transformar tu negocio? ¡Empieza hoy con FullStyle y experimenta la diferencia!
         </h2>
-        <Button
-          variant='outline'
-        >
+        <Button >
           SOLICITA UNA DEMO
         </Button>
       </section>
