@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
@@ -8,6 +9,8 @@ import { z } from 'zod'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
 
 const banksNames = ['Bancolombia', 'Caja Social', 'Banco de Bogota', 'Mundo mujer']
 const bankAcountTypes = ['Ahorros', 'Corriente']
@@ -68,7 +71,7 @@ const userSchema = z.object({
     message: 'Este campo es obligatorio'
   }).regex(/^[0-9]+$/, {
     message: 'El numero telefonico solo puede contener numeros'
-  }).length(11, {
+  }).min(11, {
     message: 'El numero de cuenta debe contener 11 digitos'
   }).max(99, {
     message: 'El limite de caracteres es de 99'
@@ -100,11 +103,35 @@ export default function RegisterOwnerForm () {
     }
   })
 
-  function onSubmit (values: z.infer<typeof userSchema>) {
-    console.log(values)
-  }
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
 
-  console.log(form.formState.errors)
+  async function onSubmit (values: z.infer<typeof userSchema>) {
+    setError('')
+    setLoading(true)
+
+    const payload = {
+      name: `${values.name.trim()} ${values.lastName.trim()}`,
+      email: values.email,
+      password: values.password
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/register', payload)
+      localStorage.setItem('userId', String(response.data.user.id))
+      router.push('/register/business')
+      console.log(localStorage.getItem('userId'))
+    } catch (error: any) {
+      if (error.response.data.message !== undefined) {
+        setError(String(error.response.data.message))
+      } else {
+        setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }
 
   return (
     <Card className='w-1/2'>
@@ -281,7 +308,10 @@ export default function RegisterOwnerForm () {
               )}
             />
             </div>
-            <Button type="submit" className='w-1/2 self-center'>REGISTRARSE</Button>
+            {(error.length > 0) && <p className="text-red-500 text-sm">{error}</p>}
+            <Button type="submit" className='w-1/2 self-center' disabled={loading}>
+              {loading ? 'Registrando...' : 'REGISTRARSE'}
+            </Button>
             <Button variant="outline" className='w-1/2 self-center'>CONTINUAR CON GOOGLE</Button>
           </form>
 
