@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
@@ -8,6 +9,8 @@ import { z } from 'zod'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { useRouter } from 'next/navigation'
+import axios from 'axios'
 
 const businessTypes = ['Barberia', 'Peluqueria', 'Salon de estetica']
 
@@ -44,8 +47,34 @@ export default function RegisterBusinessForm () {
     }
   })
 
-  function onSubmit (values: z.infer<typeof userSchema>) {
-    console.log(values)
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+
+  async function onSubmit (values: z.infer<typeof userSchema>) {
+    setError('')
+    setLoading(true)
+    const id = 2
+    const payload = {
+      name: values.name.trim(),
+      address: values.address,
+      phone: values.phone,
+      manager_id: id
+    }
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/site', payload)
+      localStorage.setItem('siteId', String(response.data.id))
+      router.push('/register/categories')
+    } catch (error: any) {
+      if (error.response.data.message !== undefined) {
+        setError(String(error.response.data.message))
+      } else {
+        setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   console.log(form.formState.errors)
@@ -125,7 +154,10 @@ export default function RegisterBusinessForm () {
                 </FormItem>
               )}
               />
-            <Button type="submit">CONTINUAR</Button>
+            {(error.length > 0) && <p className="text-red-500 text-sm">{error}</p>}
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Registrando...' : 'REGISTRARSE'}
+            </Button>
           </form>
         </Form>
       </CardContent>
