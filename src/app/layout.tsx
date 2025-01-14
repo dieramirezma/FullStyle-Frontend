@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono, Roboto, Merriweather_Sans, Raleway } from 'next/font/google'
 import { Toaster } from '@/components/ui/toaster'
+import { Providers } from './providers'
 import './globals.css'
 
 const geistSans = Geist({
@@ -37,17 +38,20 @@ export const metadata: Metadata = {
   keywords: ['estética', 'belleza', 'peluquería', 'salón de belleza']
 }
 
-export default function RootLayout ({
+export default function RootLayout({
   children
 }: Readonly<{
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning>
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${roboto.variable} ${merriweatherSans.variable} ${raleway.variable} antialiased`}
+        suppressHydrationWarning
       >
-        {children}
+        <Providers>
+          {children}
+        </Providers>
         <Toaster />
       </body>
     </html>

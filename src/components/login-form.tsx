@@ -12,6 +12,7 @@ import Link from 'next/link'
 import { GoogleIcon } from './icons/LogosGoogleIcon'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { signIn, getSession } from 'next-auth/react'
 
 const userSchema = z.object({
   email: z.string({
@@ -37,17 +38,71 @@ export default function LoginForm () {
       password: ''
     }
   })
-
+  
   async function onSubmit (values: z.infer<typeof userSchema>) {
     setLoading(true)
     setError('')
     try {
-      await axios.post('http://localhost:5000/api/login', values)
-      router.push('/')
+      const res = await signIn('credentials', {
+        redirect: false,
+        email: values.email,
+        password: values.password
+      })
+
+      if ((res?.error) != null) {
+        console.log('Error:', res.error)
+        setError('Credenciales inválidas')
+      } else {
+        router.push('/customer')
+      }
     } catch (err) {
-      setError('Credenciales inválidas')
+      setError('Error al iniciar sesión. Inténtalo de nuevo')
     } finally {
       setLoading(false)
+    }
+  }
+
+  const handleGoogleSignIn = async () => {
+    try {
+      const result = await signIn('google', {
+        callbackUrl: '/',
+        redirect: false
+      })
+
+      if ((result?.error) != null) {
+        setError('Error al autenticar con Google')
+        return
+      }
+
+      const session = await getSession()
+
+      if ((session?.user) == null) {
+        setError('No se pudo obtener la sesión del usuario')
+        return
+      }
+
+      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}login_google`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          name: session.user.name,
+          email: session.user.email
+        }),
+        credentials: 'include'
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        setError(`Error en el backend: ${error.error}`)
+        return
+      }
+      // Opcional:  obtener los datos de la respuesta
+      const data = await response.json()
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error)
+      setError('Ocurrió un error al intentar iniciar sesión con Google')
     }
   }
 
@@ -108,7 +163,11 @@ export default function LoginForm () {
             <Button type="submit" disabled={loading}>
               {loading ? 'Cargando...' : 'Iniciar Sesión'}
             </Button>
-            <Button variant='outline'>
+            <Button
+              variant='outline'
+              type="button"
+              onClick={handleGoogleSignIn}
+            >
               <GoogleIcon></GoogleIcon>
               Iniciar con Google
             </Button>
