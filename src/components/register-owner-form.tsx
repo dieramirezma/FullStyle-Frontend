@@ -72,9 +72,9 @@ const userSchema = z.object({
   }).regex(/^[0-9]+$/, {
     message: 'El numero telefonico solo puede contener numeros'
   }).min(11, {
-    message: 'El numero de cuenta debe contener 11 digitos'
-  }).max(99, {
-    message: 'El limite de caracteres es de 99'
+    message: 'El numero de cuenta debe contener como minimo 11 digitos'
+  }).max(19, {
+    message: 'El numero de cuenta debe contener como maximo 19 digitos'
   }),
   accountOwner: z.string({
     required_error: 'El nombre es obligatorio'
@@ -114,11 +114,14 @@ export default function RegisterOwnerForm () {
     const payload = {
       name: `${values.name.trim()} ${values.lastName.trim()}`,
       email: values.email,
-      password: values.password
+      password: values.password,
+      bankaccount: values.accountNumber,
+      accounttype: values.bankAcountType,
+      bankentity: values.bankName
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/register', payload)
+      const response = await axios.post('http://localhost:5000/api/manager_register', payload)
       localStorage.setItem('userId', String(response.data.user.id))
       router.push('/register/business')
       console.log(localStorage.getItem('userId'))
@@ -137,7 +140,7 @@ export default function RegisterOwnerForm () {
     <Card className='w-1/2'>
       <CardHeader>
         <CardTitle className="subtitle2 self-center">
-          Registro de Nuevo Cliente
+          Registro de Nuevo Administrador
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -312,7 +315,6 @@ export default function RegisterOwnerForm () {
             <Button type="submit" className='w-1/2 self-center' disabled={loading}>
               {loading ? 'Registrando...' : 'REGISTRARSE'}
             </Button>
-            <Button variant="outline" className='w-1/2 self-center'>CONTINUAR CON GOOGLE</Button>
           </form>
 
         </Form>
