@@ -2,11 +2,10 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
@@ -76,20 +75,18 @@ export default function RegisterOwnerForm () {
   async function onSubmit (values: z.infer<typeof userSchema>) {
     setError('')
     setLoading(true)
-    console.log(values.items)
-    console.log(localStorage.getItem('siteId'))
     try {
       const siteId = localStorage.getItem('siteId')
       if (siteId == null) {
         throw new Error('No se encontró siteId en el localStorage')
       }
       const items = values.items
+      localStorage.setItem('categories', items.toString())
       const promises = items.map(async (categoryId) => {
         const payload = {
           site_id: parseInt(siteId, 10),
           category_id: categoryId
         }
-        console.log(payload)
         return await axios.post('http://127.0.0.1:5000/api/site_has_category', payload)
       })
       await Promise.all(promises)
@@ -154,7 +151,7 @@ export default function RegisterOwnerForm () {
                                 }}
                               />
                             </FormControl>
-                            <FormLabel className="font-normal text-lg">
+                            <FormLabel className="font-normal text-lg self-center">
                               {item.label}
                             </FormLabel>
                           </FormItem>
