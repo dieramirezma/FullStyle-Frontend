@@ -6,7 +6,7 @@ export default function Page () {
   return (
     <div>
       <RegisterNavBar />
-      <div className="h-full flex items-center place-content-around px-20 pt-28">
+      <div className="h-full flex items-center place-content-around px-20 py-8">
         <Fullstyle></Fullstyle>
         <LoginForm></LoginForm>
     </div>
