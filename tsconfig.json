@@ -27,7 +27,9 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts",
-    "postcss.config.mjs", 
-    "src/app/api/auth/[...nextauth]/route.ts"  ],
+    "postcss.config.mjs",
+    "src/app/api/auth/[...nextauth]/route.ts",
+    "src/types/**/*.d.ts"
+    ],
   "exclude": ["node_modules"]
 }
