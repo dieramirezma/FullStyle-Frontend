@@ -10,6 +10,7 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import axios from 'axios'
+import Link from 'next/link'
 
 const userSchema = z.object({
   description: z.string({
@@ -47,7 +48,6 @@ const userSchema = z.object({
 const fetchServices = async () => {
   const categoriesString = localStorage.getItem('categories')
   const categories = (categoriesString != null) ? categoriesString.split(',').map(Number) : []
-  console.log(categoriesString)
   try {
     const serviceRequests = categories.map(async categoryId =>
       await axios.get(`http://127.0.0.1:5000/api/service?category_id=${categoryId}`)
@@ -64,7 +64,6 @@ const fetchServices = async () => {
 
     localStorage.setItem('servicesData', JSON.stringify(servicesData))
 
-    console.log('Servicios guardados:', servicesData)
     return servicesData
   } catch (error) {
     console.error('Error fetching services:', error)
@@ -85,6 +84,7 @@ export default function RegisterServiceForm () {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   const [services, setServices] = useState<Array<{ id: number, category_id: number, name: string }>>([])
 
   useEffect(() => {
@@ -97,6 +97,7 @@ export default function RegisterServiceForm () {
 
   async function onSubmit (values: z.infer<typeof userSchema>) {
     setError('')
+    setSuccessMessage('')
     setLoading(true)
     const siteId = localStorage.getItem('siteId')
     const payload = {
@@ -106,10 +107,16 @@ export default function RegisterServiceForm () {
       price: values.price,
       duration: values.duration
     }
-    console.log(payload)
+
     try {
       await axios.post('http://localhost:5000/api/detail', payload)
+      setServices((prevServices) =>
+        prevServices.filter((service) => service.id !== Number(values.service))
+      )
+      form.setValue('service', '')
+      setSuccessMessage('Servicio agregado de forma exitosa')
     } catch (error: any) {
+      setSuccessMessage('')
       if (error.response.data.message !== undefined) {
         setError(String(error.response.data.message))
       } else {
@@ -198,9 +205,15 @@ export default function RegisterServiceForm () {
                 </FormItem>
               )}
             />
-            {(error.length > 0) && <p className="text-red-500 text-sm">{error}</p>}
+            {(successMessage.length > 0) && !loading && (
+              <p className="text-green-500 text-sm self-center">{successMessage}</p>
+            )}
+            {(error.length > 0) && <p className="text-red-500 text-sm self-center">{error}</p>}
             <Button type="submit" className='w-1/2 self-center' disabled={loading}>
-              {loading ? 'Registrando...' : 'REGISTRARSE'}
+              {loading ? 'Agregando...' : 'AGREGAR UN NUEVO SERVICIO'}
+            </Button>
+            <Button variant='outline' className='w-1/2 self-center'>
+              <Link href="/register/worker">Continuar con el registro </Link>
             </Button>
           </form>
 
