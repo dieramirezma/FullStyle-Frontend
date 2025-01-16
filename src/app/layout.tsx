@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   keywords: ['estética', 'belleza', 'peluquería', 'salón de belleza']
 }
 
-export default function RootLayout({
+export default function RootLayout ({
   children
 }: Readonly<{
   children: React.ReactNode
