@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { Button } from './ui/button'
+import { buttonVariants } from './ui/button'
 import BurgerIcon from './icons/burger-icon'
 import { useEffect, useState } from 'react'
 
@@ -75,9 +75,12 @@ function NavBar () {
           </Link>
         </ul>
       </nav>
-      <Button >
+      <Link
+        href='/register'
+        className={`${buttonVariants({ variant: 'default' })}`}
+      >
         SOLICITA UNA DEMO
-      </Button>
+      </Link>
     </header>
   )
 }

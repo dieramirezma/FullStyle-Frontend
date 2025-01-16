@@ -50,7 +50,7 @@ const fetchServices = async () => {
   const categories = (categoriesString != null) ? categoriesString.split(',').map(Number) : []
   try {
     const serviceRequests = categories.map(async categoryId =>
-      await axios.get(`http://127.0.0.1:5000/api/service?category_id=${categoryId}`)
+      await axios.get(`process.env.NEXT_PUBLIC_API_URLservice?category_id=${categoryId}`)
     )
 
     const servicesByCategory = await Promise.all(serviceRequests)
@@ -109,7 +109,7 @@ export default function RegisterServiceForm () {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/detail', payload)
+      await axios.post(`${process.env.NEXT_PUBLIC_API_UR} detail`, payload)
       setServices((prevServices) =>
         prevServices.filter((service) => service.id !== Number(values.service))
       )

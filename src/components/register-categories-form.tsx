@@ -87,7 +87,7 @@ export default function RegisterOwnerForm () {
           site_id: parseInt(siteId, 10),
           category_id: categoryId
         }
-        return await axios.post('http://127.0.0.1:5000/api/site_has_category', payload)
+        return await axios.post(`${process.env.NEXT_PUBLIC_API_URL}site_has_category`, payload)
       })
       await Promise.all(promises)
       router.push('/register/services')

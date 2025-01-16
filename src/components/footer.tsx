@@ -9,22 +9,21 @@ function Footer () {
       <div>
         <h3 className="subtitle2">Nosotros</h3>
         <ul className='text-base text-secondary font-medium'>
-          <li><Link href='#'>Misión</Link></li>
-          <li><Link href='#'>Visión</Link></li>
+          <li><Link href='/about-us'>Misión</Link></li>
+          <li><Link href='/about-us'>Visión</Link></li>
         </ul>
       </div>
       <div>
         <h3 className="subtitle2">Legal</h3>
         <ul className='text-base text-secondary font-medium'>
-          <li><Link href='#'>Tratamiento de datos</Link></li>
-          <li><Link href='#'>Política de Privacidad</Link></li>
+          <li><Link href='/legal/habeas-data'>Tratamiento de datos</Link></li>
         </ul>
       </div>
       <div>
         <h3 className="subtitle2">Soporte</h3>
         <ul className='text-base text-secondary font-medium'>
-          <li><Link href='#'>Contáctanos</Link></li>
-          <li><Link href='#'>Contacta con el equipo de privacidad</Link></li>
+          <li><Link href='mailto:oficial.fullstyle@gmail.com'>Contáctanos</Link></li>
+          <li><Link href='mailto:oficial.fullstyle@gmail.com'>Contacta con el equipo de privacidad</Link></li>
         </ul>
       </div>
       <div className='flex gap-1 items-start'>

@@ -78,7 +78,7 @@ export default function WorkerScheduleForm () {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/worker', payload)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}worker`, payload)
       localStorage.setItem('workerId', String(response.data.id))
       setError(null)
     } catch (error: any) {
@@ -105,7 +105,7 @@ export default function WorkerScheduleForm () {
       }))
       const responses = await Promise.all(
         requests.map(async data =>
-          await axios.post('http://localhost:5000/api/availability', data)
+          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}availability`, data)
         )
       )
       setSuccessMessage('Servicio agregado de forma exitosa')

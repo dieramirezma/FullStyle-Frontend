@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
 import '@/app/globals.css'
 import Link from 'next/link'
-import LogoutButton from '@/components/logout-button'
+import { UserIcon } from '@/components/icons/user'
 
 export const metadata: Metadata = {
   title: 'FullStyle - Clientes'
@@ -22,8 +22,10 @@ export default function BlogLayout ({
         >
           FullStyle
         </Link>
-        </div>
-      <LogoutButton />
+      </div>
+      <Link href='/'>
+        <UserIcon width={40}/>
+      </Link>
     </header>
       <main>{children}</main>
     </section>

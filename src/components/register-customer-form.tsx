@@ -66,7 +66,7 @@ export default function RegisterCustomerForm() {
     }
 
     try {
-      await axios.post('http://localhost:5000/api/register', payload)
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}register`, payload)
       router.push('/login')
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -82,17 +82,17 @@ export default function RegisterCustomerForm() {
   const handleGoogleSignIn = async () => {
     try {
       const result = await signIn('google', {
-        callbackUrl: '/', 
+        callbackUrl: '/',
         redirect: false,
       })
-  
+
       if (result?.error) {
         setError('Error al autenticar con Google')
         return
       }
-  
+
       const session = await getSession()
-  
+
       if (!session?.user) {
         setError('No se pudo obtener la sesión del usuario')
         return
@@ -109,7 +109,7 @@ export default function RegisterCustomerForm() {
         }),
         credentials: 'include'
       })
-  
+
       if (!response.ok) {
         const error = await response.json()
         setError(`Error en el backend: ${error.error}`)
@@ -121,8 +121,8 @@ export default function RegisterCustomerForm() {
       setError('Ocurrió un error al intentar iniciar sesión con Google')
     }
   }
-  
-  
+
+
   return (
     <Card className='w-2/6'>
       <CardHeader>
@@ -202,8 +202,8 @@ export default function RegisterCustomerForm() {
             <Button type="submit" disabled={loading}>
               {loading ? 'Registrando...' : 'REGISTRARSE'}
             </Button>
-            <Button 
-              variant='outline' 
+            <Button
+              variant='outline'
               type="button"
               onClick={handleGoogleSignIn}
             >

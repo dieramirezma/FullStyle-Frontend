@@ -101,7 +101,7 @@ function ServiceSearch () {
   // Action when the form is submitted
   async function onSubmit (values: z.infer<typeof formSchema>) {
     try {
-      const response = await axios.get('http://localhost:5000/api/detail', {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}detail`, {
         params: {
           name: values.name,
           category_id: values.category_id === 0 ? undefined : values.category_id,

@@ -63,7 +63,7 @@ export default function RegisterBusinessForm () {
     }
 
     try {
-      const response = await axios.post('http://localhost:5000/api/site', payload)
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}site`, payload)
       localStorage.setItem('siteId', String(response.data.id))
       router.push('/register/categories')
     } catch (error: any) {

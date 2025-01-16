@@ -22,7 +22,7 @@ function ServiceCard ({ detail }: { detail: Detail }) {
       <div className="relative h-48 w-full">
         <Image
           src={images[detail.category_id]}
-          alt={detail.description}
+          alt={detail.description?.trim() === '' ? 'Service image' : detail.description}
           fill
           className="object-cover"
           priority

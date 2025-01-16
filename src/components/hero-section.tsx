@@ -1,5 +1,6 @@
+import Link from 'next/link'
 import Fullstyle from './icons/fullstyle'
-import { Button } from './ui/button'
+import { buttonVariants } from './ui/button'
 
 function HeroSection () {
   return (
@@ -40,9 +41,12 @@ function HeroSection () {
         <h2 className='subtitle mb-5'>
           ¿Listo para transformar tu negocio? ¡Empieza hoy con FullStyle y experimenta la diferencia!
         </h2>
-        <Button >
+        <Link
+          href='/register'
+          className={`${buttonVariants({ variant: 'default' })}`}
+        >
           SOLICITA UNA DEMO
-        </Button>
+        </Link>
       </section>
     </div>
   )
