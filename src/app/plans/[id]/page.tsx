@@ -5,14 +5,9 @@ import { Separator } from '@/components/ui/separator'
 import { plans } from '../data'
 import WidgetWompi from '@/components/widget-wompi'
 
-interface PageProps {
-  params: {
-    id: string
-  }
-}
-
-export default function PlanCheckout ({ params }: PageProps) {
-  const plan = plans.find((p) => p.id === parseInt(params.id))
+export default async function PlanCheckout ({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params
+  const plan = plans.find((p) => p.id === parseInt(id))
 
   if (plan === undefined) {
     notFound()
