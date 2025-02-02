@@ -13,7 +13,7 @@ const images: Record<number, string> = {
   7: '/images/services/depilacion.jpg',
   8: '/images/services/afeitado.jpg',
   9: '/images/services/extensiones.jpg',
-  10: '/images/services/maquillaje.jpg'
+  10: '/images/services/tratamientos-faciales.jpg'
 }
 
 function ServiceCard ({ detail }: { detail: Detail }) {
@@ -22,8 +22,9 @@ function ServiceCard ({ detail }: { detail: Detail }) {
       <div className="relative h-48 w-full">
         <Image
           src={images[detail.category_id]}
-          alt={detail.description?.trim() === '' ? 'Service image' : detail.description}
+          alt={detail?.description ?? 'Imagen del servicio'}
           fill
+          sizes='(max-width: 768px) 100vw, 50vw'
           className="object-cover"
           priority
         />
