@@ -5,14 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import axios from 'axios'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import Link from 'next/link'
 import { GoogleIcon } from './icons/LogosGoogleIcon'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn, getSession } from 'next-auth/react'
+import { signIn } from 'next-auth/react'
 
 const userSchema = z.object({
   email: z.string({
@@ -65,41 +64,14 @@ export default function LoginForm () {
   const handleGoogleSignIn = async () => {
     try {
       const result = await signIn('google', {
-        callbackUrl: '/',
-        redirect: false
+        callbackUrl: '/customer',
+        redirect: false,
+        prompt: 'login'
       })
 
       if ((result?.error) != null) {
-        setError('Error al autenticar con Google')
-        return
+        throw new Error('Error al iniciar sesión con Google')
       }
-
-      const session = await getSession()
-
-      if ((session?.user) == null) {
-        setError('No se pudo obtener la sesión del usuario')
-        return
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}login_google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: session.user.name,
-          email: session.user.email
-        }),
-        credentials: 'include'
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        setError(`Error en el backend: ${error.error}`)
-        return
-      }
-      // Opcional:  obtener los datos de la respuesta
-      const data = await response.json()
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
       setError('Ocurrió un error al intentar iniciar sesión con Google')
@@ -109,7 +81,7 @@ export default function LoginForm () {
   return (
     <Card className='w-full max-w-md'>
       <CardHeader>
-        <CardTitle className="subtitle2 self-center">
+        <CardTitle className="subtitle self-center">
           Iniciar Sesion
         </CardTitle>
         <CardDescription>Ingresa tu correo y contraseña para iniciar</CardDescription>
@@ -142,7 +114,7 @@ export default function LoginForm () {
                         href="/register"
                         className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                       >
-                        Forgot your password?
+                        ¿Olvidaste tu contraseña?
                       </Link>
                     </div>
                     <FormControl>
@@ -156,7 +128,7 @@ export default function LoginForm () {
             {(error !== '') && <p className="text-red-500 text-sm">{error}</p>}
             <div className="mt-2 text-center text-sm">
               ¿No tienes cuenta?{' '}
-              <Link href="#" className="underline underline-offset-4">
+              <Link href="/register" className="underline underline-offset-4">
                 ¡Registrate!
               </Link>
             </div>

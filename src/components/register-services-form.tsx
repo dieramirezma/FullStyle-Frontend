@@ -129,7 +129,7 @@ export default function RegisterServiceForm () {
   return (
     <Card className='w-1/2'>
       <CardHeader>
-        <CardTitle className="subtitle2 self-center">
+        <CardTitle className="subtitle self-center">
           Registro de Nuevo Administrador
         </CardTitle>
       </CardHeader>

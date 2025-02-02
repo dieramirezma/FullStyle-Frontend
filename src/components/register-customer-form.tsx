@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
-import { signIn, getSession } from "next-auth/react"
+import { signIn, getSession } from 'next-auth/react'
 
 const userSchema = z.object({
   names: z.string({
@@ -39,7 +39,7 @@ const userSchema = z.object({
   message: 'Las contraseñas no coinciden'
 })
 
-export default function RegisterCustomerForm() {
+export default function RegisterCustomerForm () {
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -55,7 +55,7 @@ export default function RegisterCustomerForm() {
   const [loading, setLoading] = useState(false)
   const router = useRouter()
 
-  async function onSubmit(values: z.infer<typeof userSchema>) {
+  async function onSubmit (values: z.infer<typeof userSchema>) {
     setError('')
     setLoading(true)
 
@@ -83,7 +83,7 @@ export default function RegisterCustomerForm() {
     try {
       const result = await signIn('google', {
         callbackUrl: '/',
-        redirect: false,
+        redirect: false
       })
 
       if (result?.error) {
@@ -101,11 +101,11 @@ export default function RegisterCustomerForm() {
       const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}register_google`, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify({
           name: session.user.name,
-          email: session.user.email,
+          email: session.user.email
         }),
         credentials: 'include'
       })
@@ -113,21 +113,18 @@ export default function RegisterCustomerForm() {
       if (!response.ok) {
         const error = await response.json()
         setError(`Error en el backend: ${error.error}`)
-        return
       }
-
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
       setError('Ocurrió un error al intentar iniciar sesión con Google')
     }
   }
 
-
   return (
     <Card className='w-2/6'>
       <CardHeader>
-        <CardTitle className="subtitle2">
-          Registro de Nuevo Cliente
+        <CardTitle className="subtitle text-center">
+          Registro cliente
         </CardTitle>
       </CardHeader>
       <CardContent>
