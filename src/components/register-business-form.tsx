@@ -82,7 +82,7 @@ export default function RegisterBusinessForm () {
   return (
     <Card className='w-2/6'>
       <CardHeader>
-        <CardTitle className="subtitle2">
+        <CardTitle className="subtitle">
           Registro del Negocio
         </CardTitle>
       </CardHeader>
