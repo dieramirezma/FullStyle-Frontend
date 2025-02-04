@@ -25,7 +25,7 @@ export default function WorkerScheduleForm () {
     description: '',
     schedule: DAYS.reduce((acc, day) => ({
       ...acc,
-      [day]: { startTime: '', endTime: '' }
+      [day]: { startTime: '10:00', endTime: '19:00' }
     }), {})
   })
   const [error, setError] = useState<string | null>(null)
@@ -50,7 +50,7 @@ export default function WorkerScheduleForm () {
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
-    setLoading(true)
+    //setLoading(true)
     setSuccessMessage('')
     e.preventDefault()
 
@@ -80,6 +80,7 @@ export default function WorkerScheduleForm () {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}worker`, payload)
       localStorage.setItem('workerId', String(response.data.id))
+      console.log(payload)
       setError(null)
     } catch (error: any) {
       setSuccessMessage('')
@@ -103,6 +104,7 @@ export default function WorkerScheduleForm () {
         starttime: time.startTime,
         endtime: time.endTime
       }))
+      console.log(requests)
       const responses = await Promise.all(
         requests.map(async data =>
           await axios.post(`${process.env.NEXT_PUBLIC_API_URL}availability`, data)
@@ -119,6 +121,7 @@ export default function WorkerScheduleForm () {
     } finally {
       setLoading(false)
     }
+    setLoading(false)
   }
 
   return (
