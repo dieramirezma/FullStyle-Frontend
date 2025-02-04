@@ -12,6 +12,21 @@ import Link from 'next/link'
 
 type Schedule = Record<string, { startTime: string, endTime: string }>
 
+const fetchServices = async () => {
+  const siteId = localStorage.getItem('siteId')
+  try {
+    const servicesData = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}detail?site_id=${siteId}`)
+    localStorage.setItem('servicesData', JSON.stringify(servicesData))
+    console.log(localStorage.getItem('servicesData'))
+    return servicesData
+  } catch (error) {
+    console.error('Error fetching services:', error)
+    return { available: [], selected: [] }
+  }
+}
+
+fetchServices()
+
 interface WorkerData {
   name: string
   description: string
@@ -110,7 +125,7 @@ export default function WorkerScheduleForm () {
           await axios.post(`${process.env.NEXT_PUBLIC_API_URL}availability`, data)
         )
       )
-      setSuccessMessage('Servicio agregado de forma exitosa')
+      setSuccessMessage('Trabajador agregado de forma exitosa')
     } catch (error: any) {
       setSuccessMessage('')
       if (error.response.data.message !== undefined) {
@@ -121,6 +136,7 @@ export default function WorkerScheduleForm () {
     } finally {
       setLoading(false)
     }
+    //console.log(localStorage.getItem('workerId'))
     setLoading(false)
   }
 
