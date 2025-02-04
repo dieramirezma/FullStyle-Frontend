@@ -50,7 +50,7 @@ const fetchServices = async () => {
   const categories = (categoriesString != null) ? categoriesString.split(',').map(Number) : []
   try {
     const serviceRequests = categories.map(async categoryId =>
-      await axios.get(`process.env.NEXT_PUBLIC_API_URLservice?category_id=${categoryId}`)
+      await axios.get(`${process.env.NEXT_PUBLIC_API_URL}service?category_id=${categoryId}`)
     )
 
     const servicesByCategory = await Promise.all(serviceRequests)
