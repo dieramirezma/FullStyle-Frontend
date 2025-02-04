@@ -109,7 +109,7 @@ export default function RegisterServiceForm () {
     }
 
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_UR} detail`, payload)
+      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}detail`, payload)
       setServices((prevServices) =>
         prevServices.filter((service) => service.id !== Number(values.service))
       )
