@@ -5,6 +5,7 @@ import apiClient from '@/utils/apiClient'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { useSession } from 'next-auth/react'
 import { Label } from '@radix-ui/react-label'
+import router from 'next/router'
 
 export default function DeleteAccount() {
   const { data: session, status } = useSession()
@@ -34,6 +35,7 @@ export default function DeleteAccount() {
     } catch (error: any) {
       setError(error.response?.data?.message || 'Error al eliminar la cuenta.')
     } finally {
+      router.push('/customer')
       setLoading(false)
     }
   }
