@@ -30,8 +30,8 @@ import axios from 'axios'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
+import { Input } from '../../../components/ui/input'
+import { Button } from '../../../components/ui/button'
 import { useEffect, useState } from 'react'
 import { useSearch } from '@/context/search-context'
 import apiClient from '@/utils/apiClient'
@@ -289,7 +289,7 @@ function ServiceSearch () {
                   Limpiar
                 </Button>
                 <Button type="submit" className="flex-1">
-                  Aplicar Filtros
+                  Buscar
                 </Button>
               </div>
             </form>

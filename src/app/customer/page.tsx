@@ -1,7 +1,9 @@
-import ServiceSearch from '@/components/service-search'
-import { SearchResults } from '@/components/search-results'
+import ServiceSearch from '@/app/customer/_components/service-search'
+import { ServiceResults } from './_components/service-results'
 import { SearchProvider } from '@/context/search-context'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import SiteSearch from './_components/site-search'
+import { SiteResults } from './_components/site-results'
 
 export default function Page () {
   return (
@@ -28,10 +30,13 @@ export default function Page () {
               <div className="w-full mb-4">
                 <ServiceSearch />
               </div>
-              <SearchResults />
+              <ServiceResults />
             </TabsContent>
             <TabsContent value="sites" className="border rounded-2xl p-6 shadow-sm">
-              <h2>Hola soy homero</h2>
+              <div className="w-full mb-4">
+                <SiteSearch />
+              </div>
+              <SiteResults />
             </TabsContent>
           </Tabs>
         </section>

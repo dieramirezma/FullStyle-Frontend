@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { Clock, MapPin } from 'lucide-react'
 import Image from 'next/image'
-import { type Detail } from './service-search'
+import { type Detail } from './site-search'
 
 const images: Record<number, string> = {
   1: '/images/services/cortes.jpg',
