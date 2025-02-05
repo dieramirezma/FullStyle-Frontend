@@ -106,7 +106,7 @@ function ServiceSearch () {
   // Action when the form is submitted
   async function onSubmit (values: z.infer<typeof formSchema>) {
     try {
-      const response = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL}detail`, {
+      const response = await apiClient.get('detail', {
         params: {
           name: values.name,
           category_id: values.category_id === 0 ? undefined : values.category_id,
@@ -115,7 +115,7 @@ function ServiceSearch () {
           price: values.price === 1 ? undefined : values.price
         }
       })
-
+      console.log('Request URL:', response.config.url)
       const data: Detail[] = response.data
       console.log(data)
       setDetails(data)
@@ -136,21 +136,21 @@ function ServiceSearch () {
   useEffect(() => {
     // Get services from the API
     const fetchServices = async () => {
-      const response = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL}service`)
+      const response = await apiClient.get('service')
       const data: Service[] = response.data
       setServices(data)
     }
 
     // Get categories from the API
     const fetchCategories = async () => {
-      const response = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL}category`)
+      const response = await apiClient.get('category')
       const data: Category[] = response.data
       setCategories(data)
     }
 
     // Get sites from the API
     const fetchSites = async () => {
-      const response = await apiClient.get(`${process.env.NEXT_PUBLIC_API_URL}site`)
+      const response = await apiClient.get('site')
       const data: Site[] = response.data
       setSites(data)
     }
