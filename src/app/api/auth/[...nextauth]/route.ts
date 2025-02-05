@@ -12,6 +12,7 @@ interface LoginResponse {
     name: string
     password: string
     active: boolean
+    token: string
   }
 }
 
@@ -83,11 +84,13 @@ const authOptions: AuthOptions = {
         }
       } else if (user != null) {
         token.accessToken = user.token
+        token.user = user
       }
       return token
     },
     async session ({ session, token }) {
       session.accessToken = token.accessToken as string
+      session.user = token.user as LoginResponse['user']
       return session
     }
   }
