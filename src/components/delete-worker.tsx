@@ -9,7 +9,7 @@ import axios from 'axios'
 import { Button } from './ui/button'
 import router from 'next/router'
 
-export default function DeleteSite() {
+export default function DeleteWorker() {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
