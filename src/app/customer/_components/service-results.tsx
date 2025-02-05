@@ -4,7 +4,7 @@ import { useSearch } from '@/context/search-context'
 import Link from 'next/link'
 import ServiceCard from './service-card'
 
-export function SearchResults () {
+export function ServiceResults () {
   const { details, error } = useSearch()
 
   if (error != null || details.length === 0) {
