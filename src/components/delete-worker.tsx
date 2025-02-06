@@ -9,12 +9,17 @@ import axios from 'axios'
 import { Button } from './ui/button'
 import router from 'next/router'
 
+interface Worker {
+  id: number
+  name: string
+}
+
 export default function DeleteWorker() {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [site, setSite] = useState<{ id: number; name: string; address: string; phone: string } | null>(null)
+  const [workers, setWorkers] = useState<Worker[]>([])
 
   
   useEffect(() => {
@@ -22,16 +27,14 @@ export default function DeleteWorker() {
       try {
         const manager_id = 5
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}site?manager_id=${manager_id}`)
-        console.log("Datos del sitio:", response.data)
-
-        
         if (Array.isArray(response.data) && response.data.length > 0) {
-          setSite({
-            id: response.data[0].id,
-            name: response.data[0].name,
-            address: response.data[0].address,
-            phone: response.data[0].phone
-          })
+          const workers = await apiClient.get(`worker?site_id=${response.data[0].id}`)
+          const filteredWorkers = workers.data.map((worker: any) => ({
+            worker_id: worker.id,
+            worker_name: worker.name
+          }))
+          setWorkers(filteredWorkers)
+          console.log(filteredWorkers)
         } else {
           setError("No se encontró información del negocio.")
         }
@@ -82,19 +85,19 @@ export default function DeleteWorker() {
             <div className="space-y-2">
               <Label htmlFor="name">Nombre:</Label>
               <div id="name" className="p-2 bg-gray-100 rounded-md">
-                {site?.name || "No disponible"}
+                lo que sea
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="address">Dirección:</Label>
               <div id="address" className="p-2 bg-gray-100 rounded-md">
-                {site?.address || "No disponible"}
+              lo que sea
               </div>
             </div>
             <div className="space-y-2">
               <Label htmlFor="phone">Teléfono:</Label>
               <div id="phone" className="p-2 bg-gray-100 rounded-md">
-                {site?.phone || "No disponible"}
+              lo que sea
               </div>
             </div>
           </CardContent>
