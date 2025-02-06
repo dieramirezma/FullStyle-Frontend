@@ -1,17 +1,24 @@
-'use client'
+"use client"
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect } from "react"
+import { useSession } from "next-auth/react"
+import { useRouter } from "next/router"
 import apiClient from '@/utils/apiClient'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { useSession } from 'next-auth/react'
-import { Label } from '@radix-ui/react-label'
-import axios from 'axios'
-import { Button } from './ui/button'
-import router from 'next/router'
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface Worker {
+  worker_id: number
+  worker_name: string
+}
+
+interface Site {
   id: number
   name: string
+  address: string
+  phone: string
 }
 
 export default function DeleteWorker() {
@@ -20,43 +27,56 @@ export default function DeleteWorker() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [workers, setWorkers] = useState<Worker[]>([])
+  const [site, setSite] = useState<Site | null>(null)
+  const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null)
 
-  
   useEffect(() => {
-    const fetchSite = async () => {
+    const fetchData = async () => {
+      setLoading(true)
       try {
-        const manager_id = 5
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}site?manager_id=${manager_id}`)
-        if (Array.isArray(response.data) && response.data.length > 0) {
-          const workers = await apiClient.get(`worker?site_id=${response.data[0].id}`)
-          const filteredWorkers = workers.data.map((worker: any) => ({
+        const manager_id = localStorage.getItem("userId")
+        const siteResponse = await apiClient.get(`site?manager_id=${manager_id}`)
+
+        if (Array.isArray(siteResponse.data) && siteResponse.data.length > 0) {
+          const siteData = siteResponse.data[0]
+          setSite({
+            id: siteData.id,
+            name: siteData.name,
+            address: siteData.address,
+            phone: siteData.phone,
+          })
+
+          const workersResponse = await apiClient.get(`worker?site_id=${siteData.id}`)
+          const filteredWorkers = workersResponse.data.map((worker: any) => ({
             worker_id: worker.id,
-            worker_name: worker.name
+            worker_name: worker.name,
           }))
           setWorkers(filteredWorkers)
-          console.log(filteredWorkers)
         } else {
           setError("No se encontró información del negocio.")
         }
       } catch (error) {
-        console.error("Error al obtener el sitio:", error)
-        setError("Error al obtener la información del negocio.")
+        console.error("Error al obtener datos:", error)
+        setError("Error al obtener la información.")
       } finally {
         setLoading(false)
       }
     }
-    fetchSite()
-  }, [session, status])
 
+    if (session && session.user.active) {
+      fetchData()
+    }
+  }, [session])
 
-  if (status === 'loading') return <p>Cargando...</p>
-  if (status !== 'authenticated') return <a href="/api/auth/signin">Iniciar sesión</a>
-  if(!session.user.active) {
-    setLoading(false)
+  if (status === "loading") return <p>Cargando...</p>
+  if (status !== "authenticated") return <a href="/api/auth/signin">Iniciar sesión</a>
+  if (!session.user.active) {
+    return <p>Usuario no activo</p>
   }
+
   const handleDelete = async () => {
-    if (!session.user.id) {
-      setError('No se pudo obtener el ID del usuario.')
+    if (!selectedWorkerId) {
+      setError("Por favor, selecciona un trabajador para eliminar.")
       return
     }
 
@@ -65,53 +85,90 @@ export default function DeleteWorker() {
     setSuccessMessage(null)
 
     try {
-      await apiClient.delete(`${process.env.NEXT_PUBLIC_API_URL}site?id=${site?.id}`)
-      setSuccessMessage('Sitio eliminada correctamente.')
+      await apiClient.delete(`worker?id=${selectedWorkerId}`)
+      console.log(`Eliminando trabajador con ID: ${selectedWorkerId}`)
+      setSuccessMessage("Trabajador eliminado correctamente.")
+
+      setWorkers((prevWorkers) => prevWorkers.filter((worker) => worker.worker_id.toString() !== selectedWorkerId))
+
+      setSelectedWorkerId(null)
     } catch (error: any) {
-      setError(error.response?.data?.message || 'Error al eliminar el sitio.')
+      setError(error.response?.data?.message || "Error al eliminar el trabajador.")
     } finally {
-      router.push('/customer')
       setLoading(false)
     }
   }
-
   return (
-    <div className="flex flex-col items-center space-y-4">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle>Información del Negocio</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">Nombre:</Label>
+    <div className="flex flex-col items-center space-y-6 p-6 max-w-2xl mx-auto">
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-2xl font-bold text-center">Información del Negocio</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <Label htmlFor="name" className="font-semibold">
+                Nombre:
+              </Label>
               <div id="name" className="p-2 bg-gray-100 rounded-md">
-                lo que sea
+                {site?.name}
               </div>
             </div>
-            <div className="space-y-2">
-              <Label htmlFor="address">Dirección:</Label>
-              <div id="address" className="p-2 bg-gray-100 rounded-md">
-              lo que sea
-              </div>
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="phone">Teléfono:</Label>
+            <div>
+              <Label htmlFor="phone" className="font-semibold">
+                Teléfono:
+              </Label>
               <div id="phone" className="p-2 bg-gray-100 rounded-md">
-              lo que sea
+                {site?.phone}
               </div>
             </div>
-          </CardContent>
-        </Card>
-      {successMessage && <p className="text-green-500">{successMessage}</p>}
-      {error && <p className="text-red-500">{error}</p>}
-      <Button
-        type="submit"
-        onClick={handleDelete}
-        className="bg-red-500 text-white px-4 py-2 rounded"
-        disabled={loading}
-      >
-        {loading ? 'Eliminando sitio' : 'Eliminar sitio'}
-      </Button>
+          </div>
+          <div>
+            <Label htmlFor="address" className="font-semibold">
+              Dirección:
+            </Label>
+            <div id="address" className="p-2 bg-gray-100 rounded-md">
+              {site?.address}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle className="text-xl font-bold">Eliminar Trabajador</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="worker-select" className="font-semibold">
+              Selecciona un trabajador:
+            </Label>
+            <Select onValueChange={setSelectedWorkerId}>
+              <SelectTrigger id="worker-select">
+                <SelectValue placeholder="Selecciona un trabajador" />
+              </SelectTrigger>
+              <SelectContent>
+                {workers.map((worker) => (
+                  <SelectItem key={worker.worker_id} value={worker.worker_id.toString()}>
+                    {worker.worker_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </CardContent>
+        <CardFooter className="flex flex-col items-center">
+          {successMessage && <p className="text-green-500 mb-2">{successMessage}</p>}
+          {error && <p className="text-red-500 mb-2">{error}</p>}
+          <Button
+            onClick={handleDelete}
+            className="bg-red-500 hover:bg-red-600 text-white"
+            disabled={loading || !selectedWorkerId}
+          >
+            {loading ? "Eliminando trabajador..." : "Eliminar trabajador"}
+          </Button>
+        </CardFooter>
+      </Card>
     </div>
   )
 }
