@@ -121,7 +121,7 @@ export default function RegisterCustomerForm () {
   }
 
   return (
-    <Card className='w-2/6'>
+    <Card className='w-full'>
       <CardHeader>
         <CardTitle className="subtitle text-center">
           Registro cliente
