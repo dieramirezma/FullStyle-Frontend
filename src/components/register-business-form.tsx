@@ -54,7 +54,7 @@ export default function RegisterBusinessForm () {
   async function onSubmit (values: z.infer<typeof userSchema>) {
     setError('')
     setLoading(true)
-    const id = 42
+    const id = localStorage.getItem('userId')
     const payload = {
       name: values.name.trim(),
       address: values.address,
