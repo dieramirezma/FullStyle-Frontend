@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import axios from 'axios'
+import apiClient from '@/utils/apiClient'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
-import { signIn, getSession } from 'next-auth/react'
+import { useSession } from 'next-auth/react'
 
 const userSchema = z.object({
   names: z.string({
@@ -35,19 +35,29 @@ const userSchema = z.object({
 })
 
 export default function EditCustomerForm () {
+  
+  const { data: session, status } = useSession()
+  const [error, setError] = useState('')
+  const [loading, setLoading] = useState(false)
+  const router = useRouter()
+  const [loadingSession, setLoadingSession] = useState(true)
+
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      names: '',
-      email: '',
+      names: 'cargando...',
+      email: 'cargando...',
       password: '',
       confirmPassword: ''
     }
   })
 
-  const [error, setError] = useState('')
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
+  useEffect(() => {
+    if (session?.user) {
+      form.setValue('names', session.user.name || '')
+      form.setValue('email', session.user.email || '')
+    }
+  }, [session, form])
 
   async function onSubmit (values: z.infer<typeof userSchema>) {
     setError('')
@@ -60,7 +70,7 @@ export default function EditCustomerForm () {
     }
 
     try {
-      await axios.post(`${process.env.NEXT_PUBLIC_API_URL}register`, payload)
+      await apiClient.put(`user/${session?.user.id}`, payload)
       router.push('/login')
     } catch (error: any) {
       if (error.response?.data?.message) {
@@ -72,12 +82,12 @@ export default function EditCustomerForm () {
       setLoading(false)
     }
   }
-
+  console.log(session?.user)
   return (
     <Card className='w-full'>
       <CardHeader>
         <CardTitle className="subtitle text-center">
-          Registro cliente
+          Edicion de cliente
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -86,6 +96,7 @@ export default function EditCustomerForm () {
             <FormField
               name="names"
               control={form.control}
+              disabled = {loadingSession}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className='font-black'>Nombre</FormLabel>
@@ -99,6 +110,7 @@ export default function EditCustomerForm () {
             <FormField
               name="email"
               control={form.control}
+              disabled = {loadingSession}
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className='font-black'>Correo electrónico</FormLabel>
