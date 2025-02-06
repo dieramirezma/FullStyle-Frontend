@@ -11,6 +11,10 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
 import { signIn, getSession } from 'next-auth/react'
+import { GoogleIcon } from './icons/LogosGoogleIcon'
+import { Eye, EyeOff } from 'lucide-react'
+import Link from 'next/link'
+import { Checkbox } from './ui/checkbox'
 
 const userSchema = z.object({
   names: z.string({
@@ -33,6 +37,11 @@ const userSchema = z.object({
   }).min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }),
   confirmPassword: z.string({
     required_error: 'Debe confirmar la contraseña'
+  }),
+  acceptPolicy: z.boolean({
+    required_error: 'Debes aceptar la política de tratamiento de datos'
+  }).refine(val => val, {
+    message: 'Debes aceptar la política de tratamiento de datos'
   })
 }).refine(data => data.password === data.confirmPassword, {
   path: ['confirmPassword'],
@@ -53,6 +62,13 @@ export default function RegisterCustomerForm () {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const [showPassword, setShowPassword] = useState(false)
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   const router = useRouter()
 
   async function onSubmit (values: z.infer<typeof userSchema>) {
@@ -176,7 +192,22 @@ export default function RegisterCustomerForm () {
                 <FormItem>
                   <FormLabel className='font-black'>Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <div className='relative'>
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={togglePasswordVisibility}
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -195,6 +226,26 @@ export default function RegisterCustomerForm () {
                 </FormItem>
               )}
             />
+            <FormField
+              control={form.control}
+              name="acceptPolicy"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Acepto la{' '}
+                      <Link href="/legal/habeas-data" className="underline">
+                        política de tratamiento de datos
+                      </Link>
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
             {error && <p className="text-red-500 text-sm">{error}</p>}
             <Button type="submit" disabled={loading}>
               {loading ? 'Registrando...' : 'REGISTRARSE'}
@@ -204,6 +255,7 @@ export default function RegisterCustomerForm () {
               type="button"
               onClick={handleGoogleSignIn}
             >
+              <GoogleIcon/>
               CONTINUAR CON GOOGLE
             </Button>
           </form>
