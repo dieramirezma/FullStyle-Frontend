@@ -54,7 +54,7 @@ export default function RegisterBusinessForm () {
   async function onSubmit (values: z.infer<typeof userSchema>) {
     setError('')
     setLoading(true)
-    const id = 2
+    const id = localStorage.getItem('userId')
     const payload = {
       name: values.name.trim(),
       address: values.address,
@@ -82,7 +82,7 @@ export default function RegisterBusinessForm () {
   return (
     <Card className='w-2/6'>
       <CardHeader>
-        <CardTitle className="subtitle2">
+        <CardTitle className="subtitle">
           Registro del Negocio
         </CardTitle>
       </CardHeader>

@@ -105,7 +105,7 @@ export default function RegisterOwnerForm () {
   return (
     <Card className='w-1/3'>
       <CardHeader>
-        <CardTitle className="subtitle2 self-center">
+        <CardTitle className="subtitle self-center">
           Registro de categorias
         </CardTitle>
       </CardHeader>

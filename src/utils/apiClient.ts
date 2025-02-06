@@ -10,13 +10,10 @@ apiClient.interceptors.request.use(
     const session = await getSession()
     const token = session?.accessToken
 
-    console.log('Token:', token)
-
     if (token != null) {
       config.headers.Authorization = `Bearer ${token}`
     }
 
-    console.log('Config:', config)
     return config
   },
   async (error) => {

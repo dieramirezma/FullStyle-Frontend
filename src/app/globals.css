@@ -59,7 +59,7 @@ html {
 
 .subtitle {
   font-family: var(--font-merriweather-sans), sans-serif;
-  font-size: 34px;
+  font-size: 32px;
   color: hsl(var(--secondary));
 }
 
