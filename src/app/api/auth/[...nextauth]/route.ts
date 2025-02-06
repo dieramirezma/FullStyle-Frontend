@@ -6,12 +6,14 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 interface LoginResponse {
   access_token: string
   refresh_token: string
+  manager: boolean
   user: {
     id: number
     email: string
     name: string
     password: string
     active: boolean
+    token: string
   }
 }
 
@@ -40,16 +42,14 @@ const authOptions: AuthOptions = {
         })
 
         const user: LoginResponse = await res.json()
-        console.log('user authenticated', user)
         if (res.ok && (user.access_token != null)) {
-          console.log('user', user)
-
           return {
             id: user.user.id,
             email: user.user.email,
             name: user.user.name,
             active: user.user.active,
-            token: user.access_token
+            token: user.access_token,
+            is_manager: user.manager
           }
         } else {
           return null
@@ -62,14 +62,37 @@ const authOptions: AuthOptions = {
     strategy: 'jwt'
   },
   callbacks: {
-    async jwt ({ token, user }) {
-      if (user != null) {
+    async jwt ({ token, user, account }) {
+      if ((account != null) && account.provider === 'google') {
+        try {
+          const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}login_google`, {
+            method: 'POST',
+            body: JSON.stringify({
+              email: user?.email,
+              token: account.id_token
+            }),
+            headers: { 'Content-Type': 'application/json' }
+          })
+
+          if (!res.ok) throw new Error('Error al autenticar con Google')
+
+          const userData: LoginResponse = await res.json()
+
+          token.accessToken = userData.access_token
+          token.refreshToken = userData.refresh_token
+          token.user = userData.user
+        } catch (error) {
+          console.log('error', error)
+        }
+      } else if (user != null) {
         token.accessToken = user.token
+        token.user = user
       }
       return token
     },
     async session ({ session, token }) {
       session.accessToken = token.accessToken as string
+      session.user = token.user as LoginResponse['user']
       return session
     }
   }

@@ -5,14 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import axios from 'axios'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import Link from 'next/link'
 import { GoogleIcon } from './icons/LogosGoogleIcon'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn, getSession } from 'next-auth/react'
+import { getSession, signIn } from 'next-auth/react'
+import { useToast } from '@/hooks/use-toast'
+import { Eye, EyeOff } from 'lucide-react'
 
 const userSchema = z.object({
   email: z.string({
@@ -28,8 +29,17 @@ const userSchema = z.object({
 })
 
 export default function LoginForm () {
+  const { toast } = useToast()
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
+  const [showPassword, setShowPassword] = useState(false)
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   const router = useRouter()
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
@@ -53,10 +63,24 @@ export default function LoginForm () {
         console.log('Error:', res.error)
         setError('Credenciales inválidas')
       } else {
-        router.push('/customer')
+        const session = await getSession()
+
+        toast({
+          title: 'Inicio de sesión exitoso',
+          description: 'Bienvenido de nuevo'
+        })
+        if (session?.user) {
+          const isManager = (session.user as any).is_manager
+          router.push(isManager ? '/owner' : '/customer')
+        }
       }
     } catch (err) {
       setError('Error al iniciar sesión. Inténtalo de nuevo')
+      toast({
+        title: 'Error al iniciar sesión',
+        description: 'Inténtalo de nuevo',
+        variant: 'destructive'
+      })
     } finally {
       setLoading(false)
     }
@@ -65,41 +89,14 @@ export default function LoginForm () {
   const handleGoogleSignIn = async () => {
     try {
       const result = await signIn('google', {
-        callbackUrl: '/',
-        redirect: false
+        callbackUrl: '/customer',
+        redirect: false,
+        prompt: 'login'
       })
 
       if ((result?.error) != null) {
-        setError('Error al autenticar con Google')
-        return
+        throw new Error('Error al iniciar sesión con Google')
       }
-
-      const session = await getSession()
-
-      if ((session?.user) == null) {
-        setError('No se pudo obtener la sesión del usuario')
-        return
-      }
-
-      const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}login_google`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          name: session.user.name,
-          email: session.user.email
-        }),
-        credentials: 'include'
-      })
-
-      if (!response.ok) {
-        const error = await response.json()
-        setError(`Error en el backend: ${error.error}`)
-        return
-      }
-      // Opcional:  obtener los datos de la respuesta
-      const data = await response.json()
     } catch (error) {
       console.error('Error al iniciar sesión:', error)
       setError('Ocurrió un error al intentar iniciar sesión con Google')
@@ -109,8 +106,8 @@ export default function LoginForm () {
   return (
     <Card className='w-full max-w-md'>
       <CardHeader>
-        <CardTitle className="subtitle2 self-center">
-          Iniciar Sesion
+        <CardTitle className="subtitle self-center">
+          Iniciar Sesión
         </CardTitle>
         <CardDescription>Ingresa tu correo y contraseña para iniciar</CardDescription>
       </CardHeader>
@@ -124,7 +121,9 @@ export default function LoginForm () {
                 <FormItem>
                   <FormLabel className='font-black'>Correo electrónico</FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -142,11 +141,26 @@ export default function LoginForm () {
                         href="/register"
                         className="ml-auto inline-block text-sm underline-offset-4 hover:underline"
                       >
-                        Forgot your password?
+                        ¿Olvidaste tu contraseña?
                       </Link>
                     </div>
                     <FormControl>
-                      <Input type="password" {...field} />
+                      <div className='relative'>
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          {...field}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                          onClick={togglePasswordVisibility}
+                          aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                        >
+                          {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </div>
@@ -156,7 +170,7 @@ export default function LoginForm () {
             {(error !== '') && <p className="text-red-500 text-sm">{error}</p>}
             <div className="mt-2 text-center text-sm">
               ¿No tienes cuenta?{' '}
-              <Link href="#" className="underline underline-offset-4">
+              <Link href="/register" className="underline underline-offset-4">
                 ¡Registrate!
               </Link>
             </div>
