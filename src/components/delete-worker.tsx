@@ -1,13 +1,14 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { useSession } from "next-auth/react"
-import { useRouter } from "next/router"
+import { useState, useEffect } from 'react'
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/router'
 import apiClient from '@/utils/apiClient'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { toast } from '@/hooks/use-toast'
 
 interface Worker {
   worker_id: number
@@ -21,7 +22,7 @@ interface Site {
   phone: string
 }
 
-export default function DeleteWorker() {
+export default function DeleteWorker () {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -34,7 +35,7 @@ export default function DeleteWorker() {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const manager_id = localStorage.getItem("userId")
+        const manager_id = '62'
         const siteResponse = await apiClient.get(`site?manager_id=${manager_id}`)
 
         if (Array.isArray(siteResponse.data) && siteResponse.data.length > 0) {
@@ -43,21 +44,21 @@ export default function DeleteWorker() {
             id: siteData.id,
             name: siteData.name,
             address: siteData.address,
-            phone: siteData.phone,
+            phone: siteData.phone
           })
 
           const workersResponse = await apiClient.get(`worker?site_id=${siteData.id}`)
           const filteredWorkers = workersResponse.data.map((worker: any) => ({
             worker_id: worker.id,
-            worker_name: worker.name,
+            worker_name: worker.name
           }))
           setWorkers(filteredWorkers)
         } else {
-          setError("No se encontró información del negocio.")
+          setError('No se encontró información del negocio.')
         }
       } catch (error) {
-        console.error("Error al obtener datos:", error)
-        setError("Error al obtener la información.")
+        console.error('Error al obtener datos:', error)
+        setError('Error al obtener la información.')
       } finally {
         setLoading(false)
       }
@@ -68,15 +69,15 @@ export default function DeleteWorker() {
     }
   }, [session])
 
-  if (status === "loading") return <p>Cargando...</p>
-  if (status !== "authenticated") return <a href="/api/auth/signin">Iniciar sesión</a>
+  if (status === 'loading') return <p>Cargando...</p>
+  if (status !== 'authenticated') return <a href="/api/auth/signin">Iniciar sesión</a>
   if (!session.user.active) {
     return <p>Usuario no activo</p>
   }
 
   const handleDelete = async () => {
     if (!selectedWorkerId) {
-      setError("Por favor, selecciona un trabajador para eliminar.")
+      setError('Por favor, selecciona un trabajador para eliminar.')
       return
     }
 
@@ -87,20 +88,24 @@ export default function DeleteWorker() {
     try {
       await apiClient.delete(`worker?id=${selectedWorkerId}`)
       console.log(`Eliminando trabajador con ID: ${selectedWorkerId}`)
-      setSuccessMessage("Trabajador eliminado correctamente.")
+      setSuccessMessage('')
+      toast({
+        title: 'Éxito',
+        description: 'El empleado ha sido eliminado correctamente'
+      })
 
       setWorkers((prevWorkers) => prevWorkers.filter((worker) => worker.worker_id.toString() !== selectedWorkerId))
 
       setSelectedWorkerId(null)
     } catch (error: any) {
-      setError(error.response?.data?.message || "Error al eliminar el trabajador.")
+      setError(error.response?.data?.message || 'Error al eliminar el trabajador.')
     } finally {
       setLoading(false)
     }
   }
   return (
     <div className="flex flex-col items-center space-y-6 p-6 max-w-2xl mx-auto">
-      <Card className="w-full">
+      {/* <Card className="w-full">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">Información del Negocio</CardTitle>
         </CardHeader>
@@ -132,7 +137,7 @@ export default function DeleteWorker() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       <Card className="w-full">
         <CardHeader>
@@ -165,7 +170,7 @@ export default function DeleteWorker() {
             className="bg-red-500 hover:bg-red-600 text-white"
             disabled={loading || !selectedWorkerId}
           >
-            {loading ? "Eliminando trabajador..." : "Eliminar trabajador"}
+            {loading ? 'Eliminando trabajador...' : 'Eliminar trabajador'}
           </Button>
         </CardFooter>
       </Card>

@@ -1,5 +1,4 @@
 'use client'
-import { Home, Users, Briefcase, UserCircle, Settings } from 'lucide-react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
@@ -12,36 +11,21 @@ import {
   SidebarMenuItem,
   SidebarRail
 } from '@/components/ui/sidebar'
+import { Home, Users, Briefcase, UserCircle, Settings } from 'lucide-react'
 
-const navigation = [
-  {
-    title: 'Home',
-    href: '/owner',
-    icon: Home
-  },
-  {
-    title: 'Servicios',
-    href: '/owner/services',
-    icon: Settings
-  },
-  {
-    title: 'Empleados',
-    href: '/owner/employees',
-    icon: Users
-  },
-  {
-    title: 'Perfil',
-    href: '/owner/profile',
-    icon: UserCircle
-  },
-  {
-    title: 'Negocio',
-    href: '/owner/business',
-    icon: Briefcase
-  }
-]
+const icons = { Home, Settings, Users, UserCircle, Briefcase }
 
-export function AppSidebar () {
+export interface NavigationItem {
+  title: string
+  href: string
+  icon: keyof typeof icons
+}
+
+interface SidebarProps {
+  items: NavigationItem[]
+}
+
+export function AppSidebar ({ items }: SidebarProps) {
   const pathname = usePathname()
 
   return (
@@ -65,16 +49,20 @@ export function AppSidebar () {
       </SidebarHeader>
       <SidebarContent>
         <SidebarMenu>
-          {navigation.map((item) => (
-            <SidebarMenuItem key={item.href}>
-              <SidebarMenuButton asChild isActive={pathname === item.href}>
-                <Link href={item.href}>
-                  <item.icon className="size-4" />
-                  <span>{item.title}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const IconComponent = icons[item.icon]
+
+            return (
+              <SidebarMenuItem key={item.href}>
+                <SidebarMenuButton asChild isActive={pathname === item.href}>
+                  <Link href={item.href}>
+                    <IconComponent className="size-4" />
+                    <span>{item.title}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarContent>
       <SidebarRail />
