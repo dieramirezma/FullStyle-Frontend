@@ -6,6 +6,7 @@ import CredentialsProvider from 'next-auth/providers/credentials'
 interface LoginResponse {
   access_token: string
   refresh_token: string
+  manager: boolean
   user: {
     id: number
     email: string
@@ -47,7 +48,8 @@ const authOptions: AuthOptions = {
             email: user.user.email,
             name: user.user.name,
             active: user.user.active,
-            token: user.access_token
+            token: user.access_token,
+            is_manager: user.manager
           }
         } else {
           return null
