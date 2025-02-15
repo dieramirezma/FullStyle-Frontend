@@ -8,6 +8,11 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from "@/componen
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
+import { Input } from './ui/input'
 
 interface Worker {
   worker_id: number
@@ -21,7 +26,20 @@ interface Site {
   phone: string
 }
 
-export default function EditWorker() {
+const userSchema = z.object({
+  name: z.string({
+    required_error: 'El nombre es obligatorio'
+  }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+    message: 'El nombre solo puede contener letras'
+  }),
+  description: z.string({
+    required_error: 'Los apellidos son obligatorios'
+  }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+    message: 'La descripcion solo puede contener letras'
+  })
+})
+
+export default function EditWorker () {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -30,11 +48,19 @@ export default function EditWorker() {
   const [site, setSite] = useState<Site | null>(null)
   const [selectedWorkerId, setSelectedWorkerId] = useState<string | null>(null)
 
+  const form = useForm<z.infer<typeof userSchema>>({
+    resolver: zodResolver(userSchema),
+    defaultValues: {
+      name: '',
+      description: ''
+    }
+  })
+
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const manager_id = localStorage.getItem("userId")
+        const manager_id = session?.user.id
         const siteResponse = await apiClient.get(`site?manager_id=${manager_id}`)
 
         if (Array.isArray(siteResponse.data) && siteResponse.data.length > 0) {
@@ -74,9 +100,9 @@ export default function EditWorker() {
     return <p>Usuario no activo</p>
   }
 
-  const handleDelete = async () => {
+  const handleEdit = async (values: z.infer<typeof userSchema>) => {
     if (!selectedWorkerId) {
-      setError("Por favor, selecciona un trabajador para eliminar.")
+      setError("Por favor, selecciona un trabajador para editar.")
       return
     }
 
@@ -84,16 +110,28 @@ export default function EditWorker() {
     setError(null)
     setSuccessMessage(null)
 
+    const payload = {
+      name: values.name,
+      site_id: site?.id,
+      description: values.description
+    }
+    console.log(payload)
     try {
-      await apiClient.delete(`worker?id=${selectedWorkerId}`)
-      console.log(`Eliminando trabajador con ID: ${selectedWorkerId}`)
-      setSuccessMessage("Trabajador eliminado correctamente.")
-
-      setWorkers((prevWorkers) => prevWorkers.filter((worker) => worker.worker_id.toString() !== selectedWorkerId))
-
+      await apiClient.put(`worker?id=${selectedWorkerId}`, payload)
+      setWorkers(prevWorkers =>
+        prevWorkers.map(worker =>
+          worker.worker_id === Number(selectedWorkerId)
+            ? { ...worker, worker_name: values.name }
+            : worker
+        )
+      )
+      setSuccessMessage("Trabajador actualizado correctamente.")
+      form.setValue('name', '')
+      form.setValue('description', '')
       setSelectedWorkerId(null)
+
     } catch (error: any) {
-      setError(error.response?.data?.message || "Error al eliminar el trabajador.")
+      setError(error.response?.data?.message || "Error al actualizar el trabajador.")
     } finally {
       setLoading(false)
     }
@@ -136,7 +174,7 @@ export default function EditWorker() {
 
       <Card className="w-full">
         <CardHeader>
-          <CardTitle className="text-xl font-bold">Eliminar Trabajador</CardTitle>
+          <CardTitle className="text-xl font-bold">Actualizar Trabajador</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -156,18 +194,48 @@ export default function EditWorker() {
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-        <CardFooter className="flex flex-col items-center">
+          <Form {...form}>
+          <form className='flex flex-col gap-y-4' onSubmit={form.handleSubmit(handleEdit)}>
+            <FormField
+              name="name"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className='font-black'>Nuevo nombre</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              name="description"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className='font-black'>Nueva Descripcion</FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+        <div className="flex flex-col items-center">
           {successMessage && <p className="text-green-500 mb-2">{successMessage}</p>}
           {error && <p className="text-red-500 mb-2">{error}</p>}
           <Button
-            onClick={handleDelete}
+            type="submit" // ✅ Ahora el formulario manejará el submit correctamente
             className="bg-red-500 hover:bg-red-600 text-white"
             disabled={loading || !selectedWorkerId}
           >
-            {loading ? "Eliminando trabajador..." : "Eliminar trabajador"}
+            {loading ? "Actualizando trabajador..." : "Actualizar trabajador"}
           </Button>
-        </CardFooter>
+        </div>
+        </form>
+            </Form>
+        </CardContent>
       </Card>
     </div>
   )

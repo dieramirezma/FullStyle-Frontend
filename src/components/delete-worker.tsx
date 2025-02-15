@@ -35,7 +35,7 @@ export default function DeleteWorker () {
     const fetchData = async () => {
       setLoading(true)
       try {
-        const manager_id = '62'
+        const manager_id = session?.user.id
         const siteResponse = await apiClient.get(`site?manager_id=${manager_id}`)
 
         if (Array.isArray(siteResponse.data) && siteResponse.data.length > 0) {
