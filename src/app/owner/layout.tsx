@@ -1,13 +1,14 @@
 import type { Metadata } from 'next'
 import '@/app/globals.css'
 import Link from 'next/link'
-import LogoutButton from '@/components/logout-button'
+import { SidebarProvider, SidebarTrigger, SidebarInset } from '@/components/ui/sidebar'
 import { AppSidebar, type NavigationItem } from '@/components/app-sidebar'
-import { SidebarInset, SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar'
 import { Separator } from '@/components/ui/separator'
+import LogoutButton from '@/components/logout-button'
+import React from 'react'
 
 export const metadata: Metadata = {
-  title: 'FullStyle - Clientes'
+  title: 'FullStyle - Dueños'
 }
 
 const navigation: NavigationItem[] = [
@@ -28,7 +29,7 @@ const navigation: NavigationItem[] = [
   },
   {
     title: 'Perfil',
-    href: '/delete/customer',
+    href: '/owner/profile',
     icon: 'UserCircle' as const
   },
   {
@@ -38,7 +39,7 @@ const navigation: NavigationItem[] = [
   }
 ]
 
-export default function BlogLayout ({
+export default function OwnerLayout ({
   children
 }: Readonly<{
   children: React.ReactNode
@@ -47,20 +48,17 @@ export default function BlogLayout ({
     <SidebarProvider>
       <AppSidebar items={navigation} />
       <SidebarInset>
-        <header className='flex h-16 shrink-0 items-center gap-2 border-b px-6'>
+        <header className="flex h-16 shrink-0 items-center gap-2 border-b px-6">
           <SidebarTrigger className="-ml-2" />
           <Separator orientation="vertical" className="h-6" />
-          <div className='flex flex-1 items-center justify-between'>
-            <Link
-              href='/'
-              className='hidden font-semibold md:block title'
-            >
+          <div className="flex flex-1 items-center justify-between">
+            <Link href="/" className="hidden font-semibold md:block title">
               FullStyle
             </Link>
+            <LogoutButton />
           </div>
-          <LogoutButton />
         </header>
-        <main>{children}</main>
+        <main className="flex-1 p-6">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   )

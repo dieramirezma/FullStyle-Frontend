@@ -75,12 +75,20 @@ function NavBar () {
           </Link>
         </ul>
       </nav>
-      <Link
-        href='/register'
-        className={`${buttonVariants({ variant: 'default' })}`}
-      >
-        SOLICITA UNA DEMO
-      </Link>
+      <div className='flex gap-4'>
+        <Link
+          href='/login'
+          className={`${buttonVariants({ variant: 'outline' })}`}
+        >
+          LOGIN
+        </Link>
+        <Link
+          href='/register'
+          className={`${buttonVariants({ variant: 'default' })}`}
+        >
+          SOLICITA UNA DEMO
+        </Link>
+      </div>
     </header>
   )
 }
