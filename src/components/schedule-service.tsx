@@ -20,13 +20,26 @@ export default function ScheduleService ({ id }: { id: string }) {
     const fetchData = async () => {
       try {
         const response = await apiClient.get(`site?service_id=${id}`)
-        const data: Site[] = response.data
-        setSites(data)
-      } catch (error) {
-        console.error('Error al obtener datos:', error)
+        const allSites: Site[] = response.data
+
+        const filteredSites = await Promise.all(
+          allSites.map(async (site) => {
+            try {
+              const workersResponse = await apiClient.get(`worker?site_id=${site.id}&service_id=${id}`);
+              const workers = workersResponse.data
+              return workers.length > 0 ? site : null
+            } catch (error) {
+              return null
+            }
+          })
+        )
+
+        setSites(filteredSites.filter(Boolean))
+      } catch (e) {
         setError('No se pudieron cargar los sitios.')
       }
     }
+
     if (id) {
       fetchData()
     }
