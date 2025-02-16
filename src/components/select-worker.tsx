@@ -35,11 +35,23 @@ export default function SelectWorker({ id, site }: { id: string; site: string })
   }, [site])
 
   return (
-    <div>
-      Service {id}
-      <div>
-        Site ID: {site}
-      </div>
-    </div>
+    <main className="flex flex-col gap-20 px-10 my-10 md:px-28">
+        <section className="flex flex-col gap-10 w-full max-w-4xl mx-auto">
+        <div className="w-full mb-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {workers.map((worker, index) => (
+              <Link key={index} href={`/service/${id}/${site.id}`}>
+                <div>
+                  {worker.name}
+                  <div>
+                    {worker.description}
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+        </section>
+    </main>
   )
 }
