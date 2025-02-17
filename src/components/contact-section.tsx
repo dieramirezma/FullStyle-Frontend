@@ -46,7 +46,7 @@ function ContactSection () {
   // 2. Define a submit handler.
   async function onSubmit (values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch('/api/send', {
+      const response = await fetch('/api/send-email/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -56,6 +56,7 @@ function ContactSection () {
 
       if (!response.ok) {
         form.reset()
+        throw new Error('Error al enviar el mensaje.')
       }
 
       toast({
