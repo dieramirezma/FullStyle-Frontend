@@ -25,7 +25,7 @@ export default function ScheduleService ({ id }: { id: string }) {
         const filteredSites = await Promise.all(
           allSites.map(async (site) => {
             try {
-              const workersResponse = await apiClient.get(`worker?site_id=${site.id}&service_id=${id}`);
+              const workersResponse = await apiClient.get(`worker?site_id=${site.id}&service_id=${id}`)
               const workers = workersResponse.data
               return workers.length > 0 ? site : null
             } catch (error) {
@@ -34,7 +34,7 @@ export default function ScheduleService ({ id }: { id: string }) {
           })
         )
 
-        setSites(filteredSites.filter(Boolean))
+        setSites(filteredSites.filter((site): site is Site => Boolean(site)))
       } catch (e) {
         setError('No se pudieron cargar los sitios.')
       }
