@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { format, addDays, startOfWeek, endOfWeek, parse } from "date-fns"
+import { format, addDays, startOfWeek, endOfWeek, parse, addMinutes, isBefore, isAfter, isEqual } from "date-fns"
 
 interface WeeklyCalendarProps {
   workerId: number
@@ -9,6 +9,15 @@ interface WeeklyCalendarProps {
   serviceId: number
   clientId: number
   onAppointmentScheduled: () => void
+}
+
+export interface Worker {
+  id: number
+  name: string
+  site_id: number
+  profilepicture: string
+  description: string
+  active: boolean
 }
 
 export interface TimeSlot {
@@ -25,7 +34,9 @@ export interface WeeklySchedule {
   worker_id: number
   week_start: string
   week_end: string
-  schedule: Record<string, DaySchedule>
+  schedule: {
+    [key: string]: DaySchedule
+  }
 }
 
 export interface AppointmentData {
@@ -47,20 +58,27 @@ export default function WeeklyCalendar({
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date()))
   const [schedule, setSchedule] = useState<WeeklySchedule | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
+  const [loading, setLoading] = useState(true) // Added loading state
 
   useEffect(() => {
+    setLoading(true) // Set loading to true before fetching
     fetchWeeklySchedule()
-  }, [workerId]) // Removed weekStart from dependencies
+  }, [weekStart]) // Only weekStart is needed here
 
   const fetchWeeklySchedule = async () => {
     try {
       const response = await fetch(
         `http://127.0.0.1:5000/api/worker/weekly_schedule?worker_id=${workerId}&date=${format(weekStart, "yyyy-MM-dd")}`,
       )
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
       const data: WeeklySchedule = await response.json()
       setSchedule(data)
     } catch (error) {
       console.error("Error fetching weekly schedule:", error)
+    } finally {
+      setLoading(false) // Set loading to false after fetching, regardless of success or failure
     }
   }
 
@@ -72,10 +90,47 @@ export default function WeeklyCalendar({
     setWeekStart((prevWeek) => addDays(prevWeek, 7))
   }
 
-  const handleSlotClick = (day: string, start: string) => {
+  const generateTimeSlots = (start: string, end: string): TimeSlot[] => {
+    const slots: TimeSlot[] = []
+    let currentTime = parse(start, "HH:mm:ss", new Date())
+    const endTime = parse(end, "HH:mm:ss", new Date())
+
+    while (isBefore(currentTime, endTime) || isEqual(currentTime, endTime)) {
+      const slotEnd = addMinutes(currentTime, 30)
+      slots.push({
+        start: format(currentTime, "HH:mm"),
+        end: format(slotEnd, "HH:mm"),
+      })
+      currentTime = slotEnd
+    }
+
+    return slots
+  }
+
+  const isSlotOccupied = (slot: TimeSlot, occupiedSlots: TimeSlot[]): boolean => {
+    const slotStart = parse(slot.start, "HH:mm", new Date())
+    const slotEnd = parse(slot.end, "HH:mm", new Date())
+
+    return occupiedSlots.some((occupiedSlot) => {
+      const occupiedStart = parse(occupiedSlot.start, "HH:mm:ss", new Date())
+      const occupiedEnd = parse(occupiedSlot.end, "HH:mm:ss", new Date())
+
+      return (
+        ((isAfter(slotStart, occupiedStart) || isEqual(slotStart, occupiedStart)) &&
+          isBefore(slotStart, occupiedEnd)) ||
+        (isAfter(slotEnd, occupiedStart) && (isBefore(slotEnd, occupiedEnd) || isEqual(slotEnd, occupiedEnd))) ||
+        (isBefore(slotStart, occupiedStart) && isAfter(slotEnd, occupiedEnd))
+      )
+    })
+  }
+
+  const handleSlotClick = (day: string, slot: TimeSlot) => {
+    if (isSlotOccupied(slot, schedule.schedule[day].occupied)) {
+      return // No hacer nada si el slot está ocupado
+    }
     const dayDate = parse(day, "EEEE", weekStart)
     const slotDate = addDays(weekStart, dayDate.getDay())
-    setSelectedSlot(`${format(slotDate, "yyyy-MM-dd")}T${start}`)
+    setSelectedSlot(`${format(slotDate, "yyyy-MM-dd")}T${slot.start}`)
   }
 
   const handleConfirmAppointment = async () => {
@@ -83,15 +138,13 @@ export default function WeeklyCalendar({
 
     const [date, time] = selectedSlot.split("T")
     const appointmentData: AppointmentData = {
-      appointmenttime: `${date}T${time}`,
+      appointmenttime: `${date}T${time}:00`,
       status: "pending",
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,
       client_id: clientId,
     }
-
-    console.log(appointmentData)
 
     try {
       const response = await fetch("http://127.0.0.1:5000/api/appointment", {
@@ -102,17 +155,18 @@ export default function WeeklyCalendar({
         body: JSON.stringify(appointmentData),
       })
 
-      if (response.ok) {
-        onAppointmentScheduled()
-      } else {
-        console.error("Failed to schedule appointment")
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
       }
+
+      onAppointmentScheduled()
     } catch (error) {
       console.error("Error scheduling appointment:", error)
     }
   }
 
-  if (!schedule) return <div>Loading...</div>
+  if (loading) return <div>Loading...</div> // Show loading indicator
+  if (!schedule) return <div>No schedule available.</div> // Handle case where schedule is null
 
   return (
     <div className="mt-4">
@@ -131,26 +185,28 @@ export default function WeeklyCalendar({
         {Object.entries(schedule.schedule).map(([day, daySchedule]) => {
           const dayDate = parse(day, "EEEE", weekStart)
           const slotDate = addDays(weekStart, dayDate.getDay())
+          const timeSlots = generateTimeSlots(daySchedule.available[0].start, daySchedule.available[0].end)
+
           return (
             <div key={day} className="border p-2">
               <h3 className="font-semibold">{day}</h3>
               <p className="text-xs text-gray-500">{format(slotDate, "MMM d")}</p>
-              {daySchedule.available.map((slot, index) => {
-                const isOccupied = daySchedule.occupied.some(
-                  (occupiedSlot) => occupiedSlot.start <= slot.start && occupiedSlot.end > slot.start,
-                )
-                return (
-                  <div
-                    key={index}
-                    className={`p-1 my-1 text-xs cursor-pointer ${
-                      isOccupied ? "bg-gray-300" : "bg-green-200 hover:bg-green-300"
-                    }`}
-                    onClick={() => !isOccupied && handleSlotClick(day, slot.start)}
-                  >
-                    {slot.start} - {slot.end}
-                  </div>
-                )
-              })}
+              <div className="mt-2 space-y-1 max-h-60 overflow-y-auto">
+                {timeSlots.map((slot, index) => {
+                  const isOccupied = isSlotOccupied(slot, daySchedule.occupied)
+                  return (
+                    <div
+                      key={index}
+                      className={`p-1 text-xs ${
+                        isOccupied ? "bg-gray-300 cursor-not-allowed" : "bg-green-200 hover:bg-green-300 cursor-pointer"
+                      }`}
+                      onClick={() => !isOccupied && handleSlotClick(day, slot)}
+                    >
+                      {slot.start} - {slot.end}
+                    </div>
+                  )
+                })}
+              </div>
             </div>
           )
         })}
