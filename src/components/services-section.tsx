@@ -28,7 +28,7 @@ function ServicesSection () {
 
   return (
     <div className="p-8">
-      <h2 className="text-3xl font-bold mb-8 text-center">
+      <h2 className="subtitle text-left w-full mb-4">
         ¿Qué le ofrecemos a tu negocio?
       </h2>
 
