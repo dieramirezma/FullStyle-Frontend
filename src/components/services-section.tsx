@@ -27,7 +27,7 @@ function ServicesSection () {
   ]
 
   return (
-    <div className="p-8">
+    <div className="p-8" id="services">
       <h2 className="subtitle text-left w-full mb-4">
         ¿Qué le ofrecemos a tu negocio?
       </h2>
