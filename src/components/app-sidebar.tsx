@@ -5,14 +5,15 @@ import { usePathname } from 'next/navigation'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail
 } from '@/components/ui/sidebar'
-import { Home, Users, Briefcase, UserCircle, Settings, Calendar } from 'lucide-react'
-import { useSession } from 'next-auth/react'
+import { Home, Users, Briefcase, UserCircle, Settings, Calendar, LogOut } from 'lucide-react'
+import { signOut, useSession } from 'next-auth/react'
 
 const icons = { Home, Settings, Users, UserCircle, Briefcase, Calendar }
 
@@ -49,7 +50,7 @@ export function AppSidebar ({ items }: SidebarProps) {
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className='ml-2'>
         <SidebarMenu>
           {items.map((item) => {
             const IconComponent = icons[item.icon]
@@ -67,6 +68,21 @@ export function AppSidebar ({ items }: SidebarProps) {
           })}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter className='ml-2'>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={async () => {
+                await signOut({ callbackUrl: '/login' })
+              }}
+              className="text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50"
+            >
+              <LogOut className="size-4" />
+              <span>Cerrar sesión</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

@@ -161,9 +161,10 @@ function Page () {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
+      <h1 className="title tracking-tight">Tu negocio</h1>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle className="text-3xl font-bold">Tu negocio</CardTitle>
+          <CardTitle className="text-3xl font-bold"></CardTitle>
           <AlertDialog>
             <AlertDialogTrigger asChild>
               <Button variant="destructive" size="sm" className="flex items-center gap-2" disabled={isDeleting}>

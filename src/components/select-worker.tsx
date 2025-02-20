@@ -1,9 +1,10 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import WorkerCard from "../components/WorkerCard"
-import WeeklyCalendar from "../components/WeeklyCalendar"
-import apiClient from "../utils/apiClient" // Assuming you have this utility
+import { useState, useEffect } from 'react'
+import WorkerCard from '../components/WorkerCard'
+import WeeklyCalendar from '../components/WeeklyCalendar'
+import apiClient from '../utils/apiClient' // Assuming you have this utility
+import { useSession } from 'next-auth/react'
 
 export interface Worker {
   id: number
@@ -14,10 +15,12 @@ export interface Worker {
   active: boolean
 }
 
-export default function SelectWorker({ id, site }: { id: string; site: string }) {
+export default function SelectWorker ({ id, site }: { id: string, site: string }) {
   const [workers, setWorkers] = useState<Worker[]>([])
   const [selectedWorker, setSelectedWorker] = useState<Worker | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  const { data: session } = useSession()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -26,8 +29,8 @@ export default function SelectWorker({ id, site }: { id: string; site: string })
         const data: Worker[] = response.data
         setWorkers(data)
       } catch (error) {
-        console.error("Error fetching data:", error)
-        setError("Unable to load the workers.")
+        console.error('Error fetching data:', error)
+        setError('Unable to load the workers.')
       }
     }
     if (site) {
@@ -43,13 +46,13 @@ export default function SelectWorker({ id, site }: { id: string; site: string })
     // You can add any logic here after an appointment is scheduled
     // For example, showing a success message or resetting the selection
     setSelectedWorker(null)
-    alert("Appointment scheduled successfully!")
+    alert('Appointment scheduled successfully!')
   }
 
   return (
-    <main className="flex flex-col gap-20 px-10 my-10 md:px-28">
+    <main className="flex flex-col gap-20 px-10 my-10">
       <section className="flex flex-col gap-10 w-full max-w-4xl mx-auto">
-        <h1 className="text-2xl font-bold">Select a Worker</h1>
+        <h1 className="text-2xl font-bold">Selecciona un profesional</h1>
         {error && <p className="text-red-500">{error}</p>}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {workers.map((worker) => (
@@ -58,14 +61,16 @@ export default function SelectWorker({ id, site }: { id: string; site: string })
         </div>
         {selectedWorker && (
           <div className="mt-8">
-            <h2 className="text-xl font-semibold mb-4">Schedule an Appointment with {selectedWorker.name}</h2>
-            <WeeklyCalendar
-              workerId={selectedWorker.id}
-              siteId={Number.parseInt(site)}
-              serviceId={Number.parseInt(id)}
-              clientId={1} // You might want to pass this as a prop or get it from a context
-              onAppointmentScheduled={handleAppointmentScheduled}
-            />
+            <h2 className="text-xl font-semibold mb-4">Agenda una cita con {selectedWorker.name}</h2>
+            {session?.user?.id && (
+              <WeeklyCalendar
+                workerId={selectedWorker.id}
+                siteId={Number.parseInt(site)}
+                serviceId={Number.parseInt(id)}
+                clientId={session.user.id}
+                onAppointmentScheduled={handleAppointmentScheduled}
+              />
+            )}
           </div>
         )}
       </section>

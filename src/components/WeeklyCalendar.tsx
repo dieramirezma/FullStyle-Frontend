@@ -2,6 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { format, addDays, startOfWeek, endOfWeek, parse, addMinutes, isBefore, isAfter, isEqual } from 'date-fns'
+import apiClient from '@/utils/apiClient'
+import type { Detail } from '@/app/customer/_components/site-search'
+import { AppointmentConfirmationDialog } from './appoinment-confirmation'
+import { useToast } from '@/hooks/use-toast'
+import { Site } from './schedule-service'
 
 interface WeeklyCalendarProps {
   workerId: number
@@ -56,36 +61,80 @@ export default function WeeklyCalendar ({
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date()))
   const [schedule, setSchedule] = useState<WeeklySchedule | null>(null)
   const [selectedSlot, setSelectedSlot] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true) // Added loading state
+  const [loading, setLoading] = useState(true)
+  const [serviceDetail, setServiceDetail] = useState<Detail[] | null>(null)
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [workerDetail, setWorkerDetail] = useState<Worker[] | null>(null)
+  const [siteDetail, setSiteDetail] = useState<Site[] | null>(null)
+
+  const { toast } = useToast()
 
   useEffect(() => {
-    setLoading(true) // Set loading to true before fetching
-    fetchWeeklySchedule()
-  }, [weekStart]) // Only weekStart is needed here
+    setLoading(true)
+
+    const fetchData = async () => {
+      await fetchWeeklySchedule()
+      await fetchServiceDetail()
+      await fetchWorkerDetail()
+      await fetchSiteDetail()
+      setLoading(false)
+    }
+
+    fetchData()
+  }, [weekStart, workerId, siteId, serviceId, clientId])
+
+  const fetchSiteDetail = async () => {
+    try {
+      const response = await apiClient.get(`site?id=${siteId}`)
+      setSiteDetail(response.data)
+    } catch (error) {
+      console.error('Error fetching site detail:', error)
+    }
+  }
+
+  const fetchWorkerDetail = async () => {
+    try {
+      const response = await apiClient.get(`worker?id=${workerId}`)
+      setWorkerDetail(response.data)
+    } catch (error) {
+      console.error('Error fetching worker detail:', error)
+    }
+  }
 
   const fetchWeeklySchedule = async () => {
     try {
-      const response = await fetch(
-        `http://127.0.0.1:5000/api/worker/weekly_schedule?worker_id=${workerId}&date=${format(weekStart, 'yyyy-MM-dd')}`
+      const response = await apiClient.get<WeeklySchedule>(
+        'worker/weekly_schedule',
+        {
+          params: {
+            worker_id: workerId,
+            date: format(weekStart, 'yyyy-MM-dd')
+          }
+        }
       )
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
-      }
-      const data: WeeklySchedule = await response.json()
-      setSchedule(data)
+
+      setSchedule(response.data)
     } catch (error) {
-      console.error('Error fetching weekly schedule:', error)
-    } finally {
-      setLoading(false) // Set loading to false after fetching, regardless of success or failure
+      console.error('Error fetching schedule:', error)
+    }
+  }
+
+  const fetchServiceDetail = async () => {
+    try {
+      const response = await apiClient.get(`detail?service_id=${serviceId}&site_id=${siteId}`)
+      const data = response.data as Detail
+      setServiceDetail(data)
+    } catch (error) {
+      console.error('Error fetching service detail:', error)
     }
   }
 
   const handlePreviousWeek = () => {
-    setWeekStart((prevWeek) => addDays(prevWeek, -7))
+    setWeekStart(addDays(weekStart, -7))
   }
 
   const handleNextWeek = () => {
-    setWeekStart((prevWeek) => addDays(prevWeek, 7))
+    setWeekStart(addDays(weekStart, 7))
   }
 
   const generateTimeSlots = (start: string, end: string): TimeSlot[] => {
@@ -124,11 +173,12 @@ export default function WeeklyCalendar ({
 
   const handleSlotClick = (day: string, slot: TimeSlot) => {
     if (!schedule || isSlotOccupied(slot, schedule.schedule[day].occupied)) {
-      return // No hacer nada si el slot está ocupado o si schedule es null
+      return
     }
     const dayDate = parse(day, 'EEEE', weekStart)
     const slotDate = addDays(weekStart, dayDate.getDay())
     setSelectedSlot(`${format(slotDate, 'yyyy-MM-dd')}T${slot.start}`)
+    setShowConfirmation(true)
   }
 
   const handleConfirmAppointment = async () => {
@@ -145,38 +195,43 @@ export default function WeeklyCalendar ({
     }
 
     try {
-      const response = await fetch('http://127.0.0.1:5000/api/appointment', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(appointmentData)
-      })
+      const response = await apiClient.post('appointment', appointmentData)
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+      if (response.status !== 201) {
+        throw new Error('Error al crear la reserva')
       }
 
+      toast({
+        title: 'Reserva confirmada',
+        description: 'Tu reserva ha sido creada exitosamente'
+      })
+
+      setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No se pudo crear la reserva. Por favor, intenta nuevamente.'
+      })
       console.error('Error scheduling appointment:', error)
     }
   }
 
-  if (loading) return <div>Loading...</div> // Show loading indicator
-  if (!schedule) return <div>No schedule available.</div> // Handle case where schedule is null
+  if (loading) return <div>Cargando...</div>
+  if (!schedule) return <div>No hay un calendario disponible</div>
 
   return (
     <div className="mt-4">
       <div className="flex justify-between items-center mb-4">
         <button onClick={handlePreviousWeek} className="px-4 py-2 bg-blue-500 text-white rounded">
-          Previous Week
+          Anterior semana
         </button>
         <span>
           {format(weekStart, 'MMMM d, yyyy')} - {format(endOfWeek(weekStart), 'MMMM d, yyyy')}
         </span>
         <button onClick={handleNextWeek} className="px-4 py-2 bg-blue-500 text-white rounded">
-          Next Week
+          Siguiente semana
         </button>
       </div>
       <div className="grid grid-cols-7 gap-2">
@@ -198,7 +253,9 @@ export default function WeeklyCalendar ({
                       className={`p-1 text-xs ${
                         isOccupied ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-200 hover:bg-green-300 cursor-pointer'
                       }`}
-                      onClick={() => { !isOccupied && handleSlotClick(day, slot) }}
+                      onClick={() => {
+                        !isOccupied && handleSlotClick(day, slot)
+                      }}
                     >
                       {slot.start} - {slot.end}
                     </div>
@@ -209,13 +266,17 @@ export default function WeeklyCalendar ({
           )
         })}
       </div>
-      {selectedSlot && (
-        <div className="mt-4">
-          <p>Selected slot: {format(new Date(selectedSlot), 'MMMM d, yyyy HH:mm')}</p>
-          <button onClick={handleConfirmAppointment} className="px-4 py-2 bg-green-500 text-white rounded mt-2">
-            Confirm Appointment
-          </button>
-        </div>
+
+      {selectedSlot && serviceDetail && workerDetail && (
+        <AppointmentConfirmationDialog
+          isOpen={showConfirmation}
+          onClose={() => { setShowConfirmation(false) }}
+          selectedSlot={selectedSlot}
+          serviceDetail={serviceDetail[0]}
+          workerName={workerDetail[0].name}
+          siteDetail={siteDetail[0]}
+          onConfirm={handleConfirmAppointment}
+        />
       )}
     </div>
   )
