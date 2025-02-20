@@ -1,3 +1,6 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import BlogCard from './blog-card'
 
 const data = [
@@ -18,15 +21,65 @@ const data = [
 ]
 
 function BlogSection () {
+  const containerVariants = {
+    hidden: {},
+    visible: {
+      transition: {
+        staggerChildren: 0.3
+      }
+    }
+  }
+
+  const cardVariants = {
+    hidden: {
+      opacity: 0,
+      y: 50
+    },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.6,
+        ease: 'easeOut'
+      }
+    }
+  }
+
   return (
-    <section className='container mx-auto my-10'>
-      <h2 className='subtitle mb-5'>Blog</h2>
-      <article className='flex gap-10 lg:flex-row flex-col'>
+    <motion.section
+      className='container mx-auto my-10'
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-100px' }}
+    >
+      <motion.h2
+        className='subtitle mb-5'
+        initial={{ opacity: 0, y: 20 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+        viewport={{ once: true }}
+      >
+        Blog
+      </motion.h2>
+
+      <motion.article
+        className='flex gap-10 lg:flex-row flex-col'
+        variants={containerVariants}
+      >
         {data.map((item, index) => (
-          <BlogCard key={index} {...item}/>
+          <motion.div
+            key={item.id}
+            variants={cardVariants}
+            whileHover={{
+              scale: 1.02,
+              transition: { duration: 0.2 }
+            }}
+          >
+            <BlogCard {...item} />
+          </motion.div>
         ))}
-      </article>
-    </section>
+      </motion.article>
+    </motion.section>
   )
 }
 

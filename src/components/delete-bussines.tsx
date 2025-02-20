@@ -19,8 +19,9 @@ export default function DeleteSite() {
   
   useEffect(() => {
     const fetchSite = async () => {
+      setError('')
       try {
-        const manager_id = 4
+        const manager_id = session?.user.id
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}site?manager_id=${manager_id}`)
         console.log("Datos del sitio:", response.data)
 

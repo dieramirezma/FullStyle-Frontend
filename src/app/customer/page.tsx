@@ -15,13 +15,13 @@ export default function Page () {
             <TabsList className="grid w-full grid-cols-2 gap-4 h-auto mb-8 rounded-lg bg-inherit p-1">
               <TabsTrigger
                 value="services"
-                className="data-[state=active]:bg-primary data-[state=active]:font-bold data-[state=active]:text-secondary p-4 rounded-xl border border-muted transition-all hover:border-primary data-[state=active]:border-primary"
+                className="data-[state=active]:bg-primary data-[state=active]:font-bold data-[state=active]:text-secondary p-2 rounded-xl border border-muted transition-all hover:border-primary data-[state=active]:border-primary"
               >
                 Servicios
               </TabsTrigger>
               <TabsTrigger
                 value="sites"
-                className="data-[state=active]:bg-primary data-[state=active]:font-bold data-[state=active]:text-secondary p-4 rounded-xl border border-muted transition-all hover:border-primary data-[state=active]:border-primary"
+                className="data-[state=active]:bg-primary data-[state=active]:font-bold data-[state=active]:text-secondary p-2 rounded-xl border border-muted transition-all hover:border-primary data-[state=active]:border-primary"
               >
                 Sitios
               </TabsTrigger>

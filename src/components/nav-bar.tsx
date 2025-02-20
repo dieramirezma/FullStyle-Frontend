@@ -1,13 +1,14 @@
 'use client'
 
 import Link from 'next/link'
-import { buttonVariants } from './ui/button'
-import BurgerIcon from './icons/burger-icon'
+import { Menu, X } from 'lucide-react'
 import { useEffect, useState } from 'react'
+
+import { Button, buttonVariants } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 function NavBar () {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
-  // Show header on scroll
   const [hidden, setHidden] = useState(false)
 
   useEffect(() => {
@@ -15,19 +16,17 @@ function NavBar () {
 
     const handleScroll = () => {
       if (window.scrollY > lastScrollY) {
-        // Scrolling down
         setHidden(true)
       } else {
-        // Scrolling up
         setHidden(false)
       }
       lastScrollY = window.scrollY
     }
 
     window.addEventListener('scroll', handleScroll)
-
-    // Clean up event listener on unmount
-    return () => { window.removeEventListener('scroll', handleScroll) }
+    return () => {
+      window.removeEventListener('scroll', handleScroll)
+    }
   }, [])
 
   const toggleMenu = () => {
@@ -35,52 +34,105 @@ function NavBar () {
   }
 
   return (
-    <header className={`flex z-10 sticky top-0 w-full justify-between items-center bg-background rounded-lg mx-4 mt-4 px-8 border-b-2 transition-transform duration-700 ease-in-out ${hidden ? '-translate-y-full opacity-0' : 'translate-y-0 opacity-100'}`}>
-      <div className='hidden md:block'>
-        <Link
-          href='/'
-          className='title'
-        >
-          FullStyle
-        </Link>
+    <header
+      className={cn(
+        'fixed inset-x-0 top-0 z-50 bg-background/80 backdrop-blur-sm border-b transition-transform duration-300',
+        hidden ? '-translate-y-full' : 'translate-y-0'
+      )}
+    >
+      <div className="container px-4 md:px-8">
+        <div className="flex h-16 items-center justify-between">
+          {/* Logo - visible en todas las pantallas */}
+          <Link href="/" className="title">
+            FullStyle
+          </Link>
+
+          {/* Navegación de escritorio */}
+          <nav className="hidden md:flex items-center space-x-8">
+            <Link className="text-sm font-medium hover:text-primary transition-colors" href="#hero">
+              Inicio
+            </Link>
+            <Link className="text-sm font-medium hover:text-primary transition-colors" href="#services">
+              Servicios
+            </Link>
+            <Link className="text-sm font-medium hover:text-primary transition-colors" href="#contact">
+              Contacto
+            </Link>
+          </nav>
+
+          {/* Botones de autenticación para escritorio */}
+          <div className="hidden md:flex items-center space-x-4">
+            <Link href="/login" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
+              LOGIN
+            </Link>
+            <Link href="/register" className={buttonVariants({ variant: 'default', size: 'sm' })}>
+              SOLICITA UNA DEMO
+            </Link>
+          </div>
+
+          {/* Botón de menú móvil */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="md:hidden"
+            onClick={toggleMenu}
+            aria-label={isMenuOpen ? 'Cerrar menú' : 'Abrir menú'}
+          >
+            {isMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </Button>
+        </div>
       </div>
-      <div className='md:hidden'>
-        <button onClick={toggleMenu} aria-label='Abrir menú'>
-          <BurgerIcon />
-        </button>
+
+      {/* Menú móvil */}
+      <div
+        className={cn(
+          'fixed inset-x-0 top-16 bg-background border-b md:hidden transition-all duration-300 ease-in-out',
+          isMenuOpen ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-full pointer-events-none'
+        )}
+      >
+        <div className="container px-4 py-4 flex flex-col space-y-4">
+          <nav className="flex flex-col space-y-4">
+            <Link
+              className="text-sm font-medium hover:text-primary transition-colors px-4 py-2 rounded-md hover:bg-muted"
+              href="#hero"
+              onClick={() => { setIsMenuOpen(false) }}
+            >
+              Inicio
+            </Link>
+            <Link
+              className="text-sm font-medium hover:text-primary transition-colors px-4 py-2 rounded-md hover:bg-muted"
+              href="#services"
+              onClick={() => { setIsMenuOpen(false) }}
+            >
+              Servicios
+            </Link>
+            <Link
+              className="text-sm font-medium hover:text-primary transition-colors px-4 py-2 rounded-md hover:bg-muted"
+              href="#contact"
+              onClick={() => { setIsMenuOpen(false) }}
+            >
+              Contacto
+            </Link>
+          </nav>
+
+          <div className="grid gap-2 pt-4 border-t">
+            <Link
+              href="/login"
+              className={buttonVariants({ variant: 'outline', size: 'sm', className: 'w-full' })}
+              onClick={() => { setIsMenuOpen(false) }}
+            >
+              LOGIN
+            </Link>
+            <Link
+              href="/register"
+              className={buttonVariants({ variant: 'default', size: 'sm', className: 'w-full' })}
+              onClick={() => { setIsMenuOpen(false) }}
+            >
+              SOLICITA UNA DEMO
+            </Link>
+          </div>
+        </div>
       </div>
-      <nav
-        className={`${
-          isMenuOpen ? 'block' : 'hidden'
-        } md:flex flex-col md:flex-row md:items-center md:justify-center flex-grow py-4 px-6 rounded-lg`}
-      >
-        <ul className='flex justify-evenly text-gray-primary w-full'>
-          <Link
-            className='font-bold hover:text-secondary'
-            href="#hero"
-          >
-            Inicio
-          </Link>
-          <Link
-            className='font-bold hover:text-secondary'
-            href="#services"
-          >
-            Servicios
-          </Link>
-          <Link
-            className='font-bold hover:text-secondary'
-            href="#contact"
-          >
-            Contacto
-          </Link>
-        </ul>
-      </nav>
-      <Link
-        href='/register'
-        className={`${buttonVariants({ variant: 'default' })}`}
-      >
-        SOLICITA UNA DEMO
-      </Link>
     </header>
   )
 }

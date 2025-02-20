@@ -11,6 +11,9 @@ import { Button } from './ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { Eye, EyeOff } from 'lucide-react'
+import { Checkbox } from './ui/checkbox'
+import Link from 'next/link'
 
 const banksNames = ['Bancolombia', 'Caja Social', 'Banco de Bogota', 'Mundo mujer']
 const bankAcountTypes = ['Ahorros', 'Corriente']
@@ -82,6 +85,11 @@ const userSchema = z.object({
     message: 'Este campo es obligatorio'
   }).max(99, {
     message: 'El limite de caracteres es de 99'
+  }),
+  acceptPolicy: z.boolean({
+    required_error: 'Debes aceptar la política de tratamiento de datos'
+  }).refine(val => val, {
+    message: 'Debes aceptar la política de tratamiento de datos'
   })
 }).refine(data => data.password === data.confirmPassword, {
   path: ['confirmPassword'],
@@ -105,6 +113,13 @@ export default function RegisterOwnerForm () {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const [showPassword, setShowPassword] = useState(false)
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword)
+  }
+
   const router = useRouter()
 
   async function onSubmit (values: z.infer<typeof userSchema>) {
@@ -210,7 +225,22 @@ export default function RegisterOwnerForm () {
                 <FormItem>
                   <FormLabel className="font-black">Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <div className='relative'>
+                      <Input
+                        type={showPassword ? 'text' : 'password'}
+                        {...field}
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                        onClick={togglePasswordVisibility}
+                        aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
+                      >
+                        {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
+                      </Button>
+                    </div>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -311,6 +341,26 @@ export default function RegisterOwnerForm () {
               )}
             />
             </div>
+            <FormField
+              control={form.control}
+              name="acceptPolicy"
+              render={({ field }) => (
+                <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                  <FormControl>
+                    <Checkbox checked={field.value} onCheckedChange={field.onChange} />
+                  </FormControl>
+                  <div className="space-y-1 leading-none">
+                    <FormLabel>
+                      Acepto la{' '}
+                      <Link href="/legal/habeas-data" className="underline">
+                        política de tratamiento de datos
+                      </Link>
+                    </FormLabel>
+                    <FormMessage />
+                  </div>
+                </FormItem>
+              )}
+            />
             {(error.length > 0) && <p className="text-red-500 text-sm">{error}</p>}
             <Button type="submit" className='w-1/2 self-center' disabled={loading}>
               {loading ? 'Registrando...' : 'REGISTRARSE'}
