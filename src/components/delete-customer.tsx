@@ -7,7 +7,7 @@ import { useSession } from 'next-auth/react'
 import { Label } from '@radix-ui/react-label'
 import router from 'next/router'
 
-export default function DeleteAccount() {
+export default function DeleteAccount () {
   const { data: session, status } = useSession()
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -15,7 +15,7 @@ export default function DeleteAccount() {
 
   if (status === 'loading') return <p>Cargando...</p>
   if (status !== 'authenticated') return <a href="/api/auth/signin">Iniciar sesión</a>
-  if(!session.user.active) {
+  if (!session.user.active) {
     setLoading(false)
   }
   const handleDelete = async () => {
@@ -41,7 +41,7 @@ export default function DeleteAccount() {
   }
 
   return (
-    
+
     <div className="flex flex-col items-center space-y-4">
       <Card className="w-full max-w-md">
         <CardHeader>

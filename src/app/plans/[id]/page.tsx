@@ -54,7 +54,7 @@ export default async function PlanCheckout ({ params }: { params: Promise<{ id: 
               </div>
             </div>
 
-            <div className="mt-6">
+            <div className="mt-24">
               <WidgetWompi amount={parseInt(plan.price.replace('.', ''))}/>
             </div>
           </CardContent>

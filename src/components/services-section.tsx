@@ -1,35 +1,69 @@
+'use client'
+
+import { motion } from 'framer-motion'
 import AppointmentIcon from './icons/appointment-icon'
 import EmployeesIcon from './icons/employees-icon'
 import PaymentIcon from './icons/payment-icon'
 import { RankingIcon } from './icons/ranking-icon'
 
 function ServicesSection () {
+  const services = [
+    {
+      icon: <EmployeesIcon />,
+      title: 'Gestión de empleados'
+    },
+    {
+      icon: <AppointmentIcon />,
+      title: 'Agenda de citas para clientes'
+    },
+    {
+      icon: <PaymentIcon />,
+      title: 'Sistema de pagos integrado'
+    },
+    {
+      icon: <RankingIcon />,
+      title: 'Visibilidad de tu negocio'
+    }
+  ]
+
   return (
-    <section id='services' className='flex mt-10 gap-20 items-center w-full md:flex-row flex-col-reverse'>
-      <article className='flex flex-col gap-5 w-full items-center'>
-        <h2 className='subtitle text-left w-full'>
-          ¿Qué le ofrecemos a tu negocio?
-        </h2>
-        <div className='flex flex-col gap-5 md:w-3/4'>
-          <div className='flex items-center gap-5 border-t-2 border-l-2 border-primary p-5'>
-            <EmployeesIcon width='50'/>
-            <p>Gestión de empleados</p>
-          </div>
-          <div className='flex items-center md:justify-end gap-5 border-b-2 border-r-2 border-primary p-5'>
-            <AppointmentIcon width='50' />
-            <p>Agenda de citas para clientes</p>
-          </div>
-          <div className='flex items-center gap-5 border-t-2 border-l-2 border-primary p-5'>
-            <PaymentIcon width='50'/>
-            <p>Sistema de pagos integrado</p>
-          </div>
-          <div className='flex items-center md:justify-end gap-5 border-b-2 border-r-2 border-primary p-5'>
-            <RankingIcon width='50'/>
-            <p>Visibilidad de tu negocio</p>
-          </div>
-        </div>
-      </article>
-    </section>
+    <div className="p-8" id="services">
+      <h2 className="subtitle text-left w-full mb-4">
+        ¿Qué le ofrecemos a tu negocio?
+      </h2>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {services.map((service, index) => (
+          <motion.div
+            key={index}
+            initial={{ opacity: 0, y: 20 }}
+            whileHover={{
+              scale: 1.05,
+              transition: { duration: 0.2 }
+            }}
+            whileInView={{
+              opacity: 1,
+              y: 0,
+              transition: {
+                delay: index * 0.2,
+                duration: 0.5
+              }
+            }}
+            viewport={{ once: true }}
+            className="p-6 bg-white rounded-lg shadow-lg cursor-pointer"
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="text-blue-600 w-12 h-12">
+                {service.icon}
+              </div>
+              <h3 className="font-semibold text-lg">
+                {service.title}
+              </h3>
+            </div>
+          </motion.div>
+        ))}
+      </div>
+    </div>
   )
 }
 

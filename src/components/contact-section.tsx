@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -33,7 +34,6 @@ const formSchema = z.object({
 function ContactSection () {
   const { toast } = useToast()
 
-  // 1. Define your form.
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -43,10 +43,9 @@ function ContactSection () {
     }
   })
 
-  // 2. Define a submit handler.
   async function onSubmit (values: z.infer<typeof formSchema>) {
     try {
-      const response = await fetch('/api/send', {
+      const response = await fetch('/api/send-email/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -56,6 +55,7 @@ function ContactSection () {
 
       if (!response.ok) {
         form.reset()
+        throw new Error('Error al enviar el mensaje.')
       }
 
       toast({
@@ -71,81 +71,140 @@ function ContactSection () {
     }
   }
 
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: {
+        duration: 0.6,
+        staggerChildren: 0.2
+      }
+    }
+  }
+
+  const itemVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: {
+      opacity: 1,
+      y: 0,
+      transition: {
+        duration: 0.5
+      }
+    }
+  }
+
   return (
-    <section id='contact' className='flex my-10 gap-20 items-center w-full md:flex-row flex-col-reverse'>
+    <motion.section
+      id='contact'
+      className='flex my-10 gap-20 items-center w-full md:flex-row flex-col-reverse'
+      initial="hidden"
+      whileInView="visible"
+      viewport={{ once: true, margin: '-100px' }}
+      variants={containerVariants}
+    >
       <article className='flex flex-col gap-5 w-full'>
-        <h2 className='subtitle text-left w-full'>
+        <motion.h2
+          className='subtitle text-left w-full'
+          variants={itemVariants}
+        >
           Contáctanos
-        </h2>
+        </motion.h2>
         <div className='flex gap-5 md:flex-row flex-col'>
-          <div className='flex-1'>
+          <motion.div
+            className='flex-1'
+            variants={itemVariants}
+          >
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-2">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nombre</FormLabel>
-                      <FormControl>
-                        <Input
-                          className='h-12'
-                          placeholder="Diego"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="email"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Correo</FormLabel>
-                      <FormControl>
-                        <Input
-                          className='h-12'
-                          placeholder="example@gmail.com"
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="message"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Mensaje</FormLabel>
-                      <FormControl>
-                        <Textarea
-                          className='h-32 resize-none'
-                          {...field}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <Button
-                  variant='outline'
-                  type="submit"
+                <motion.div
+                  variants={itemVariants}
                 >
-                  Enviar
-                </Button>
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nombre</FormLabel>
+                        <FormControl>
+                          <Input
+                            className='h-12'
+                            placeholder="Diego"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
+
+                <motion.div
+                  variants={itemVariants}
+                >
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Correo</FormLabel>
+                        <FormControl>
+                          <Input
+                            className='h-12'
+                            placeholder="example@gmail.com"
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
+
+                <motion.div
+                  variants={itemVariants}
+                >
+                  <FormField
+                    control={form.control}
+                    name="message"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Mensaje</FormLabel>
+                        <FormControl>
+                          <Textarea
+                            className='h-32 resize-none'
+                            {...field}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </motion.div>
+
+                <motion.div
+                  variants={itemVariants}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <Button
+                    variant='outline'
+                    type="submit"
+                  >
+                    Enviar
+                  </Button>
+                </motion.div>
               </form>
             </Form>
-          </div>
-          <div className='flex-1'>
+          </motion.div>
+          <motion.div
+            className='flex-1'
+            variants={itemVariants}
+          >
             <GoogleMapComponent />
-          </div>
+          </motion.div>
         </div>
       </article>
-    </section>
+    </motion.section>
   )
 }
 

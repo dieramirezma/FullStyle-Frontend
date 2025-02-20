@@ -5,6 +5,14 @@ const nextConfig: NextConfig = {
   // diabled eslint in build
   eslint: {
     ignoreDuringBuilds: true
+  },
+  images: {
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'example.com' // <--- Agrega el dominio aquí
+      }
+    ]
   }
 }
 

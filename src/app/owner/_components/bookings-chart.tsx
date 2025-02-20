@@ -2,17 +2,9 @@
 
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-const data = [
-  { name: 'Ene', Reservas: 24 },
-  { name: 'Feb', Reservas: 18 },
-  { name: 'Mar', Reservas: 22 },
-  { name: 'Abr', Reservas: 27 },
-  { name: 'May', Reservas: 34 },
-  { name: 'Jun', Reservas: 32 },
-  { name: 'Jul', Reservas: 38 }
-]
+export interface BookingsData { name: string, Reservas: number }
 
-export function BookingsChart () {
+export function BookingsChart ({ data }: { data: BookingsData[] }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <BarChart data={data}>
