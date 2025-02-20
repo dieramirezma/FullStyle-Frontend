@@ -6,7 +6,7 @@ import apiClient from '@/utils/apiClient'
 import type { Detail } from '@/app/customer/_components/site-search'
 import { AppointmentConfirmationDialog } from './appoinment-confirmation'
 import { useToast } from '@/hooks/use-toast'
-import { Site } from './schedule-service'
+import type { Site } from './schedule-service'
 
 interface WeeklyCalendarProps {
   workerId: number
@@ -86,7 +86,7 @@ export default function WeeklyCalendar ({
   const fetchSiteDetail = async () => {
     try {
       const response = await apiClient.get(`site?id=${siteId}`)
-      setSiteDetail(response.data)
+      setSiteDetail(response.data as Site[])
     } catch (error) {
       console.error('Error fetching site detail:', error)
     }
@@ -95,7 +95,7 @@ export default function WeeklyCalendar ({
   const fetchWorkerDetail = async () => {
     try {
       const response = await apiClient.get(`worker?id=${workerId}`)
-      setWorkerDetail(response.data)
+      setWorkerDetail(response.data as Worker[])
     } catch (error) {
       console.error('Error fetching worker detail:', error)
     }
@@ -122,7 +122,7 @@ export default function WeeklyCalendar ({
   const fetchServiceDetail = async () => {
     try {
       const response = await apiClient.get(`detail?service_id=${serviceId}&site_id=${siteId}`)
-      const data = response.data as Detail
+      const data = response.data as Detail[]
       setServiceDetail(data)
     } catch (error) {
       console.error('Error fetching service detail:', error)
@@ -267,7 +267,7 @@ export default function WeeklyCalendar ({
         })}
       </div>
 
-      {selectedSlot && serviceDetail && workerDetail && (
+      {selectedSlot && serviceDetail && workerDetail && siteDetail && (
         <AppointmentConfirmationDialog
           isOpen={showConfirmation}
           onClose={() => { setShowConfirmation(false) }}
