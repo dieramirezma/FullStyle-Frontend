@@ -11,9 +11,10 @@ import {
   SidebarMenuItem,
   SidebarRail
 } from '@/components/ui/sidebar'
-import { Home, Users, Briefcase, UserCircle, Settings } from 'lucide-react'
+import { Home, Users, Briefcase, UserCircle, Settings, Calendar } from 'lucide-react'
+import { useSession } from 'next-auth/react'
 
-const icons = { Home, Settings, Users, UserCircle, Briefcase }
+const icons = { Home, Settings, Users, UserCircle, Briefcase, Calendar }
 
 export interface NavigationItem {
   title: string
@@ -27,6 +28,7 @@ interface SidebarProps {
 
 export function AppSidebar ({ items }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   return (
     <Sidebar>
@@ -39,8 +41,8 @@ export function AppSidebar ({ items }: SidebarProps) {
                   <Settings className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">FullStyle</span>
-                  <span className="text-xs text-muted-foreground">Panel de Control</span>
+                  <span className="font-semibold">{session?.user.name}</span>
+                  <span className="text-xs text-muted-foreground">Panel de Control { session?.user.is_manager ? 'Gerente' : 'Cliente' }</span>
                 </div>
               </Link>
             </SidebarMenuButton>

@@ -13,28 +13,18 @@ export const metadata: Metadata = {
 const navigation: NavigationItem[] = [
   {
     title: 'Home',
-    href: '/owner',
+    href: '/customer',
     icon: 'Home' as const
   },
   {
-    title: 'Servicios',
-    href: '/owner/services',
-    icon: 'Settings' as const
-  },
-  {
-    title: 'Empleados',
-    href: '/owner/employees',
-    icon: 'Users' as const
+    title: 'Mis reservas',
+    href: '/customer/appointments',
+    icon: 'Calendar' as const
   },
   {
     title: 'Perfil',
     href: '/delete/customer',
     icon: 'UserCircle' as const
-  },
-  {
-    title: 'Negocio',
-    href: '/owner/business',
-    icon: 'Briefcase' as const
   }
 ]
 

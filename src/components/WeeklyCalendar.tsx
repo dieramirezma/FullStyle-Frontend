@@ -183,7 +183,7 @@ export default function WeeklyCalendar ({
         {Object.entries(schedule.schedule).map(([day, daySchedule]) => {
           const dayDate = parse(day, 'EEEE', weekStart)
           const slotDate = addDays(weekStart, dayDate.getDay())
-          const timeSlots = generateTimeSlots(daySchedule.available[0].start, daySchedule.available[0].end)
+          const timeSlots = generateTimeSlots(daySchedule.available[0]?.start, daySchedule.available[0]?.end)
 
           return (
             <div key={day} className="border p-2">

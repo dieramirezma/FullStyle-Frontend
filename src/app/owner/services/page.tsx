@@ -46,39 +46,28 @@ function Page () {
 
   useEffect(() => {
     if (status === 'authenticated' && managerId) {
-      const fetchSite = async () => {
+      const fetchSiteAndDetails = async () => {
         setLoading(true)
-
         try {
           const response = await apiClient.get(`site?manager_id=${managerId}`)
           const data: Site[] = response.data
-          console.log(data)
           setSite(data[0])
+
+          if (data[0]) {
+            const detailsResponse = await apiClient.get(`detail?site_id=${data[0].id}&limit=10`)
+            const detailsData: Detail[] = detailsResponse.data
+
+            setDetails(detailsData)
+            console.log(detailsData)
+          }
         } catch (error) {
-          console.error('Error fetching site data:', error)
+          console.error('Error fetching site or details:', error)
         } finally {
           setLoading(false)
         }
       }
 
-      const fetchDetails = async () => {
-        setLoading(true)
-
-        try {
-          const response = await apiClient.get(`detail?site=${site.id}&limit=10`)
-          const data: Detail[] = response.data
-
-          setDetails(data)
-          console.log(data)
-        } catch (error) {
-          console.error('Error fetching site data:', error)
-        } finally {
-          setLoading(false)
-        }
-      }
-
-      fetchSite()
-      fetchDetails()
+      fetchSiteAndDetails()
     }
   }, [managerId, status])
 

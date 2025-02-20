@@ -2,17 +2,9 @@
 
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts'
 
-const data = [
-  { name: 'Ene', ventas: 4000 },
-  { name: 'Feb', ventas: 3000 },
-  { name: 'Mar', ventas: 2000 },
-  { name: 'Abr', ventas: 2780 },
-  { name: 'May', ventas: 1890 },
-  { name: 'Jun', ventas: 2390 },
-  { name: 'Jul', ventas: 3490 }
-]
+export interface SalesData { name: string, ventas: number }
 
-export function SalesChart () {
+export function SalesChart ({ data }: { data: SalesData[] }) {
   return (
     <ResponsiveContainer width="100%" height={300}>
       <LineChart data={data}>

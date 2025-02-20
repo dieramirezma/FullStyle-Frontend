@@ -4,7 +4,7 @@ import type { LucideIcon } from 'lucide-react'
 interface StatCardProps {
   title: string
   value: string
-  description?: string
+  description?: { text: string, color: string } | null
   icon: LucideIcon
 }
 
@@ -16,8 +16,9 @@ export function StatCard ({ title, value, description, icon: Icon }: StatCardPro
         <Icon className="h-4 w-4 text-muted-foreground" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {description && <p className="text-xs text-muted-foreground">{description}</p>}
+        <div className='text-2xl font-bold'>{value}
+        </div>
+        {description && <p className={`text-xs ${description.color}`}>{description.text}</p>}
       </CardContent>
     </Card>
   )
