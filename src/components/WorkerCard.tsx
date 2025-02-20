@@ -1,3 +1,4 @@
+import { UserCircle2 } from "lucide-react"
 import Image from "next/image"
 
 export interface Worker {
@@ -21,13 +22,7 @@ export default function WorkerCard({ worker, onSelect }: WorkerCardProps) {
       onClick={() => onSelect(worker)}
     >
       <div className="flex items-center space-x-4">
-        <Image
-          src={worker.profilepicture || "/placeholder.svg"}
-          alt={worker.name}
-          width={64}
-          height={64}
-          className="rounded-full"
-        />
+        <UserCircle2 className="w-16 h-16 text-muted-foreground" />
         <div>
           <h3 className="text-lg font-semibold">{worker.name}</h3>
           <p className="text-sm text-gray-600">{worker.description}</p>

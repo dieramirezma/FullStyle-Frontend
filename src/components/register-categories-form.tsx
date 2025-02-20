@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { Checkbox } from './ui/checkbox'
 
-const items = [
+export const CATEGORIES: Array<{ id: number, label: string }> = [
   {
     id: 1,
     label: 'Corte de Cabello'
@@ -126,7 +126,7 @@ export default function RegisterOwnerForm () {
                     </FormDescription>
                   </div>
                   <div className='grid grid-cols-2 gap-4'>
-                  {items.map((item) => (
+                  {CATEGORIES.map((item) => (
                     <FormField
                       key={item.id}
                       control={form.control}

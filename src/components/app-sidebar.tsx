@@ -5,15 +5,17 @@ import { usePathname } from 'next/navigation'
 import {
   Sidebar,
   SidebarContent,
+  SidebarFooter,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail
 } from '@/components/ui/sidebar'
-import { Home, Users, Briefcase, UserCircle, Settings } from 'lucide-react'
+import { Home, Users, Briefcase, UserCircle, Settings, Calendar, LogOut } from 'lucide-react'
+import { signOut, useSession } from 'next-auth/react'
 
-const icons = { Home, Settings, Users, UserCircle, Briefcase }
+const icons = { Home, Settings, Users, UserCircle, Briefcase, Calendar }
 
 export interface NavigationItem {
   title: string
@@ -27,6 +29,7 @@ interface SidebarProps {
 
 export function AppSidebar ({ items }: SidebarProps) {
   const pathname = usePathname()
+  const { data: session } = useSession()
 
   return (
     <Sidebar>
@@ -39,15 +42,15 @@ export function AppSidebar ({ items }: SidebarProps) {
                   <Settings className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">FullStyle</span>
-                  <span className="text-xs text-muted-foreground">Panel de Control</span>
+                  <span className="font-semibold">{session?.user.name}</span>
+                  <span className="text-xs text-muted-foreground">Panel de Control { session?.user.is_manager ? 'Gerente' : 'Cliente' }</span>
                 </div>
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
-      <SidebarContent>
+      <SidebarContent className='ml-2'>
         <SidebarMenu>
           {items.map((item) => {
             const IconComponent = icons[item.icon]
@@ -65,6 +68,21 @@ export function AppSidebar ({ items }: SidebarProps) {
           })}
         </SidebarMenu>
       </SidebarContent>
+      <SidebarFooter className='ml-2'>
+        <SidebarMenu>
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              onClick={async () => {
+                await signOut({ callbackUrl: '/login' })
+              }}
+              className="text-red-500 hover:text-red-600 hover:bg-red-100 dark:hover:bg-red-900/50"
+            >
+              <LogOut className="size-4" />
+              <span>Cerrar sesión</span>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarFooter>
       <SidebarRail />
     </Sidebar>
   )

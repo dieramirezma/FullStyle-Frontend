@@ -11,6 +11,7 @@ import { Button } from './ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import axios from 'axios'
 import Link from 'next/link'
+import { CATEGORIES } from './register-categories-form'
 
 const userSchema = z.object({
   description: z.string({
@@ -46,8 +47,7 @@ const userSchema = z.object({
 })
 
 const fetchServices = async () => {
-  const categoriesString = localStorage.getItem('categories')
-  const categories = (categoriesString != null) ? categoriesString.split(',').map(Number) : []
+  const categories = CATEGORIES.map(category => category.id)
   try {
     const serviceRequests = categories.map(async categoryId =>
       await axios.get(`${process.env.NEXT_PUBLIC_API_URL}service?category_id=${categoryId}`)

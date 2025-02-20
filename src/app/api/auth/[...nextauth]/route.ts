@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-import NextAuth, { type AuthOptions } from 'next-auth'
+import NextAuth, { type User, type AuthOptions } from 'next-auth'
 import GoogleProvider from 'next-auth/providers/google'
 import CredentialsProvider from 'next-auth/providers/credentials'
 
@@ -87,12 +87,13 @@ const authOptions: AuthOptions = {
       } else if (user != null) {
         token.accessToken = user.token
         token.user = user
+        token.is_manager = user.is_manager
       }
       return token
     },
     async session ({ session, token }) {
       session.accessToken = token.accessToken as string
-      session.user = token.user as LoginResponse['user']
+      session.user = token.user as User
       return session
     }
   }
