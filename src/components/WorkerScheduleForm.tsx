@@ -23,7 +23,7 @@ interface WorkerData {
   schedule: Schedule
 }
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 export default function WorkerScheduleForm () {
   const [workerData, setWorkerData] = useState<WorkerData>({
     name: '',

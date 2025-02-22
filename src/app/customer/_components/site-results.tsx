@@ -20,7 +20,7 @@ export function SiteResults () {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {sites.map((site, index) => (
-        <Link key={index} href={`/service/${site.id}`}>
+        <Link key={index} href={`/customer/service/${site.id}`}>
           <SiteCard site={site} />
         </Link>
       ))}

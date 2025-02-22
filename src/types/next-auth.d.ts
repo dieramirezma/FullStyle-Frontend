@@ -9,6 +9,7 @@ declare module 'next-auth' {
     name: string
     active: boolean
     token: string
+    is_manager: boolean
   }
 
   interface Session {
@@ -18,5 +19,6 @@ declare module 'next-auth' {
 
   interface JWT {
     accessToken: string
+    is_manager: boolean
   }
 }

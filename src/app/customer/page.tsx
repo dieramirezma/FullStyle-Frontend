@@ -8,7 +8,7 @@ import { SiteResults } from './_components/site-results'
 export default function Page () {
   return (
     <SearchProvider>
-      <main className="flex flex-col gap-20 px-10 my-10 md:px-28">
+      <main className="flex flex-col gap-20 px-10 my-10">
         <section className="flex flex-col gap-10 w-full max-w-4xl mx-auto">
           <h1 className="title text-center">¿Qué deseas buscar hoy?</h1>
           <Tabs defaultValue="services" className="w-full">
