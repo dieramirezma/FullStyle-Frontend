@@ -1,4 +1,4 @@
-'use client';
+'use client'
 
 import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
@@ -15,15 +15,16 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
+
   useEffect(() => {
-    if (!isOpen || !containerRef.current) return;
+    if (!isOpen || !containerRef.current) return
 
     const loadWompiWidget = async () => {
       try {
         const response = await fetch('/api/wompi', {
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
+            'Content-Type': 'application/json'
           },
           body: JSON.stringify({ amount }),
         });
@@ -41,7 +42,6 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
         script.setAttribute('data-signature:integrity', data.hash);
         script.setAttribute('data-redirection-url', `${baseUrl}/customer/appointments`);
 
-      
 
         if (containerRef.current) {
           containerRef.current.innerHTML = '';
@@ -80,16 +80,17 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
           }, 100);
         }
       } catch (error) {
-        console.error('Error loading Wompi widget:', error);
+        console.error('Error loading Wompi widget:', error)
       }
-    };
+    }
 
-    loadWompiWidget();
+    loadWompiWidget()
 
     return () => {
       if (containerRef.current) {
-        containerRef.current.innerHTML = '';
+        containerRef.current.innerHTML = ''
       }
+
     };
   }, [isOpen, amount, label, onClose]);
 
@@ -101,6 +102,7 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
       </Button>
     </div>
   );
+
 }
 
-export default WidgetWompi;
+export default WidgetWompi
