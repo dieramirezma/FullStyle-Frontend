@@ -1,52 +1,62 @@
-import Script from 'next/script'
+'use client';
+
+import { useEffect, useRef } from 'react';
 
 interface WidgetWompiProps {
-  amount: number
+  amount: number;
+  isOpen: boolean;
 }
 
-async function encodeString (stringToEncode: string) {
-  const encondedText = new TextEncoder().encode(stringToEncode)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encondedText)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-  return hashHex
+function WidgetWompi({ amount, isOpen }: WidgetWompiProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
+
+    const loadWompiWidget = async () => {
+      try {
+        // Obtener datos del servidor
+        const response = await fetch('/api/wompi', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ amount }),
+        });
+        const data = await response.json();
+
+        // Crear y configurar el script
+        const script = document.createElement('script');
+        script.id = 'wompi-script';
+        script.src = 'https://checkout.wompi.co/widget.js';
+        script.setAttribute('data-render', 'button');
+        script.setAttribute('data-public-key', data.publicKey);
+        script.setAttribute('data-currency', data.currency);
+        script.setAttribute('data-amount-in-cents', data.amountInCents);
+        script.setAttribute('data-reference', data.reference);
+        script.setAttribute('data-signature:integrity', data.hash);
+
+        // Limpiar contenedor y agregar nuevo script
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+          containerRef.current.appendChild(script);
+        }
+      } catch (error) {
+        console.error('Error loading Wompi widget:', error);
+      }
+    };
+
+    loadWompiWidget();
+
+    // Cleanup function
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [isOpen, amount]);
+
+  return <div ref={containerRef} className="w-full flex justify-center"></div>;
 }
 
-async function WidgetWompi ({ amount }: WidgetWompiProps) {
-  const amountInCents = `${amount * 100}`
-  const currency = 'COP'
-  const integritySecret = process.env.WOMPI_INTEGRITY_KEY
-  const reference = crypto.randomUUID()
-  const concatenatedString = `${reference}${amountInCents}${currency}${integritySecret}`
-
-  const hash = await encodeString(concatenatedString)
-
-  return (
-    <div >
-      <form className='flex w-full'>
-        <Script
-          id="wompi-widget"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-                  (function() {
-                      var script = document.createElement('script');
-                      script.src = "https://checkout.wompi.co/widget.js";
-                      script.setAttribute("data-render", "button");
-                      script.setAttribute("data-public-key", "${process.env.WOMPI_PUBLIC_TEST_KEY ?? ''}");
-                      script.setAttribute("data-currency", "${currency}");
-                      script.setAttribute("data-amount-in-cents", "${amountInCents}");
-                      script.setAttribute("data-reference", "${reference}");
-                      script.setAttribute("data-signature:integrity", "${hash}");
-                      script.async = true;
-                      document.body.appendChild(script);
-                  })();
-              `
-          }}
-      />
-      </form>
-    </div>
-  )
-}
-
-export default WidgetWompi
+export default WidgetWompi;

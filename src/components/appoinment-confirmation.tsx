@@ -13,6 +13,7 @@ import { format } from 'date-fns'
 import { CalendarDays, Clock, User2, MapPin, Phone, Scissors } from 'lucide-react'
 import type { Detail } from '@/app/customer/_components/site-search'
 import type { Site } from './schedule-service'
+import WidgetWompi from '@/components/widget-wompi';
 
 interface AppointmentConfirmationDialogProps {
   isOpen: boolean
@@ -24,7 +25,7 @@ interface AppointmentConfirmationDialogProps {
   onConfirm: () => Promise<void>
 }
 
-export function AppointmentConfirmationDialog ({
+export function AppointmentConfirmationDialog({
   isOpen,
   onClose,
   selectedSlot,
@@ -101,10 +102,10 @@ export function AppointmentConfirmationDialog ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>Proceder al pago</Button>
+          <div className="flex flex-row justify-between w-full">
+            <Button variant="outline" onClick={onConfirm}>Pagar solo reserva</Button>
+            <Button onClick={onConfirm}>Pago total</Button>
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
