@@ -103,9 +103,9 @@ export default function RegisterOwnerForm () {
   }
 
   return (
-    <Card className='w-1/3'>
+    <Card className='w-full md:w-auto'>
       <CardHeader>
-        <CardTitle className="subtitle self-center">
+        <CardTitle className="subtitle text-center">
           Registro de categorias
         </CardTitle>
       </CardHeader>
@@ -125,7 +125,7 @@ export default function RegisterOwnerForm () {
                       Selecciona las categorias de los servicios que vas a realizar.
                     </FormDescription>
                   </div>
-                  <div className='grid grid-cols-2 gap-4'>
+                  <div className='grid gap-4 sm:grid-cols-2'>
                   {CATEGORIES.map((item) => (
                     <FormField
                       key={item.id}
@@ -165,7 +165,7 @@ export default function RegisterOwnerForm () {
               )}
             />
             {(error.length > 0) && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" className='w-1/2 self-center' disabled={loading}>
+            <Button type="submit" className='self-center' disabled={loading}>
               {loading ? 'Registrando...' : 'GUARDAR CATEGORIAS'}
             </Button>
           </form>

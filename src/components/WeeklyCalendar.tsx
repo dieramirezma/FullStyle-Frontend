@@ -5,7 +5,7 @@ import { format, addDays, startOfWeek, endOfWeek, parse, addMinutes, isBefore, i
 import apiClient from '@/utils/apiClient'
 import type { Detail } from '@/app/customer/_components/site-search'
 import { AppointmentConfirmationDialog } from './appoinment-confirmation'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import type { Site } from './schedule-service'
 
 interface WeeklyCalendarProps {
@@ -66,8 +66,6 @@ export default function WeeklyCalendar ({
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [workerDetail, setWorkerDetail] = useState<Worker[] | null>(null)
   const [siteDetail, setSiteDetail] = useState<Site[] | null>(null)
-
-  const { toast } = useToast()
 
   useEffect(() => {
     setLoading(true)
@@ -201,17 +199,14 @@ export default function WeeklyCalendar ({
         throw new Error('Error al crear la reserva')
       }
 
-      toast({
-        title: 'Reserva confirmada',
+      toast.success('Reserva confirmada', {
         description: 'Tu reserva ha sido creada exitosamente'
       })
 
       setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: 'No se pudo crear la reserva. Por favor, intenta nuevamente.'
       })
       console.error('Error scheduling appointment:', error)

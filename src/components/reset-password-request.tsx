@@ -9,7 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import Link from 'next/link'
 
 const userSchema = z.object({
@@ -41,15 +41,11 @@ export default function ResetPasswordRequest () {
 
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}user/reset-password-request`, payload)
-      toast({
-        variant: 'default',
-        title: 'Correo enviado',
+      toast.success('Correo enviado', {
         description: 'Hemos enviado un correo con instrucciones para reestablecer tu contraseña.'
       })
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: 'No se pudo enviar el correo de reestablecimiento de contraseña. Por favor, intenta de nuevo.'
       })
     } finally {
