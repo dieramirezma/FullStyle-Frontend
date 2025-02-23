@@ -144,7 +144,8 @@ function CheckoutDialog({ plan, isOpen, onClose }: {
           </div>
 
           <div className="pt-4">
-            <WidgetWompi amount={parseInt(priceNumber)} isOpen={isOpen} />
+            <WidgetWompi amount={parseInt(priceNumber)} isOpen={isOpen} 
+              label="Pagar subscripcion"/>
           </div>
         </div>
       </DialogContent>

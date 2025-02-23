@@ -102,9 +102,19 @@ export function AppointmentConfirmationDialog({
         </div>
 
         <DialogFooter>
-          <div className="flex flex-row justify-between w-full">
-            <Button variant="outline" onClick={onConfirm}>Pagar solo reserva</Button>
-            <Button onClick={onConfirm}>Pago total</Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+            <WidgetWompi
+              amount={Math.max(5000, serviceDetail.price * 0.1)}
+              isOpen={isOpen}
+              label="Pagar reserva"
+              className="w-full"
+            />
+            <WidgetWompi
+              amount={serviceDetail.price}
+              isOpen={isOpen}
+              label="Pagar completo"
+              className="w-full"
+            />
           </div>
         </DialogFooter>
       </DialogContent>
