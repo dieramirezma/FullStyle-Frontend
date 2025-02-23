@@ -9,6 +9,8 @@ import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/componen
 import { TimeRangeInput } from './TimeRangeInput'
 import axios from 'axios'
 import Link from 'next/link'
+import { Checkbox } from './ui/checkbox'
+import { toast } from 'sonner'
 
 type Schedule = Record<string, { startTime: string, endTime: string }>
 
@@ -23,7 +25,8 @@ interface WorkerData {
   schedule: Schedule
 }
 
-const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+
 export default function WorkerScheduleForm () {
   const [workerData, setWorkerData] = useState<WorkerData>({
     name: '',
@@ -121,9 +124,9 @@ export default function WorkerScheduleForm () {
     } catch (error: any) {
       setSuccessMessage('')
       if (error.response.data.message !== undefined) {
-        setError(String(error.response.data.message))
+        toast.error(String(error.response.data.message))
       } else {
-        setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
+        toast.error('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
       }
     }
     try {
@@ -140,13 +143,13 @@ export default function WorkerScheduleForm () {
           await axios.post(`${process.env.NEXT_PUBLIC_API_URL}worker_has_service`, data)
         )
       )
-      setSuccessMessage('Servicios asignados correctamente')
+      toast.success('Servicios asignados correctamente')
     } catch (error: any) {
       setSuccessMessage('')
       if (error.response.data.message !== undefined) {
-        setError(String(error.response.data.message))
+        toast.error(String(error.response.data.message))
       } else {
-        setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
+        toast.error('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
       }
     }
 
@@ -166,84 +169,105 @@ export default function WorkerScheduleForm () {
           await axios.post(`${process.env.NEXT_PUBLIC_API_URL}availability`, data)
         )
       )
-      setSuccessMessage('Trabajador agregado de forma exitosa')
+      toast.success('Trabajador registrado de manera exitosa')
     } catch (error: any) {
       setSuccessMessage('')
       if (error.response.data.message !== undefined) {
-        setError(String(error.response.data.message))
+        toast.error(String(error.response.data.message))
       } else {
-        setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
+        toast.error('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
       }
     }
     setLoading(false)
   }
 
   return (
-    <Card className="w-full max-w-2xl ">
+    <Card className="w-full max-w-2xl mx-auto">
       <CardHeader>
-        <CardTitle>Registro de Trabajador y Horario</CardTitle>
+        <CardTitle className="subtitle text-center">
+          Registro de Trabajador y Horario
+        </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="name">Nombre del trabajador:</Label>
-            <Input
-              id="name"
-              name="name"
-              value={workerData.name}
-              onChange={handleInputChange}
-              required
-            />
-          </div>
-          <div>
-            <Label htmlFor="description">Descripción:</Label>
-            <Textarea
-              id="description"
-              name="description"
-              value={workerData.description}
-              onChange={handleInputChange}
-              rows={3}
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Horario de trabajo:</Label>
-            {DAYS.map(day => (
-              <TimeRangeInput
-                key={day}
-                day={day}
-                startTime={workerData.schedule[day].startTime}
-                endTime={workerData.schedule[day].endTime}
-                onChange={handleTimeChange}
+        <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name" className="text-base font-medium">
+                Nombre del trabajador
+              </Label>
+              <Input
+                id="name"
+                name="name"
+                value={workerData.name}
+                onChange={handleInputChange}
+                className="w-full"
+                required
               />
-            ))}
-          </div>
-          <div className="space-y-2">
-            <Label>Servicios que realizará:</Label>
-            {services.map(service => (
-              <div key={service.service_id} className="flex items-center">
-                <input
-                  type="checkbox"
-                  id={`service-${service.service_id}`}
-                  checked={selectedServices.includes(service.service_id)}
-                  onChange={() => { handleServiceChange(service.service_id) }}
-                  className="mr-2"
-                />
-                <label htmlFor={`service-${service.service_id}`}>{service.service_name}</label>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="description" className="text-base font-medium">
+                Descripción
+              </Label>
+              <Textarea
+                id="description"
+                name="description"
+                value={workerData.description}
+                onChange={handleInputChange}
+                className="w-full min-h-[100px]"
+                rows={3}
+              />
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Horario de trabajo</Label>
+              <div className="grid gap-4">
+                {DAYS.map((day) => (
+                  <TimeRangeInput
+                    key={day}
+                    day={day}
+                    startTime={workerData.schedule[day].startTime}
+                    endTime={workerData.schedule[day].endTime}
+                    onChange={handleTimeChange}
+                  />
+                ))}
               </div>
-            ))}
+            </div>
+
+            <div className="space-y-3">
+              <Label className="text-base font-medium">Servicios que realizará</Label>
+              <div className="grid gap-2 md:grid-cols-2">
+                {services.map((service) => (
+                  <div key={service.service_id} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`service-${service.service_id}`}
+                      checked={selectedServices.includes(service.service_id)}
+                      onCheckedChange={() => { handleServiceChange(service.service_id) }}
+                    />
+                    <Label htmlFor={`service-${service.service_id}`} className="text-sm">
+                      {service.service_name}
+                    </Label>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
-          {(successMessage.length > 0) && !loading && (
-              <p className="text-green-500 text-sm self-center">{successMessage}</p>
+
+          {successMessage && !loading && (
+            <p className="text-sm font-medium text-green-600 text-center">{successMessage}</p>
           )}
-          {(error != null) && <p className="text-red-500">{error}</p>}
+
+          {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
         </form>
       </CardContent>
-      <CardFooter className="flex-col justify-center ">
-        <Button type="submit" onClick={handleSubmit} disabled={loading} className='w-1/3 my-2'>
+      <CardFooter className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
+        <Button type="submit" onClick={handleSubmit} disabled={loading} className="w-full sm:w-auto">
           {loading ? 'Agregando...' : 'AGREGAR TRABAJADOR'}
         </Button>
-        <Button variant='outline' className='w-1/3'>
-          <Link href="/login">Finalizar registro</Link>
+        <Button variant="outline" className="w-full sm:w-auto">
+          <Link href="/login" className="w-full">
+            Finalizar registro
+          </Link>
         </Button>
       </CardFooter>
     </Card>
