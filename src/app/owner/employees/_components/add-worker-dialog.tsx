@@ -17,7 +17,7 @@ import {
   DialogTrigger
 } from '@/components/ui/dialog'
 import { Plus } from 'lucide-react'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
 type Schedule = Record<string, { startTime: string, endTime: string }>
 
@@ -42,6 +42,7 @@ const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'
 
 export function AddWorkerDialog ({ siteId, services, onWorkerAdded }: AddWorkerDialogProps) {
   const [open, setOpen] = useState(false)
+  const { toast } = useToast()
   const [workerData, setWorkerData] = useState<WorkerData>({
     name: '',
     description: '',
@@ -145,7 +146,8 @@ export function AddWorkerDialog ({ siteId, services, onWorkerAdded }: AddWorkerD
         )
       )
 
-      toast.success('Éxito', {
+      toast({
+        title: 'Éxito',
         description: 'Trabajador agregado correctamente'
       })
 
@@ -153,7 +155,9 @@ export function AddWorkerDialog ({ siteId, services, onWorkerAdded }: AddWorkerD
       setOpen(false)
       resetForm()
     } catch (error: any) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: error.response?.data?.message || error.message || 'Ocurrió un error inesperado'
       })
     } finally {

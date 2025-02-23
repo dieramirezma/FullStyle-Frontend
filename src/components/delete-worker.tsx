@@ -5,7 +5,7 @@ import { useSession } from 'next-auth/react'
 import apiClient from '@/utils/apiClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
+import { toast } from '@/hooks/use-toast'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -82,11 +82,14 @@ export default function DeleteWorker () {
     try {
       await apiClient.delete(`worker?id=${worker.id}`)
       setWorkers((prevWorkers) => prevWorkers.filter((w) => w.id !== worker.id))
-      toast.success('Éxito', {
+      toast({
+        title: 'Éxito',
         description: 'El empleado ha sido eliminado correctamente'
       })
     } catch (error: any) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: error.response?.data?.message || 'Error al eliminar el trabajador.'
       })
     } finally {

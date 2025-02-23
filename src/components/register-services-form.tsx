@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from './ui/card'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -127,9 +127,9 @@ export default function RegisterServiceForm () {
     }
   }
   return (
-    <Card className='w-full md:w-auto'>
+    <Card className='w-1/2'>
       <CardHeader>
-        <CardTitle className="subtitle text-center">
+        <CardTitle className="subtitle self-center">
           Registro de Nuevo Administrador
         </CardTitle>
       </CardHeader>
@@ -209,14 +209,12 @@ export default function RegisterServiceForm () {
               <p className="text-green-500 text-sm self-center">{successMessage}</p>
             )}
             {(error.length > 0) && <p className="text-red-500 text-sm self-center">{error}</p>}
-            <CardFooter className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-              <Button type="submit" className='w-full sm:w-auto' disabled={loading}>
-                {loading ? 'Agregando...' : 'AGREGAR UN NUEVO SERVICIO'}
-              </Button>
-              <Button variant='outline' className='w-full sm:w-auto'>
-                <Link href="/register/worker">Continuar con el registro </Link>
-              </Button>
-            </CardFooter>
+            <Button type="submit" className='w-1/2 self-center' disabled={loading}>
+              {loading ? 'Agregando...' : 'AGREGAR UN NUEVO SERVICIO'}
+            </Button>
+            <Button variant='outline' className='w-1/2 self-center'>
+              <Link href="/register/worker">Continuar con el registro </Link>
+            </Button>
           </form>
 
         </Form>

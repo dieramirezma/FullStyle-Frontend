@@ -2,23 +2,24 @@ import RegisterCustomerForm from '@/components/register-customer-form'
 import RegisterNavBar from '@/components/register-nav-bar'
 import Image from 'next/image'
 
-export default function Page () {
+export default function registerClientPage () {
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <RegisterNavBar />
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="hidden lg:block lg:flex-1">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-              <Image src="/images/login.png" alt="Login" fill className="object-cover" priority />
-            </div>
-          </div>
-
-          <div className="mx-auto w-full max-w-md lg:max-w-lg">
-            <RegisterCustomerForm />
-          </div>
+      <div className="h-full flex items-stretch justify-center px-20 gap-16">
+        <div className="flex-1 max-w-[50%] flex items-center">
+          <Image
+            src="/images/login.png"
+            alt="Login"
+            width={600}
+            height={500}
+            className="rounded-xl h-full object-cover"
+          />
         </div>
-      </main>
+        <div className="w-[400px] flex items-center">
+          <RegisterCustomerForm />
+        </div>
+      </div>
     </div>
   )
 }

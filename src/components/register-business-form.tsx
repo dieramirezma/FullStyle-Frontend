@@ -80,7 +80,7 @@ export default function RegisterBusinessForm () {
   console.log(form.formState.errors)
 
   return (
-    <Card className='w-full md:w-1/2'>
+    <Card className='w-2/6'>
       <CardHeader>
         <CardTitle className="subtitle">
           Registro del Negocio
