@@ -8,9 +8,10 @@ interface WidgetWompiProps {
   isOpen: boolean;
   label: string;
   className?: string;
+  onClose: () => void;  // Agregar la prop onClose
 }
 
-function WidgetWompi({ amount, isOpen, label, className }: WidgetWompiProps) {
+function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -40,6 +41,7 @@ function WidgetWompi({ amount, isOpen, label, className }: WidgetWompiProps) {
         script.setAttribute('data-signature:integrity', data.hash);
         script.setAttribute('data-redirection-url', `${baseUrl}/customer/appointments`);
 
+      
 
         if (containerRef.current) {
           containerRef.current.innerHTML = '';
@@ -50,6 +52,9 @@ function WidgetWompi({ amount, isOpen, label, className }: WidgetWompiProps) {
             const wompiButton = containerRef.current?.querySelector('button');
             if (wompiButton && buttonRef.current) {
               const styles = window.getComputedStyle(buttonRef.current);
+              wompiButton.addEventListener('click', () => {
+                setTimeout(onClose, 500); // Cerrar el diálogo después de un breve delay
+              });
               Object.assign(wompiButton.style, {
                 backgroundColor: styles.backgroundColor,
                 color: styles.color,
@@ -86,16 +91,12 @@ function WidgetWompi({ amount, isOpen, label, className }: WidgetWompiProps) {
         containerRef.current.innerHTML = '';
       }
     };
-  }, [isOpen, amount, label]);
+  }, [isOpen, amount, label, onClose]);
 
   return (
     <div className={className}>
       <div ref={containerRef} className="w-full"></div>
-      <Button
-        ref={buttonRef}
-        variant='default'
-        className="hidden text-sm h-10 font-bold"
-      >
+      <Button ref={buttonRef} variant='default' className="hidden text-sm h-10 font-bold">
         {label}
       </Button>
     </div>

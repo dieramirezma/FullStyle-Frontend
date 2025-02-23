@@ -108,12 +108,14 @@ export function AppointmentConfirmationDialog({
               isOpen={isOpen}
               label="Pagar reserva"
               className="w-full"
+              onClose={onClose}
             />
             <WidgetWompi
               amount={serviceDetail.price}
               isOpen={isOpen}
               label="Pagar completo"
               className="w-full"
+              onClose={onClose}
             />
           </div>
         </DialogFooter>
