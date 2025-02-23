@@ -1,45 +1,83 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
 
 interface WidgetWompiProps {
-  amount: number
-  isOpen: boolean
+  amount: number;
+  isOpen: boolean;
+  label: string;
+  className?: string;
+  onClose: () => void;  // Agregar la prop onClose
 }
 
-function WidgetWompi ({ amount, isOpen }: WidgetWompiProps) {
-  const containerRef = useRef<HTMLDivElement>(null)
+function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
 
   useEffect(() => {
     if (!isOpen || !containerRef.current) return
 
     const loadWompiWidget = async () => {
       try {
-        // Obtener datos del servidor
         const response = await fetch('/api/wompi', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json'
           },
-          body: JSON.stringify({ amount })
-        })
-        const data = await response.json()
+          body: JSON.stringify({ amount }),
+        });
+        const data = await response.json();
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
 
-        // Crear y configurar el script
-        const script = document.createElement('script')
-        script.id = 'wompi-script'
-        script.src = 'https://checkout.wompi.co/widget.js'
-        script.setAttribute('data-render', 'button')
-        script.setAttribute('data-public-key', data.publicKey)
-        script.setAttribute('data-currency', data.currency)
-        script.setAttribute('data-amount-in-cents', data.amountInCents)
-        script.setAttribute('data-reference', data.reference)
-        script.setAttribute('data-signature:integrity', data.hash)
+        const script = document.createElement('script');
+        script.id = 'wompi-script';
+        script.src = 'https://checkout.wompi.co/widget.js';
+        script.setAttribute('data-render', 'button');
+        script.setAttribute('data-public-key', data.publicKey);
+        script.setAttribute('data-currency', data.currency);
+        script.setAttribute('data-amount-in-cents', data.amountInCents);
+        script.setAttribute('data-reference', data.reference);
+        script.setAttribute('data-signature:integrity', data.hash);
+        script.setAttribute('data-redirection-url', `${baseUrl}/customer/appointments`);
 
-        // Limpiar contenedor y agregar nuevo script
+
         if (containerRef.current) {
-          containerRef.current.innerHTML = ''
-          containerRef.current.appendChild(script)
+          containerRef.current.innerHTML = '';
+          containerRef.current.appendChild(script);
+          
+          // Aplicar estilos mejorados al botón de Wompi
+          setTimeout(() => {
+            const wompiButton = containerRef.current?.querySelector('button');
+            if (wompiButton && buttonRef.current) {
+              const styles = window.getComputedStyle(buttonRef.current);
+              wompiButton.addEventListener('click', () => {
+                setTimeout(onClose, 500); // Cerrar el diálogo después de un breve delay
+              });
+              Object.assign(wompiButton.style, {
+                backgroundColor: styles.backgroundColor,
+                color: styles.color,
+                border: styles.border,
+                borderRadius: styles.borderRadius,
+                padding: styles.padding,
+                fontSize: '0.875rem', // text-sm
+                fontFamily: styles.fontFamily,
+                width: '100%',
+                height: '40px', // h-10
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: '1.25rem',
+                fontWeight: '800',
+                transition: 'all 0s',
+              });
+              wompiButton.textContent = label;
+            }
+          }, 100);
         }
       } catch (error) {
         console.error('Error loading Wompi widget:', error)
@@ -48,15 +86,23 @@ function WidgetWompi ({ amount, isOpen }: WidgetWompiProps) {
 
     loadWompiWidget()
 
-    // Cleanup function
     return () => {
       if (containerRef.current) {
         containerRef.current.innerHTML = ''
       }
-    }
-  }, [isOpen, amount])
 
-  return <div ref={containerRef} className="w-full flex justify-center"></div>
+    };
+  }, [isOpen, amount, label, onClose]);
+
+  return (
+    <div className={className}>
+      <div ref={containerRef} className="w-full"></div>
+      <Button ref={buttonRef} variant='default' className="hidden text-sm h-10 font-bold">
+        {label}
+      </Button>
+    </div>
+  );
+
 }
 
 export default WidgetWompi
