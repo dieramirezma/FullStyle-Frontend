@@ -9,7 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Pencil, Save, X, Trash2 } from 'lucide-react'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -42,6 +42,7 @@ function Page () {
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<number | null>(null)
 
+  const { toast } = useToast()
   const router = useRouter()
 
   const managerId = session?.user.id
@@ -64,7 +65,9 @@ function Page () {
       if (error.response?.status === 404) {
         setError(404) // Guardamos el error 404
       } else {
-        toast.error('Error', {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
           description: 'No se pudo cargar la información del sitio'
         })
       }
@@ -100,12 +103,15 @@ function Page () {
         setSite(formData)
       }
       setIsEditing(false)
-      toast.success('Éxito', {
+      toast({
+        title: 'Éxito',
         description: 'La información se actualizó correctamente'
       })
     } catch (error) {
       console.error('Error updating site:', error)
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: 'No se pudo actualizar la información'
       })
     } finally {
@@ -117,14 +123,17 @@ function Page () {
     setIsDeleting(true)
     try {
       await apiClient.delete(`site?id=${site.id}`)
-      toast.success('Éxito', {
+      toast({
+        title: 'Éxito',
         description: 'El negocio ha sido eliminado correctamente'
       })
       // Redirigir al usuario a una página apropiada después de eliminar
       router.push('/owner') // Ajusta esta ruta según tu aplicación
     } catch (error) {
       console.error('Error deleting site:', error)
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: 'No se pudo eliminar el negocio'
       })
     } finally {

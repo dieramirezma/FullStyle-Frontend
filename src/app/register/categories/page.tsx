@@ -5,7 +5,7 @@ export default function registerClientPage () {
   return (
     <div>
       <RegisterNavBar />
-      <div className="h-full flex items-center place-content-around p-10">
+      <div className="h-full flex items-center place-content-around px-20">
         <RegisterCategoriesForm></RegisterCategoriesForm>
       </div>
     </div>

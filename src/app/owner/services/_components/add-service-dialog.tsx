@@ -18,7 +18,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import apiClient from '@/utils/apiClient'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
 const serviceSchema = z.object({
   description: z
@@ -47,6 +47,7 @@ interface AddServiceDialogProps {
 export function AddServiceDialog ({ siteId, services, onServiceAdded }: AddServiceDialogProps) {
   const [open, setOpen] = useState(false)
   const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
@@ -69,7 +70,8 @@ export function AddServiceDialog ({ siteId, services, onServiceAdded }: AddServi
         duration: values.duration
       })
 
-      toast.success('Servicio agregado', {
+      toast({
+        title: 'Servicio agregado',
         description: 'El servicio ha sido agregado exitosamente'
       })
 
@@ -77,7 +79,9 @@ export function AddServiceDialog ({ siteId, services, onServiceAdded }: AddServi
       setOpen(false)
       onServiceAdded()
     } catch (error: any) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: error.response?.data?.message || 'Ocurrió un error inesperado. Inténtalo de nuevo más tarde.'
       })
     } finally {

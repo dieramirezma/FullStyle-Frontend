@@ -152,7 +152,7 @@ export default function RegisterOwnerForm () {
   }
 
   return (
-    <Card className='w-full max-w-4xl mx-auto'>
+    <Card className='w-1/2'>
       <CardHeader>
         <CardTitle className="subtitle self-center">
           Registro de Nuevo Administrador
@@ -165,7 +165,7 @@ export default function RegisterOwnerForm () {
             onSubmit={form.handleSubmit(onSubmit)}
           >
             <CardDescription className='text-xl text-black '>Datos personales</CardDescription>
-            <div className='grid md:grid-cols-2 gap-4 grid-cols-1'>
+            <div className='grid grid-cols-2 gap-4'>
             <FormField
               name="name"
               control={form.control}
@@ -261,7 +261,7 @@ export default function RegisterOwnerForm () {
             />
             </div>
             <CardDescription className='text-xl text-black'>Datos bancarios</CardDescription>
-            <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            <div className='grid grid-cols-2 gap-4'>
               <FormField
               control={form.control}
               name="bankName"
