@@ -17,7 +17,7 @@ interface LoginResponse {
   }
 }
 
-const authOptions: AuthOptions = {
+export const authOptions: AuthOptions = {
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_CLIENT_ID ?? '',
@@ -29,7 +29,7 @@ const authOptions: AuthOptions = {
         email: { label: 'Correo', type: 'email' },
         password: { label: 'Contraseña', type: 'password' }
       },
-      async authorize (credentials) {
+      async authorize(credentials) {
         const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}login`, {
           method: 'POST',
           body: JSON.stringify({
@@ -62,7 +62,7 @@ const authOptions: AuthOptions = {
     strategy: 'jwt'
   },
   callbacks: {
-    async jwt ({ token, user, account }) {
+    async jwt({ token, user, account }) {
       if ((account != null) && account.provider === 'google') {
         try {
           const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}login_google`, {
@@ -91,7 +91,7 @@ const authOptions: AuthOptions = {
       }
       return token
     },
-    async session ({ session, token }) {
+    async session({ session, token }) {
       session.accessToken = token.accessToken as string
       session.user = token.user as User
       return session

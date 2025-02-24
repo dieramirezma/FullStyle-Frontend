@@ -108,6 +108,8 @@ export function AppointmentConfirmationDialog({
               isOpen={isOpen}
               label="Pagar reserva"
               className="w-full"
+              paymentType="SRV"
+              itemId={serviceDetail.service_id.toString()}
               onClose={onClose}
             />
             <WidgetWompi
@@ -115,6 +117,8 @@ export function AppointmentConfirmationDialog({
               isOpen={isOpen}
               label="Pagar completo"
               className="w-full"
+              paymentType="SRV"
+              itemId={serviceDetail.service_id.toString()}
               onClose={onClose}
             />
           </div>

@@ -30,17 +30,17 @@ interface CardPlansProps extends Plan {
   onSelectPlan: (plan: Plan) => void;
 }
 
-function CardPlans({ 
-  id, 
-  title, 
-  price, 
-  description, 
-  features, 
-  button, 
-  popular, 
+function CardPlans({
+  id,
+  title,
+  price,
+  description,
+  features,
+  button,
+  popular,
   icon,
   onSelectPlan,
-  ...plan 
+  ...plan
 }: CardPlansProps) {
   const getIcon = () => {
     switch (icon) {
@@ -84,8 +84,8 @@ function CardPlans({
         </ul>
       </CardContent>
       <CardFooter>
-        <Button 
-          className="w-full" 
+        <Button
+          className="w-full"
           variant="default"
           onClick={() => onSelectPlan({ id, title, price, description, features, button, popular, icon })}
         >
@@ -96,9 +96,9 @@ function CardPlans({
   );
 }
 
-function CheckoutDialog({ plan, isOpen, onClose }: { 
-  plan: Plan | null; 
-  isOpen: boolean; 
+function CheckoutDialog({ plan, isOpen, onClose }: {
+  plan: Plan | null;
+  isOpen: boolean;
   onClose: () => void;
 }) {
   if (!plan) return null;
@@ -144,7 +144,9 @@ function CheckoutDialog({ plan, isOpen, onClose }: {
           </div>
 
           <div className="pt-4">
-          <WidgetWompi amount={parseInt(priceNumber)} isOpen={isOpen} label="Pagar suscripción" onClose={onClose} />
+            <WidgetWompi amount={parseInt(priceNumber)} isOpen={isOpen} label="Pagar suscripción" onClose={onClose}
+              paymentType="SUB"
+              itemId={plan.title} />
           </div>
         </div>
       </DialogContent>

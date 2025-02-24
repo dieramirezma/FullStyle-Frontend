@@ -3,15 +3,29 @@
 import { useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 
+import { getServerSession } from 'next-auth'
+import { useSession } from 'next-auth/react'
+
+
 interface WidgetWompiProps {
   amount: number;
   isOpen: boolean;
   label: string;
   className?: string;
-  onClose: () => void;  // Agregar la prop onClose
+  paymentType: 'SUB' | 'SRV';  // Tipo de pago
+  itemId: string;              // ID del item (subscripción o servicio)
+  onClose: () => void;
 }
 
-function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiProps) {
+function WidgetWompi({
+  amount,
+  isOpen,
+  label,
+  className,
+  paymentType,
+  itemId,
+  onClose
+}: WidgetWompiProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
 
@@ -20,12 +34,20 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
 
     const loadWompiWidget = async () => {
       try {
+        const { data: session } = useSession()
+        const userId = session?.user?.id;
+
         const response = await fetch('/api/wompi', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ amount }),
+          body: JSON.stringify({
+            amount,
+            paymentType,
+            itemId,
+            userId
+          }),
         });
         const data = await response.json();
         const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
@@ -41,19 +63,16 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
         script.setAttribute('data-signature:integrity', data.hash);
         script.setAttribute('data-redirection-url', `${baseUrl}/customer/appointments`);
 
-      
-
         if (containerRef.current) {
           containerRef.current.innerHTML = '';
           containerRef.current.appendChild(script);
-          
-          // Aplicar estilos mejorados al botón de Wompi
+
           setTimeout(() => {
             const wompiButton = containerRef.current?.querySelector('button');
             if (wompiButton && buttonRef.current) {
               const styles = window.getComputedStyle(buttonRef.current);
               wompiButton.addEventListener('click', () => {
-                setTimeout(onClose, 500); // Cerrar el diálogo después de un breve delay
+                setTimeout(onClose, 500);
               });
               Object.assign(wompiButton.style, {
                 backgroundColor: styles.backgroundColor,
@@ -61,10 +80,10 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
                 border: styles.border,
                 borderRadius: styles.borderRadius,
                 padding: styles.padding,
-                fontSize: '0.875rem', // text-sm
+                fontSize: '0.875rem',
                 fontFamily: styles.fontFamily,
                 width: '100%',
-                height: '40px', // h-10
+                height: '40px',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -91,7 +110,7 @@ function WidgetWompi({ amount, isOpen, label, className, onClose }: WidgetWompiP
         containerRef.current.innerHTML = '';
       }
     };
-  }, [isOpen, amount, label, onClose]);
+  }, [isOpen, amount, label, paymentType, itemId, onClose]);
 
   return (
     <div className={className}>
