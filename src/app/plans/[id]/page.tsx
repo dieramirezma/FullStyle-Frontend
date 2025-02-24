@@ -55,7 +55,9 @@ export default async function PlanCheckout ({ params }: { params: Promise<{ id: 
             </div>
 
             <div className="mt-24">
-              <WidgetWompi amount={parseInt(plan.price.replace('.', ''))}/>
+              <WidgetWompi amount={parseInt(plan.price.replace('.', ''))} isOpen={false} label={''} paymentType={'SUB'} itemId={''} onClose={function (): void {
+                throw new Error('Function not implemented.')
+              } }/>
             </div>
           </CardContent>
         </Card>
