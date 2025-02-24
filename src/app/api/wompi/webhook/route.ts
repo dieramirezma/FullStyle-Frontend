@@ -43,6 +43,8 @@ async function verifySignature(
         .map(byte => byte.toString(16).padStart(2, '0'))
         .join('');
 
+    console.log('Calculated signature:', calculatedSignature);
+    console.log('Received signature:', signature);
     return calculatedSignature === signature;
 }
 
