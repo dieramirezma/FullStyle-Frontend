@@ -28,13 +28,14 @@ function WidgetWompi({
 }: WidgetWompiProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const { data: session } = useSession()
 
   useEffect(() => {
     if (!isOpen || !containerRef.current) return;
 
     const loadWompiWidget = async () => {
       try {
-        const { data: session } = useSession()
+
         const userId = session?.user?.id;
 
         const response = await fetch('/api/wompi', {
