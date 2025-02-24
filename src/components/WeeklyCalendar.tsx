@@ -7,6 +7,9 @@ import type { Detail } from '@/app/customer/_components/site-search'
 import { AppointmentConfirmationDialog } from './appoinment-confirmation'
 import { toast } from 'sonner'
 import type { Site } from './schedule-service'
+import { Scheduler, WeekView, Appointments } from "@devexpress/dx-react-scheduler-material-ui"
+import { ViewState } from "@devexpress/dx-react-scheduler"
+import Paper from "@mui/material/Paper"
 
 interface WeeklyCalendarProps {
   workerId: number
@@ -51,6 +54,22 @@ export interface AppointmentData {
   client_id: number
 }
 
+interface WorkerSchedule {
+  worker_id: number
+  week_start: string
+  week_end: string
+  schedule: Record<string, DaySchedule>
+}
+
+interface Appointment {
+  title: string
+  startDate: Date
+  endDate: Date
+  type: "available" | "occupied"
+}
+
+const DAYS_OF_WEEK = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"]
+
 export default function WeeklyCalendar ({
   workerId,
   siteId,
@@ -66,6 +85,8 @@ export default function WeeklyCalendar ({
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [workerDetail, setWorkerDetail] = useState<Worker[] | null>(null)
   const [siteDetail, setSiteDetail] = useState<Site[] | null>(null)
+  const [appointments, setAppointments] = useState<Appointment[]>([])
+  const [currentDate, setCurrentDate] = useState("2025-02-17")
 
   useEffect(() => {
     setLoading(true)
@@ -110,8 +131,12 @@ export default function WeeklyCalendar ({
           }
         }
       )
-
+      const data: WorkerSchedule = response.data
+      const transformedAppointments = transformScheduleToAppointments(data)
+      setAppointments(transformedAppointments)
+      setCurrentDate(data.week_start)
       setSchedule(response.data)
+      console.log(response.data)
     } catch (error) {
       console.error('Error fetching schedule:', error)
     }
@@ -125,6 +150,76 @@ export default function WeeklyCalendar ({
     } catch (error) {
       console.error('Error fetching service detail:', error)
     }
+  }
+
+  const transformScheduleToAppointments = (schedule: WorkerSchedule): Appointment[] => {
+    const appointments: Appointment[] = []
+    const weekStart = new Date(schedule.week_start)
+
+    DAYS_OF_WEEK.forEach((day, index) => {
+      const currentDay = new Date(weekStart)
+      currentDay.setDate(weekStart.getDate() + index)
+
+      const daySchedule = schedule.schedule[day]
+      if (!daySchedule) return
+
+      // Add occupied slots
+      daySchedule.occupied.forEach((slot) => {
+        const [startHour, startMinute] = slot.start.split(":").map(Number)
+        const [endHour, endMinute] = slot.end.split(":").map(Number)
+
+        const startDate = new Date(currentDay)
+        startDate.setHours(startHour, startMinute, 0)
+
+        const endDate = new Date(currentDay)
+        endDate.setHours(endHour, endMinute, 0)
+
+        appointments.push({
+          title: "Reservado",
+          startDate,
+          endDate,
+          type: "occupied",
+        })
+      })
+
+      // Add available slots
+      daySchedule.available.forEach((slot) => {
+        const [startHour, startMinute] = slot.start.split(":").map(Number)
+        const [endHour, endMinute] = slot.end.split(":").map(Number)
+
+        const startDate = new Date(currentDay)
+        startDate.setHours(startHour, startMinute, 0)
+
+        const endDate = new Date(currentDay)
+        endDate.setHours(endHour, endMinute, 0)
+
+        appointments.push({
+          title: "Disponible",
+          startDate,
+          endDate,
+          type: "available",
+        })
+      })
+    })
+
+    return appointments
+  }
+
+  const Appointment = ({ children, style, ...restProps }: any) => {
+    const { type } = restProps.data
+
+    return (
+      <Appointments.Appointment
+        {...restProps}
+        style={{
+          ...style,
+          backgroundColor: type === "occupied" ? "#f87171" : "#6ee7b7",
+          borderRadius: "8px",
+        }}
+      >
+        {children}
+      </Appointments.Appointment>
+    )
   }
 
   const handlePreviousWeek = () => {
@@ -261,7 +356,13 @@ export default function WeeklyCalendar ({
           )
         })}
       </div>
-
+      <Paper>
+        <Scheduler data={appointments} height={700}>
+          <ViewState currentDate={currentDate} />
+          <WeekView startDayHour={9} endDayHour={19} cellDuration={30} />
+          <Appointments appointmentComponent={Appointment} />
+        </Scheduler>
+      </Paper>
       {selectedSlot && serviceDetail && workerDetail && siteDetail && (
         <AppointmentConfirmationDialog
           isOpen={showConfirmation}
