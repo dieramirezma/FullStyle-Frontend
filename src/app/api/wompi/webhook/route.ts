@@ -44,6 +44,8 @@ async function verifySignature(
         .map(byte => byte.toString(16).padStart(2, '0'))
         .join('');
 
+    console.log('Calculated signature:', calculatedSignature);
+    console.log('Received signature:', signature);
     return calculatedSignature === signature;
 }
 
@@ -54,6 +56,8 @@ export async function POST(request: Request) {
         const nonce = (await headersList).get('wompi-nonce');
         const transmissionId = (await headersList).get('wompi-transmission-id');
         const signature = (await headersList).get('wompi-signature');
+
+        console.log('Headers:', timestamp, nonce, transmissionId, signature);
 
         if (!timestamp || !nonce || !transmissionId || !signature) {
             return NextResponse.json(
