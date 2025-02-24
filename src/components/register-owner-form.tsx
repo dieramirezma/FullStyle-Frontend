@@ -141,7 +141,7 @@ export default function RegisterOwnerForm () {
       router.push('/register/business')
       console.log(localStorage.getItem('userId'))
     } catch (error: any) {
-      if (error.response.data.message !== undefined) {
+      if (error.response?.data?.message !== undefined) {
         setError(String(error.response.data.message))
       } else {
         setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
