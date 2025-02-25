@@ -202,7 +202,7 @@ function ServiceSearch () {
                           <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
                             {category.name}
@@ -225,7 +225,7 @@ function ServiceSearch () {
                           <SelectValue placeholder="Sitio" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {sites.map((site) => (
                           <SelectItem key={site.id} value={site.id.toString()}>
                             {site.name}
@@ -248,7 +248,7 @@ function ServiceSearch () {
                           <SelectValue placeholder="Servicio" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {services.map((service) => (
                           <SelectItem key={service.id} value={service.id.toString()}>
                             {service.name}
@@ -271,7 +271,7 @@ function ServiceSearch () {
                           <SelectValue placeholder="Precio" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {prices.map((price) => (
                           <SelectItem key={price} value={price.toString()}>
                             ${price}
