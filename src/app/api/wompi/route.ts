@@ -9,15 +9,18 @@ async function encodeString(stringToEncode: string) {
 }
 
 export async function POST(request: Request) {
-  const { amount, paymentType, itemId, userId } = await request.json();
+  const { amount, paymentType, itemId, userId, serviceString } = await request.json();
 
   const amountInCents = `${amount * 100}`;
   const currency = 'COP';
   const integritySecret = process.env.WOMPI_INTEGRITY_KEY;
 
   // Crear una referencia que incluya el tipo de pago
+  var reference = '';
   const uniqueId = crypto.randomUUID();
-  const reference = `${paymentType}_${userId}_${itemId}_${uniqueId}`;
+  if (serviceString === undefined) {
+    reference = `${paymentType}_${userId}_${itemId}_${uniqueId}`;
+  } else { reference = `${paymentType}_${userId}_${itemId}_${serviceString}_${uniqueId}`; }
 
   const concatenatedString = `${reference}${amountInCents}${currency}${integritySecret}`;
 

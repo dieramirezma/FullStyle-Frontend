@@ -51,7 +51,7 @@ export interface AppointmentData {
   client_id: number
 }
 
-export default function WeeklyCalendar ({
+export default function WeeklyCalendar({
   workerId,
   siteId,
   serviceId,
@@ -181,18 +181,25 @@ export default function WeeklyCalendar ({
     setShowConfirmation(true)
   }
 
-  const handleConfirmAppointment = async () => {
-    if (!selectedSlot) return
-
+  const handleAppointmentData = () => {
+    if (!selectedSlot) return null
     const [date, time] = selectedSlot.split('T')
     const appointmentData: AppointmentData = {
       appointmenttime: `${date}T${time}:00`,
-      status: 'pending',
+      status: 'paid',
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,
       client_id: clientId
     }
+    console.log('weekly', appointmentData)
+    return appointmentData
+  }
+
+  const handleConfirmAppointment = async () => {
+
+    const appointmentData = handleAppointmentData()
+    if (appointmentData === null) return
 
     try {
       const response = await apiClient.post('appointment', appointmentData)
@@ -250,9 +257,8 @@ export default function WeeklyCalendar ({
                   return (
                     <div
                       key={index}
-                      className={`p-1 text-xs ${
-                        isOccupied ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-200 hover:bg-green-300 cursor-pointer'
-                      }`}
+                      className={`p-1 text-xs ${isOccupied ? 'bg-gray-300 cursor-not-allowed' : 'bg-green-200 hover:bg-green-300 cursor-pointer'
+                        }`}
                       onClick={() => {
                         !isOccupied && handleSlotClick(day, slot)
                       }}
@@ -275,6 +281,7 @@ export default function WeeklyCalendar ({
           serviceDetail={serviceDetail[0]}
           workerName={workerDetail[0].name}
           siteDetail={siteDetail[0]}
+          appointmentData={handleAppointmentData()}
           onConfirm={handleConfirmAppointment}
         />
       )}

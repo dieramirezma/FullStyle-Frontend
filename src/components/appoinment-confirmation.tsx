@@ -15,6 +15,15 @@ import type { Detail } from '@/app/customer/_components/site-search'
 import type { Site } from './schedule-service'
 import WidgetWompi from '@/components/widget-wompi';
 
+export interface AppointmentData {
+  appointmenttime: string
+  status: string
+  worker_id: number
+  site_id: number
+  service_id: number
+  client_id: number
+}
+
 interface AppointmentConfirmationDialogProps {
   isOpen: boolean
   onClose: () => void
@@ -22,6 +31,7 @@ interface AppointmentConfirmationDialogProps {
   serviceDetail: Detail
   workerName: string
   siteDetail: Site
+  appointmentData: AppointmentData | null
   onConfirm: () => Promise<void>
 }
 
@@ -32,6 +42,7 @@ export function AppointmentConfirmationDialog({
   serviceDetail,
   workerName,
   onConfirm,
+  appointmentData,
   siteDetail
 }: AppointmentConfirmationDialogProps) {
   return (
@@ -119,6 +130,9 @@ export function AppointmentConfirmationDialog({
               className="w-full"
               paymentType="SRV"
               itemId={serviceDetail.service_id.toString()}
+              serviceString={appointmentData
+                ? `${appointmentData.appointmenttime}_${appointmentData.status}_${appointmentData.worker_id}_${appointmentData.site_id}_${appointmentData.service_id}_${appointmentData.client_id}`
+                : ''}
               onClose={onClose}
             />
           </div>

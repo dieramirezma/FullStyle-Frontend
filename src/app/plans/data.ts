@@ -11,6 +11,23 @@ export interface Plan {
 
 export const plans: Plan[] = [
   {
+    id: 4,
+    title: 'Prueba',
+    price: "30.000",
+    description: 'Acceso las funcionalidades Básicas por 30 días',
+    features: [
+      'Hasta 50 clientes',
+      'Sistema de reservas básico',
+      'Gestión de clientes',
+      'Calendario de citas',
+      'Notificaciones por email'
+    ],
+    // button: 'Contactar Ventas',
+    button: 'Compra Ahora',
+    popular: false,
+    icon: 'star'
+  },
+  {
     id: 1,
     title: 'Básico',
     price: '300.000',

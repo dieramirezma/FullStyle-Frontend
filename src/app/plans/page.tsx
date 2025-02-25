@@ -68,7 +68,9 @@ function CardPlans({
         <div className="mt-4 space-y-2">
           <p className="text-3xl font-bold">
             ${price}
-            <span className="text-sm font-normal text-muted-foreground">/año</span>
+            <span className="text-sm font-normal text-muted-foreground">
+              {title.toLowerCase() === 'prueba' ? '/mes' : '/año'}
+            </span>
           </p>
           <p className="text-sm text-muted-foreground">{description}</p>
         </div>
@@ -120,7 +122,7 @@ function CheckoutDialog({ plan, isOpen, onClose }: {
               <h3 className="font-medium">Plan {plan.title}</h3>
               <p className="text-sm text-muted-foreground">Facturación anual</p>
             </div>
-            <p className="font-medium">${subtotal.toLocaleString()}/año</p>
+            <p className="font-medium">${subtotal.toLocaleString()}{plan.title.toLowerCase() === 'prueba' ? '/mes' : '/año'}</p>
           </div>
 
           <Separator />
@@ -166,7 +168,7 @@ export default function SubscriptionPlans() {
   return (
     <div className="container mx-auto py-10">
       <h2 className="text-3xl font-bold text-center mb-8">Planes de Suscripción</h2>
-      <div className="grid md:grid-cols-3 gap-6 max-w-6xl mx-auto px-4">
+      <div className="grid md:grid-cols-4 gap-6 max-w-6xl mx-auto px-4">
         {plans.map((plan) => (
           <CardPlans
             key={plan.id}

@@ -14,6 +14,7 @@ interface WidgetWompiProps {
   className?: string;
   paymentType: 'SUB' | 'SRV';  // Tipo de pago
   itemId: string;              // ID del item (subscripción o servicio)
+  serviceString?: string;      // Cadena de servicio
   onClose: () => void;
 }
 
@@ -24,6 +25,7 @@ function WidgetWompi({
   className,
   paymentType,
   itemId,
+  serviceString,
   onClose
 }: WidgetWompiProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -38,6 +40,9 @@ function WidgetWompi({
 
         const userId = session?.user?.id;
 
+
+        console.log('widget', serviceString)
+
         const response = await fetch('/api/wompi', {
           method: 'POST',
           headers: {
@@ -47,7 +52,8 @@ function WidgetWompi({
             amount,
             paymentType,
             itemId,
-            userId
+            userId,
+            serviceString
           }),
         });
         const data = await response.json();
@@ -111,7 +117,7 @@ function WidgetWompi({
         containerRef.current.innerHTML = '';
       }
     };
-  }, [isOpen, amount, label, paymentType, itemId, onClose]);
+  }, [isOpen, amount, label, paymentType, itemId, serviceString, onClose]);
 
   return (
     <div className={className}>

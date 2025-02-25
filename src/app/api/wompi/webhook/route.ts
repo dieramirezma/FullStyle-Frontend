@@ -5,13 +5,21 @@ import apiClient from '@/utils/apiClient'
 export interface TransactionData {
     amount: number
     paymentmethod: string
-    appointment_id: string
+    appointment_id: number
+}
+export interface AppointmentData {
+    appointmenttime: string,
+    status: string,
+    worker_id: number,
+    site_id: number,
+    service_id: number,
+    client_id: number
 }
 export interface SubscriptionData {
     subscriptionactive: boolean
     subscriptiontype: string
-    subscriptionstartdate: Date
-    subscriptionfinishdate: Date
+    subscriptionstartdate: string
+    subscriptionfinishdate: string
 }
 
 async function verifySignature(
@@ -88,33 +96,105 @@ export async function POST(request: Request) {
         const status = data.transaction.status;
 
         // Extraer el tipo de pago y el ID real de la referencia
-        const [paymentType, userId, itemId, originalReference] = reference.split('_');
+        const [paymentType, userId, itemId, appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, finalReference] = reference.split('_');
 
         if (event === 'transaction.updated' && status === 'APPROVED') {
             // Diferentes endpoints según el tipo de pago
-            const baseUrl = process.env.API_BASE_URL;
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL;
 
             switch (paymentType) {
                 case 'SUB': // Subscripción
-                    const subscriptionData: SubscriptionData = {
-                        subscriptionactive: status == 'APPROVED' ? true : false,
-                        subscriptiontype: itemId,
-                        subscriptionstartdate: new Date(),
-                        subscriptionfinishdate: itemId == 'prueba' ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
+                    // Crear fechas base
+                    const startDate = new Date();
+
+                    // Calcular la fecha de finalización
+                    let finishDate = new Date(startDate);
+                    if (itemId === 'prueba') {
+                        // Si es de prueba, añadir un mes
+                        finishDate.setMonth(startDate.getMonth() + 1);
+                    } else {
+                        // Si no, añadir un año
+                        finishDate.setFullYear(startDate.getFullYear() + 1);
                     }
-                    console.log(subscriptionData)
-                    // await apiClient.post(`subscription/${userId}`, subscriptionData)
-                    break;
+
+                    // Formatear las fechas como strings en formato ISO
+                    const formattedStartDate = startDate.toISOString().split('.')[0]; // '2025-02-24T12:00:00'
+                    const formattedFinishDate = finishDate.toISOString().split('.')[0]; // '2026-02-24T12:00:00'
+
+                    const subscriptionData: SubscriptionData = {
+                        subscriptionactive: status === 'APPROVED',
+                        subscriptiontype: itemId,
+                        subscriptionstartdate: formattedStartDate,
+                        subscriptionfinishdate: formattedFinishDate
+                    }
+
+                    console.log('Usuario:', userId, 'Datos de suscripción:', subscriptionData);
+
+                    // Usar fetch directamente en lugar de apiClient
+                    const subResponse = await fetch(`${baseUrl}/subscription/${userId}`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(subscriptionData)
+                    });
+                    break; // Asegúrate de tener un break aquí para que no continúe al caso siguiente
 
                 case 'SRV': // Servicio
+                    // console.log('originalReference', originalReference)
+                    // const [appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, finalReference] = originalReference.split('_');
+                    console.log(appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id)
+                    const appointmentData: AppointmentData = {
+                        appointmenttime: appointmenttime,
+                        status: appointmentStatus,
+                        worker_id: parseInt(worker_id),
+                        site_id: parseInt(site_id),
+                        service_id: parseInt(service_id),
+                        client_id: parseInt(client_id)
+                    }
+
+                    console.log(appointmentData)
+                    // Usar fetch directamente en lugar de apiClient
+                    const serviceResponse = await fetch(`${baseUrl}/appointment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(appointmentData)
+                    });
+
+                    // Verificar si la respuesta es exitosa
+                    if (!serviceResponse.ok) {
+                        const errorData = await serviceResponse.json();
+                        console.error('Error en la respuesta de cita:', errorData);
+                        throw new Error(`Error en la creación de cita: ${serviceResponse.status}`);
+                    }
+
+                    // Obtener el JSON de la respuesta para extraer el ID
+                    const appointmentResult = await serviceResponse.json();
+                    const appointmentId = appointmentResult.id; // Asumiendo que la API devuelve el ID como "id"
+
                     const transactionData: TransactionData = {
                         amount: data.transaction.amount_in_cents / 100,
                         paymentmethod: data.transaction.payment_method_type,
-                        appointment_id: itemId
+                        appointment_id: appointmentId // Usar el ID obtenido de la respuesta anterior
                     }
 
                     console.log(transactionData)
-                    // await apiClient.post('payment', transactionData)
+                    // Usar fetch directamente en lugar de apiClient
+                    const paymentResponse = await fetch(`${baseUrl}/payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(transactionData)
+                    });
+
+                    if (!paymentResponse.ok) {
+                        const errorData = await paymentResponse.json();
+                        console.error('Error en la respuesta de pago:', errorData);
+                        throw new Error(`Error en el pago: ${paymentResponse.status}`);
+                    }
                     break;
 
                 default:
