@@ -6,7 +6,6 @@ export interface TransactionData {
     amount: number
     paymentmethod: string
     appointment_id: string
-    customer_email: string
 }
 export interface SubscriptionData {
     subscriptionactive: boolean
@@ -51,38 +50,37 @@ async function verifySignature(
 
 export async function POST(request: Request) {
     try {
-        const headersList = headers();
-        const timestamp = (await headersList).get('wompi-timestamp');
-        const nonce = (await headersList).get('wompi-nonce');
-        const transmissionId = (await headersList).get('wompi-transmission-id');
-        const signature = (await headersList).get('wompi-signature');
+        // const headersList = headers();
+        // const timestamp = (await headersList).get('wompi-timestamp');
+        // const nonce = (await headersList).get('wompi-nonce');
+        // const transmissionId = (await headersList).get('wompi-transmission-id');
+        // const signature = (await headersList).get('X-Event-Checksum');
 
-        console.log('Headers:', timestamp, nonce, transmissionId, signature);
 
-        if (!timestamp || !nonce || !transmissionId || !signature) {
-            return NextResponse.json(
-                { error: 'Missing required headers' },
-                { status: 400 }
-            );
-        }
+        // if (!timestamp || !nonce || !transmissionId || !signature) {
+        //     return NextResponse.json(
+        //         { error: 'Missing required headers' },
+        //         { status: 400 }
+        //     );
+        // }
 
         const body = await request.json();
         const eventData = JSON.stringify(body);
 
-        const isValid = await verifySignature(
-            timestamp,
-            nonce,
-            transmissionId,
-            eventData,
-            signature
-        );
+        // const isValid = await verifySignature(
+        //     timestamp,
+        //     nonce,
+        //     transmissionId,
+        //     eventData,
+        //     signature
+        // );
 
-        if (!isValid) {
-            return NextResponse.json(
-                { error: 'Invalid signature' },
-                { status: 401 }
-            );
-        }
+        // if (!isValid) {
+        //     return NextResponse.json(
+        //         { error: 'Invalid signature' },
+        //         { status: 401 }
+        //     );
+        // }
 
         const event = body.event;
         const data = body.data;
@@ -104,18 +102,19 @@ export async function POST(request: Request) {
                         subscriptionstartdate: new Date(),
                         subscriptionfinishdate: itemId == 'prueba' ? new Date(new Date().setMonth(new Date().getMonth() + 1)) : new Date(new Date().setFullYear(new Date().getFullYear() + 1))
                     }
-                    await apiClient.post(`subscription/${userId}`, subscriptionData)
+                    console.log(subscriptionData)
+                    // await apiClient.post(`subscription/${userId}`, subscriptionData)
                     break;
 
                 case 'SRV': // Servicio
                     const transactionData: TransactionData = {
                         amount: data.transaction.amount_in_cents / 100,
                         paymentmethod: data.transaction.payment_method_type,
-                        appointment_id: itemId,
-                        customer_email: data.transaction.customer_email ?? '',
+                        appointment_id: itemId
                     }
 
-                    await apiClient.post('payment', transactionData)
+                    console.log(transactionData)
+                    // await apiClient.post('payment', transactionData)
                     break;
 
                 default:
