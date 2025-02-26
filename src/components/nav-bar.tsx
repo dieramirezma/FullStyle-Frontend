@@ -6,10 +6,13 @@ import { useEffect, useState } from 'react'
 
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
+import { useSession } from 'next-auth/react'
 
 function NavBar () {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [hidden, setHidden] = useState(false)
+
+  const { data: session } = useSession()
 
   useEffect(() => {
     let lastScrollY = window.scrollY
@@ -62,9 +65,23 @@ function NavBar () {
 
           {/* Botones de autenticación para escritorio */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link href="/login" className={buttonVariants({ variant: 'outline', size: 'sm' })}>
-              LOGIN
-            </Link>
+            {session
+              ? (
+                <Link
+                  href={session.user.is_manager ? '/owner' : '/customer'}
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  IR AL DASHBOARD
+                </Link>
+                )
+              : (
+                <Link
+                  href="/login"
+                  className={buttonVariants({ variant: 'outline', size: 'sm' })}
+                >
+                  LOGIN
+                </Link>
+                )}
             <Link href="/register" className={buttonVariants({ variant: 'default', size: 'sm' })}>
               SOLICITA UNA DEMO
             </Link>
@@ -116,13 +133,25 @@ function NavBar () {
           </nav>
 
           <div className="grid gap-2 pt-4 border-t">
-            <Link
-              href="/login"
-              className={buttonVariants({ variant: 'outline', size: 'sm', className: 'w-full' })}
-              onClick={() => { setIsMenuOpen(false) }}
-            >
-              LOGIN
-            </Link>
+              {session
+                ? (
+                <Link
+                  href={session.user.is_manager ? '/owner' : '/customer'}
+                  className={buttonVariants({ variant: 'outline', size: 'sm', className: 'w-full' })}
+                  onClick={() => { setIsMenuOpen(false) }}
+                >
+                  IR AL DASHBOARD
+                </Link>
+                  )
+                : (
+                <Link
+                  href="/login"
+                  className={buttonVariants({ variant: 'outline', size: 'sm', className: 'w-full' })}
+                  onClick={() => { setIsMenuOpen(false) }}
+                >
+                  LOGIN
+                </Link>
+                  )}
             <Link
               href="/register"
               className={buttonVariants({ variant: 'default', size: 'sm', className: 'w-full' })}

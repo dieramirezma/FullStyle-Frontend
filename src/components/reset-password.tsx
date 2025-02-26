@@ -16,7 +16,11 @@ import { Eye, EyeOff } from 'lucide-react'
 const userSchema = z.object({
   password: z.string({
     required_error: 'La contraseña es obligatoria'
-  }).min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }),
+  }).min(8, {
+    message: 'La contraseña debe tener al menos 8 caracteres'
+  }).max(50, {
+    message: 'La contraseña debe tener máximo 50 caracteres'
+  }),
   confirmPassword: z.string({
     required_error: 'Debe confirmar la contraseña'
   })

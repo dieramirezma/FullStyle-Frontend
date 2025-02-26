@@ -14,7 +14,7 @@ import axios from 'axios'
 import { MapPin, Loader2 } from 'lucide-react'
 import GoogleMapComponent from '@/components/map'
 
-const businessTypes = ['Barberia', 'Peluqueria', 'Salon de estetica']
+const businessTypes = ['Barbería', 'Peluquería', 'Salon de estética']
 
 interface ResponseGeo {
   location: {
@@ -27,34 +27,38 @@ interface ResponseGeo {
 const userSchema = z.object({
   name: z
     .string({
-      required_error: 'El nombre es obligatorio'
+      required_error: 'Este campo es obligatorio'
     })
-    .min(1, {
-      message: 'El nombre es obligatorio'
+    .min(5, {
+      message: 'El nombre debe tener al menos 5 caracteres'
+    })
+    .max(50, {
+      message: 'El nombre debe tener máximo 50 caracteres'
     }),
   address: z
     .string({
-      required_error: 'La direccion es obligatoria'
+      required_error: 'Este campo es obligatorio'
     })
     .min(1, {
       message: 'La direccion es obligatoria'
     }),
-  phone: z
-    .string({
-      required_error: 'El numero telefonico es obligatorio'
-    })
-    .min(1, {
-      message: 'El numero telefonico es obligatorio'
-    })
-    .regex(/^[0-9]+$/, {
-      message: 'El numero telefonico solo puede contener numeros'
-    }),
-  businessType: z.enum(['Barberia', 'Peluqueria', 'Salon de estetica'], {
+  phone: z.string({
+    required_error: 'Este campo es obligatorio'
+  }).min(10, {
+    message: 'Debe contener exactamente 10 dígitos'
+  }).regex(/^[0-9]+$/, {
+    message: 'El número telefónico solo puede contener números'
+  }).max(10, {
+    message: 'Debe contener exactamente 10 dígitos'
+  }).regex(/^3/, {
+    message: 'El número telefónico debe empezar por 3'
+  }),
+  businessType: z.enum(['Barbería', 'Peluquería', 'Salón de estética'], {
     message: 'Seleccione el tipo de negocio'
   })
 })
 
-export default function RegisterBusinessForm () {
+export default function RegisterBusinessForm ({ className, urlCallback }: { className?: string, urlCallback?: string }) {
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -116,7 +120,7 @@ export default function RegisterBusinessForm () {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}site`, payload)
       localStorage.setItem('siteId', String(response.data.id))
-      router.push('/register/categories')
+      router.push(urlCallback ?? '/register/categories')
     } catch (error: any) {
       if (error.response?.data?.message) {
         setError(String(error.response.data.message))
@@ -129,7 +133,7 @@ export default function RegisterBusinessForm () {
   }
 
   return (
-    <Card className="w-full md:w-1/2">
+    <Card className={className ?? 'w-full md:w-1/2'}>
       <CardHeader>
         <CardTitle className="subtitle text-center">Registro del Negocio</CardTitle>
       </CardHeader>
@@ -141,9 +145,9 @@ export default function RegisterBusinessForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Nombre del negocio</FormLabel>
+                  <FormLabel className="font-black">Nombre del negocio<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder='Ej. FullStyle' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -155,7 +159,7 @@ export default function RegisterBusinessForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Direccion del negocio</FormLabel>
+                  <FormLabel className="font-black">Direccion del negocio<span className="text-red-500"> *</span></FormLabel>
                   <div className="flex gap-2">
                     <FormControl>
                       <Input className='h-auto' {...field} placeholder="Ej: Calle 123 #45-67" />
@@ -186,9 +190,9 @@ export default function RegisterBusinessForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Numero telefonico</FormLabel>
+                  <FormLabel className="font-black">Número telefónico<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input type='number' {...field} placeholder='Ej. 3033044340' />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -200,7 +204,7 @@ export default function RegisterBusinessForm () {
               name="businessType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Tipo de negocio</FormLabel>
+                  <FormLabel className="font-black">Tipo de negocio<span className="text-red-500"> *</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
