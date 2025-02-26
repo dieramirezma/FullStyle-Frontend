@@ -49,6 +49,7 @@ export interface AppointmentData {
   site_id: number
   service_id: number
   client_id: number
+  request: boolean
 }
 
 export default function WeeklyCalendar({
@@ -190,7 +191,8 @@ export default function WeeklyCalendar({
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,
-      client_id: clientId
+      client_id: clientId,
+      request: true
     }
     console.log('weekly', appointmentData)
     return appointmentData

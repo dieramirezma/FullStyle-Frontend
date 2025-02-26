@@ -1,101 +1,181 @@
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import apiClient from '@/utils/apiClient'
+import * as crypto from 'crypto';
+import { format } from 'date-fns';
 
 export interface TransactionData {
-    amount: number
-    paymentmethod: string
-    appointment_id: number
-}
-export interface AppointmentData {
-    appointmenttime: string,
-    status: string,
-    worker_id: number,
-    site_id: number,
-    service_id: number,
-    client_id: number
-}
-export interface SubscriptionData {
-    subscriptionactive: boolean
-    subscriptiontype: string
-    subscriptionstartdate: string
-    subscriptionfinishdate: string
+    amount: number;
+    paymentmethod: string;
+    appointment_id: number;
+    status: string;
 }
 
-async function verifySignature(
-    timestamp: string,
-    nonce: string,
-    transmissionId: string,
-    eventData: string,
-    signature: string
-) {
+export interface AppointmentData {
+    appointmenttime: string;
+    status: string;
+    worker_id: number;
+    site_id: number;
+    service_id: number;
+    client_id: number;
+}
+
+export interface SubscriptionData {
+    subscriptionactive: boolean;
+    subscriptiontype: string;
+    subscriptionstartdate: string;
+    subscriptionfinishdate: string;
+}
+
+// Implementación simplificada usando el módulo crypto de Node.js
+function verifySignature(body: any, receivedSignature: string) {
     const secret = process.env.WOMPI_EVENTS_KEY;
     if (!secret) throw new Error('WOMPI_EVENTS_KEY is not defined');
 
-    const concatenatedData = `${timestamp}.${nonce}.${transmissionId}.${eventData}`;
-    const encoder = new TextEncoder();
-    const data = encoder.encode(concatenatedData);
-    const key = encoder.encode(secret);
+    // Extraer los properties del evento
+    const properties = body.signature?.properties || [];
+    const data = body.data;
+    let concatenatedValues = '';
 
-    const cryptoKey = await crypto.subtle.importKey(
-        'raw',
-        key,
-        { name: 'HMAC', hash: 'SHA-256' },
-        false,
-        ['sign']
-    );
+    // Paso 1: Concatenar los valores de properties en el orden especificado
+    for (const prop of properties) {
+        // Navegar la estructura anidada usando el path de la propiedad
+        const pathParts = prop.split('.');
+        let value = data;
 
-    const signatureBuffer = await crypto.subtle.sign('HMAC', cryptoKey, data);
-    const signatureArray = Array.from(new Uint8Array(signatureBuffer));
-    const calculatedSignature = signatureArray
-        .map(byte => byte.toString(16).padStart(2, '0'))
-        .join('');
+        for (const part of pathParts) {
+            if (value && typeof value === 'object') {
+                value = value[part];
+            } else {
+                value = undefined;
+                break;
+            }
+        }
 
-    console.log('Calculated signature:', calculatedSignature);
-    console.log('Received signature:', signature);
-    return calculatedSignature === signature;
+        // Concatenar el valor si existe
+        if (value !== undefined) {
+            concatenatedValues += value.toString();
+        }
+    }
+
+    // Paso 2: Concatenar el timestamp
+    concatenatedValues += body.timestamp.toString();
+
+    // Paso 3: Concatenar el secreto
+    concatenatedValues += secret;
+
+    // Paso 4: Generar el hash SHA-256 usando el módulo crypto directamente
+    const calculatedSignature = crypto
+        .createHash('sha256')
+        .update(concatenatedValues)
+        .digest('hex');
+
+    // Comparar firmas (la documentación muestra ejemplos en mayúsculas)
+    return calculatedSignature.toLowerCase() === receivedSignature.toLowerCase();
+}
+
+// Función para obtener detalles del cliente
+async function getClientDetails(clientId: number) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(`${baseUrl}user/${clientId}`);
+    console.log('user:', response);
+
+    if (!response.ok) {
+        throw new Error(`Error al obtener detalles del cliente: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Función para obtener detalles de la cita
+async function getAppointmentDetails(appointmentId: number) {
+    const baseUrl = process.env.NEXT_PUBLIC_API_URL;
+    const response = await fetch(`${baseUrl}appointmentdetail?id=${appointmentId}`);
+    console.log('appointment:', response);
+
+    if (!response.ok) {
+        throw new Error(`Error al obtener detalles de la cita: ${response.status}`);
+    }
+
+    return await response.json();
+}
+
+// Función para enviar el correo de confirmación
+async function sendConfirmationEmail(clientData: any, appointmentData: any) {
+    try {
+        const appointmentDate = new Date(appointmentData[0].appointmenttime);
+
+        const values = {
+            customerName: clientData?.name || "Cliente",
+            customerEmail: clientData?.email,
+            siteName: appointmentData[0].site.name,
+            siteAddress: appointmentData[0].site.address,
+            sitePhone: appointmentData[0].site.phone,
+            serviceName: appointmentData[0].service.name,
+            serviceDescription: appointmentData[0].service.description,
+            workerName: appointmentData[0].worker.name,
+            appointmentDate: format(appointmentDate, 'EEEE, d MMMM yyyy'),
+            appointmentTime: format(appointmentDate, 'HH:mm'),
+            servicePrice: appointmentData[0].service.price,
+            serviceDuration: appointmentData[0].service.duration
+        };
+        console.log('email service values:', values);
+
+        // URL del API de envío de correo (ajustar según sea necesario)
+        const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+        const emailEndpoint = `${frontendUrl}/api/send-email/appointment`;
+
+        const response = await fetch(emailEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error al enviar correo: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error al enviar el correo de confirmación:', error);
+        throw error;
+    }
 }
 
 export async function POST(request: Request) {
     try {
-        // const headersList = headers();
-        // const timestamp = (await headersList).get('wompi-timestamp');
-        // const nonce = (await headersList).get('wompi-nonce');
-        // const transmissionId = (await headersList).get('wompi-transmission-id');
-        // const signature = (await headersList).get('X-Event-Checksum');
+        const headersList = headers();
+        const signature = (await headersList).get('X-Event-Checksum');
 
-
-        // if (!timestamp || !nonce || !transmissionId || !signature) {
-        //     return NextResponse.json(
-        //         { error: 'Missing required headers' },
-        //         { status: 400 }
-        //     );
-        // }
+        if (!signature) {
+            return NextResponse.json(
+                { error: 'Missing required signature header' },
+                { status: 400 }
+            );
+        }
 
         const body = await request.json();
-        const eventData = JSON.stringify(body);
 
-        // const isValid = await verifySignature(
-        //     timestamp,
-        //     nonce,
-        //     transmissionId,
-        //     eventData,
-        //     signature
-        // );
+        // Verificar la firma usando el método simplificado
+        const isValid = verifySignature(body, signature);
 
-        // if (!isValid) {
-        //     return NextResponse.json(
-        //         { error: 'Invalid signature' },
-        //         { status: 401 }
-        //     );
-        // }
+        if (!isValid) {
+            console.log("La firma no es válida");
+            return NextResponse.json(
+                { error: 'Invalid signature' },
+                { status: 401 }
+            );
+        }
 
+        console.log("Firma verificada correctamente");
         const event = body.event;
         const data = body.data;
         const reference = data.transaction.reference;
         const status = data.transaction.status;
 
-        // Extraer el tipo de pago y el ID real de la referencia
+        // El resto del código permanece igual
         const [paymentType, userId, itemId, appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, finalReference] = reference.split('_');
 
         if (event === 'transaction.updated' && status === 'APPROVED') {
@@ -118,8 +198,8 @@ export async function POST(request: Request) {
                     }
 
                     // Formatear las fechas como strings en formato ISO
-                    const formattedStartDate = startDate.toISOString().split('.')[0]; // '2025-02-24T12:00:00'
-                    const formattedFinishDate = finishDate.toISOString().split('.')[0]; // '2026-02-24T12:00:00'
+                    const formattedStartDate = startDate.toISOString().split('.')[0];
+                    const formattedFinishDate = finishDate.toISOString().split('.')[0];
 
                     const subscriptionData: SubscriptionData = {
                         subscriptionactive: status === 'APPROVED',
@@ -128,22 +208,22 @@ export async function POST(request: Request) {
                         subscriptionfinishdate: formattedFinishDate
                     }
 
-                    console.log('Usuario:', userId, 'Datos de suscripción:', subscriptionData);
-
                     // Usar fetch directamente en lugar de apiClient
-                    const subResponse = await fetch(`${baseUrl}/subscription/${userId}`, {
-                        method: 'POST',
+                    const subResponse = await fetch(`${baseUrl}subscription/${userId}`, {
+                        method: 'PUT',
                         headers: {
                             'Content-Type': 'application/json',
                         },
                         body: JSON.stringify(subscriptionData)
                     });
-                    break; // Asegúrate de tener un break aquí para que no continúe al caso siguiente
+
+                    if (!subResponse.ok) {
+                        throw new Error(`Error en la creación de suscripción: ${subResponse.status}`);
+                    }
+
+                    break;
 
                 case 'SRV': // Servicio
-                    // console.log('originalReference', originalReference)
-                    // const [appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, finalReference] = originalReference.split('_');
-                    console.log(appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id)
                     const appointmentData: AppointmentData = {
                         appointmenttime: appointmenttime,
                         status: appointmentStatus,
@@ -152,10 +232,9 @@ export async function POST(request: Request) {
                         service_id: parseInt(service_id),
                         client_id: parseInt(client_id)
                     }
-
-                    console.log(appointmentData)
+                    console.log('appointmentData:', appointmentData);
                     // Usar fetch directamente en lugar de apiClient
-                    const serviceResponse = await fetch(`${baseUrl}/appointment`, {
+                    const serviceResponse = await fetch(`${baseUrl}appointment`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -165,24 +244,23 @@ export async function POST(request: Request) {
 
                     // Verificar si la respuesta es exitosa
                     if (!serviceResponse.ok) {
-                        const errorData = await serviceResponse.json();
-                        console.error('Error en la respuesta de cita:', errorData);
                         throw new Error(`Error en la creación de cita: ${serviceResponse.status}`);
                     }
 
                     // Obtener el JSON de la respuesta para extraer el ID
                     const appointmentResult = await serviceResponse.json();
-                    const appointmentId = appointmentResult.id; // Asumiendo que la API devuelve el ID como "id"
+                    const appointmentId = appointmentResult.id;
 
                     const transactionData: TransactionData = {
                         amount: data.transaction.amount_in_cents / 100,
                         paymentmethod: data.transaction.payment_method_type,
-                        appointment_id: appointmentId // Usar el ID obtenido de la respuesta anterior
-                    }
+                        appointment_id: appointmentId,
+                        status: "paid"
 
-                    console.log(transactionData)
+                    }
+                    console.log('transactionData:', transactionData);
                     // Usar fetch directamente en lugar de apiClient
-                    const paymentResponse = await fetch(`${baseUrl}/payment`, {
+                    const paymentResponse = await fetch(`${baseUrl}payment`, {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json',
@@ -191,10 +269,29 @@ export async function POST(request: Request) {
                     });
 
                     if (!paymentResponse.ok) {
-                        const errorData = await paymentResponse.json();
-                        console.error('Error en la respuesta de pago:', errorData);
                         throw new Error(`Error en el pago: ${paymentResponse.status}`);
                     }
+
+                    // --- NUEVO: Enviar correo de confirmación ---
+                    try {
+                        // Obtener los detalles de la cita
+                        const appointmentDetails = await getAppointmentDetails(appointmentId);
+                        console.log('appointmentDetails:', appointmentDetails);
+
+                        // Obtener los detalles del cliente
+                        const clientDetails = await getClientDetails(parseInt(client_id));
+                        console.log('clientDetails:', clientDetails);
+
+                        // Enviar el correo de confirmación
+                        await sendConfirmationEmail(clientDetails, appointmentDetails);
+
+                        console.log("Correo de confirmación enviado correctamente");
+                    } catch (emailError) {
+                        // No fallar todo el webhook si hay error en el correo
+                        console.error("Error al enviar el correo, pero el pago se procesó correctamente:", emailError);
+                    }
+                    // --- FIN NUEVO ---
+
                     break;
 
                 default:
@@ -202,37 +299,7 @@ export async function POST(request: Request) {
             }
         } else if (status === 'DECLINED' || status === 'ERROR' || status === 'VOIDED') {
             // Manejar fallos según el tipo de pago
-            // const baseUrl = process.env.API_BASE_URL;
-
-            // switch (paymentType) {
-            //     case 'SUB':
-            //         await fetch(`${baseUrl}/api/subscriptions/failed`, {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //             },
-            //             body: JSON.stringify({
-            //                 reference: realReference,
-            //                 status,
-            //                 reason: data.transaction.status_message,
-            //             }),
-            //         });
-            //         break;
-
-            //     case 'SRV':
-            //         await fetch(`${baseUrl}/api/services/payment/failed`, {
-            //             method: 'POST',
-            //             headers: {
-            //                 'Content-Type': 'application/json',
-            //             },
-            //             body: JSON.stringify({
-            //                 reference: realReference,
-            //                 status,
-            //                 reason: data.transaction.status_message,
-            //             }),
-            //         });
-            //         break;
-            // }
+            console.log(`Payment failed with status: ${status}`);
         }
 
         return NextResponse.json({ status: 'ok' });
