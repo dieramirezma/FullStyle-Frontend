@@ -10,7 +10,7 @@ import { z } from 'zod'
 import { Input } from './ui/input'
 import { Button } from './ui/button'
 import { useRouter } from 'next/navigation'
-import { toast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
 
 const userSchema = z.object({
@@ -57,15 +57,11 @@ export default function ResetPassword ({ token }: { token: string }) {
     try {
       await axios.post(`${process.env.NEXT_PUBLIC_API_URL}user/reset-password`, payload)
       router.push('/login')
-      toast({
-        variant: 'default',
-        title: 'Contraseña reestablecida',
+      toast.success('Contraseña reestablecida', {
         description: 'Tu contraseña ha sido reestablecida. Ahora puedes iniciar sesión con tu nueva contraseña.'
       })
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
+      toast.error('Error', {
         description: 'No se pudo reestablecer la contraseña. Por favor, intenta de nuevo.'
       })
     } finally {

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -32,8 +32,6 @@ const formSchema = z.object({
 })
 
 function ContactSection () {
-  const { toast } = useToast()
-
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,15 +56,12 @@ function ContactSection () {
         throw new Error('Error al enviar el mensaje.')
       }
 
-      toast({
-        title: 'Mensaje enviado con éxito',
+      toast.success('Mensaje enviado con éxito', {
         description: new Date().toLocaleString()
       })
     } catch (error) {
-      toast({
-        title: 'Error al enviar el mensaje',
-        description: 'Por favor intenta más tarde.',
-        variant: 'destructive'
+      toast.error('Error al enviar el mensaje', {
+        description: 'Por favor intenta más tarde.'
       })
     }
   }
@@ -200,7 +195,11 @@ function ContactSection () {
             className='flex-1'
             variants={itemVariants}
           >
-            <GoogleMapComponent />
+            <GoogleMapComponent position={{
+              lat: 4.637379162836954,
+              lng: -74.08382826724461
+            }}
+            />
           </motion.div>
         </div>
       </article>
