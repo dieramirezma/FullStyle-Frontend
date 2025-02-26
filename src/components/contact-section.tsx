@@ -195,7 +195,11 @@ function ContactSection () {
             className='flex-1'
             variants={itemVariants}
           >
-            <GoogleMapComponent />
+            <GoogleMapComponent position={{
+              lat: 4.637379162836954,
+              lng: -74.08382826724461
+            }}
+            />
           </motion.div>
         </div>
       </article>

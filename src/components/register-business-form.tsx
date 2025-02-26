@@ -2,36 +2,53 @@
 
 import { useState } from 'react'
 import { useForm } from 'react-hook-form'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Input } from './ui/input'
-import { Button } from './ui/button'
+import { Input } from '@/components/ui/input'
+import { Button } from '@/components/ui/button'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { MapPin, Loader2 } from 'lucide-react'
+import GoogleMapComponent from '@/components/map'
 
 const businessTypes = ['Barberia', 'Peluqueria', 'Salon de estetica']
 
+interface ResponseGeo {
+  location: {
+    lat: number
+    lng: number
+  }
+  formatted_address: string
+}
+
 const userSchema = z.object({
-  name: z.string({
-    required_error: 'El nombre es obligatorio'
-  }).min(1, {
-    message: 'El nombre es obligatorio'
-  }),
-  address: z.string({
-    required_error: 'La direccion es obligatoria'
-  }).min(1, {
-    message: 'El nombre es obligatorio'
-  }),
-  phone: z.string({
-    required_error: 'El numero telefonico es obligatorio'
-  }).min(1, {
-    message: 'El nombre es obligatorio'
-  }).regex(/^[0-9]+$/, {
-    message: 'El numero telefonico solo puede contener numeros'
-  }),
+  name: z
+    .string({
+      required_error: 'El nombre es obligatorio'
+    })
+    .min(1, {
+      message: 'El nombre es obligatorio'
+    }),
+  address: z
+    .string({
+      required_error: 'La direccion es obligatoria'
+    })
+    .min(1, {
+      message: 'La direccion es obligatoria'
+    }),
+  phone: z
+    .string({
+      required_error: 'El numero telefonico es obligatorio'
+    })
+    .min(1, {
+      message: 'El numero telefonico es obligatorio'
+    })
+    .regex(/^[0-9]+$/, {
+      message: 'El numero telefonico solo puede contener numeros'
+    }),
   businessType: z.enum(['Barberia', 'Peluqueria', 'Salon de estetica'], {
     message: 'Seleccione el tipo de negocio'
   })
@@ -49,9 +66,43 @@ export default function RegisterBusinessForm () {
 
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [addressLoading, setAddressLoading] = useState(false)
+  const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null)
+  const [showMap, setShowMap] = useState(false)
   const router = useRouter()
 
+  async function validateAddress (address: string) {
+    setAddressLoading(true)
+    setError('')
+    setCoords(null)
+
+    try {
+      // Append Bogota to the address if not already included
+      const fullAddress = address.toLowerCase().includes('bogota') ? address : `${address}, Bogota`
+
+      const res = await fetch(`/api/geocode?address=${encodeURIComponent(fullAddress)}`)
+      const data: ResponseGeo = await res.json()
+
+      if (res.ok) {
+        setCoords(data.location)
+        setShowMap(true)
+        form.setValue('address', data.formatted_address)
+      } else {
+        setError('No se pudo encontrar la dirección. Por favor, verifique e intente nuevamente.')
+      }
+    } catch (err) {
+      setError('Error al validar la dirección')
+    } finally {
+      setAddressLoading(false)
+    }
+  }
+
   async function onSubmit (values: z.infer<typeof userSchema>) {
+    if (!coords) {
+      setError('Por favor valide la dirección en el mapa antes de continuar')
+      return
+    }
+
     setError('')
     setLoading(true)
     const id = localStorage.getItem('userId')
@@ -67,7 +118,7 @@ export default function RegisterBusinessForm () {
       localStorage.setItem('siteId', String(response.data.id))
       router.push('/register/categories')
     } catch (error: any) {
-      if (error.response.data.message !== undefined) {
+      if (error.response?.data?.message) {
         setError(String(error.response.data.message))
       } else {
         setError('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
@@ -77,24 +128,20 @@ export default function RegisterBusinessForm () {
     }
   }
 
-  console.log(form.formState.errors)
-
   return (
-    <Card className='w-full md:w-1/2'>
+    <Card className="w-full md:w-1/2">
       <CardHeader>
-        <CardTitle className="subtitle">
-          Registro del Negocio
-        </CardTitle>
+        <CardTitle className="subtitle text-center">Registro del Negocio</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form className='flex flex-col gap-y-4' onSubmit={form.handleSubmit(onSubmit)}>
+          <form className="flex flex-col gap-y-4" onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               name="name"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Nombre del negocio</FormLabel>
+                  <FormLabel className="font-black">Nombre del negocio</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -102,25 +149,44 @@ export default function RegisterBusinessForm () {
                 </FormItem>
               )}
             />
+
             <FormField
               name="address"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Direccion del negocio</FormLabel>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
+                  <FormLabel className="font-black">Direccion del negocio</FormLabel>
+                  <div className="flex gap-2">
+                    <FormControl>
+                      <Input className='h-auto' {...field} placeholder="Ej: Calle 123 #45-67" />
+                    </FormControl>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={async () => { await validateAddress(field.value) }}
+                      disabled={!field.value || addressLoading}
+                    >
+                      {addressLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
+                      <span className="ml-2">Validar</span>
+                    </Button>
+                  </div>
                   <FormMessage />
                 </FormItem>
               )}
             />
+
+            {showMap && coords && (
+              <div className="mt-2 rounded-lg overflow-hidden border">
+                <GoogleMapComponent position={coords} />
+              </div>
+            )}
+
             <FormField
               name="phone"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Numero telefonico</FormLabel>
+                  <FormLabel className="font-black">Numero telefonico</FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -128,35 +194,45 @@ export default function RegisterBusinessForm () {
                 </FormItem>
               )}
             />
+
             <FormField
               control={form.control}
               name="businessType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Tipo de negocio</FormLabel>
+                  <FormLabel className="font-black">Tipo de negocio</FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona el tipo de cuenta" />
+                        <SelectValue placeholder="Selecciona el tipo de negocio" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {
-                        businessTypes.map((type) => (
-                          <SelectItem key={ type } value={ type }>
-                            { type }
-                          </SelectItem>
-                        ))
-                      }
+                      {businessTypes.map((type) => (
+                        <SelectItem key={type} value={type}>
+                          {type}
+                        </SelectItem>
+                      ))}
                     </SelectContent>
                   </Select>
                   <FormMessage />
                 </FormItem>
               )}
-              />
-            {(error.length > 0) && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" disabled={loading}>
-              {loading ? 'Registrando...' : 'REGISTRARSE'}
+            />
+
+            {error && <p className="text-red-500 text-sm">{error}</p>}
+
+            <Button type="submit" disabled={loading || !coords}>
+              {loading
+                ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Registrando...
+                </>
+                  )
+                : (
+                    'REGISTRARSE'
+                  )}
             </Button>
           </form>
         </Form>
