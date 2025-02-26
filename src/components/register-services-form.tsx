@@ -12,14 +12,27 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import axios from 'axios'
 import Link from 'next/link'
 import { CATEGORIES } from './register-categories-form'
+import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
+
+const durationOptions = [
+  { value: '30', label: '30 minutos' },
+  { value: '60', label: '1 hora' },
+  { value: '90', label: '1 hora y 30 minutos' },
+  { value: '120', label: '2 horas' },
+  { value: '150', label: '2 horas y 30 minutos' },
+  { value: '180', label: '3 horas' }
+]
 
 const userSchema = z.object({
   description: z.string({
-    required_error: 'Escribe una descripcion del servicio'
-  }).min(1, {
-    message: 'Escribe una descripcion del servicio'
-  }).max(150, {
-    message: 'La descripcion tiene un limite de 160 caracteres'
+    required_error: 'Este campo es requerido'
+  }).min(10, {
+    message: 'La descripción debe tener al menos 10 caracteres'
+  }).max(100, {
+    message: 'La descripción tiene un limite de 100 caracteres'
+  }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ,.?¿!¡)(\s]+$/, {
+    message: 'La descripción solo puede contener letras y signos de puntuación'
   }),
   service: z.string({
     required_error: 'Selecciona un servicio'
@@ -28,21 +41,13 @@ const userSchema = z.object({
   }),
   price: z.string({
     required_error: 'Indica el precio de tu servicio'
-  }).min(1, {
-    message: 'Indica el precio de tu servicio'
-  }).regex(/^[0-9]+$/, {
-    message: 'El precio del servicio solo debe contener numeros'
-  }).max(10, {
-    message: 'El precio puede tener maximo 10 digitos'
+  }).refine((val) => Number(val) > 1000, {
+    message: 'El precio debe ser mayor a 1000 COP'
+  }).refine((val) => Number(val) % 50 === 0, {
+    message: 'El precio debe ser múltiplo de 50 COP'
   }),
-  duration: z.string({
-    required_error: 'La duracion del servicio es obligatoria'
-  }).min(1, {
-    message: 'La duracion del servicio es obligatoria'
-  }).regex(/^[0-9]+$/, {
-    message: 'La duracion del servicio solo debe contener numeros'
-  }).max(5, {
-    message: 'El limite de caracteres es de 5'
+  duration: z.enum(durationOptions.map(option => option.value) as [string, ...string[]], {
+    message: 'Selecciona una duración'
   })
 })
 
@@ -72,7 +77,7 @@ const fetchServices = async () => {
 }
 
 fetchServices()
-export default function RegisterServiceForm () {
+export default function RegisterServiceForm ({ className, urlCallback }: { className?: string, urlCallback?: string }) {
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -86,6 +91,8 @@ export default function RegisterServiceForm () {
   const [loading, setLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [services, setServices] = useState<Array<{ id: number, category_id: number, name: string }>>([])
+
+  const router = useRouter()
 
   useEffect(() => {
     const getServices = async () => {
@@ -114,7 +121,10 @@ export default function RegisterServiceForm () {
         prevServices.filter((service) => service.id !== Number(values.service))
       )
       form.setValue('service', '')
-      setSuccessMessage('Servicio agregado de forma exitosa')
+      toast.success('Servicio agregado de forma exitosa')
+      if (urlCallback) {
+        router.push(urlCallback)
+      }
     } catch (error: any) {
       setSuccessMessage('')
       if (error.response.data.message !== undefined) {
@@ -127,10 +137,10 @@ export default function RegisterServiceForm () {
     }
   }
   return (
-    <Card className='w-full md:w-auto'>
+    <Card className={className ?? 'w-full md:w-1/2'}>
       <CardHeader>
         <CardTitle className="subtitle text-center">
-          Registro de Nuevo Administrador
+          Registro de Nuevo Servicio
         </CardTitle>
       </CardHeader>
       <CardContent>
@@ -139,13 +149,13 @@ export default function RegisterServiceForm () {
             className="flex flex-col gap-y-4"
             onSubmit={form.handleSubmit(onSubmit)}
           >
-            <CardDescription className='text-xl text-black '>Datos personales</CardDescription>
+            <CardDescription className='text-xl text-black '>Datos del servicio</CardDescription>
             <FormField
               control={form.control}
               name="service"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Servicio</FormLabel>
+                  <FormLabel className='font-black'>Servicio<span className="text-red-500"> *</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -171,7 +181,7 @@ export default function RegisterServiceForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Descripcion del servicio</FormLabel>
+                  <FormLabel className="font-black">Descripcion del servicio<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -184,22 +194,33 @@ export default function RegisterServiceForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Precio</FormLabel>
+                  <FormLabel className="font-black">Precio<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input type='number' {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-              <FormField
+            <FormField
               name="duration"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Duracion</FormLabel>
+                  <FormLabel className="font-black">Duración<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecciona la duración" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {durationOptions.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -213,9 +234,11 @@ export default function RegisterServiceForm () {
               <Button type="submit" className='w-full sm:w-auto' disabled={loading}>
                 {loading ? 'Agregando...' : 'AGREGAR UN NUEVO SERVICIO'}
               </Button>
-              <Button variant='outline' className='w-full sm:w-auto'>
-                <Link href="/register/worker">Continuar con el registro </Link>
-              </Button>
+              {!urlCallback && (
+                <Button variant='outline' className='w-full sm:w-auto'>
+                  <Link href={'/register/worker'}>Continuar con el registro </Link>
+                </Button>
+              )}
             </CardFooter>
           </form>
 

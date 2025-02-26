@@ -6,16 +6,24 @@ export default function Page () {
   return (
     <div className="min-h-screen bg-background">
       <RegisterNavBar />
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-center lg:justify-between">
-          <div className="hidden lg:block lg:flex-1">
-            <div className="relative aspect-[4/3] w-full overflow-hidden rounded-xl">
-              <Image src="/images/login.png" alt="Login" fill className="object-cover" priority />
-            </div>
-          </div>
+      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-center">
+        <div className="w-full max-w-4xl">
+          <div className="overflow-hidden rounded-xl shadow-lg bg-white">
+            <div className="grid grid-cols-1 lg:grid-cols-2">
+              {/* Image Section - Visible on all screen sizes */}
+              <div className="relative w-full hidden lg:block">
+                <div className="relative aspect-[4/3] lg:aspect-auto lg:h-full w-full">
+                  <Image src="/images/login.png" alt="Login" fill className="object-cover" priority />
+                </div>
+              </div>
 
-          <div className="mx-auto w-full max-w-md lg:max-w-lg">
-            <LoginForm />
+              {/* Form Section */}
+              <div className="p-6 sm:p-8 flex items-center justify-center">
+                <div className="w-full max-w-md">
+                  <LoginForm />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </main>
