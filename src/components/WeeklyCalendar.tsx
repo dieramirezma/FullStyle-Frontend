@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import apiClient from "@/utils/apiClient"
 import type { Detail } from "@/app/customer/_components/site-search"
 import { AppointmentConfirmationDialog } from "./appoinment-confirmation"
-import { useToast } from "@/hooks/use-toast"
 import { toast } from 'sonner'
 
 import type { Site } from "./schedule-service"
@@ -74,8 +73,6 @@ export default function WeeklyCalendar({
   const [showConfirmation, setShowConfirmation] = useState(false)
   const [workerDetail, setWorkerDetail] = useState<Worker[] | null>(null)
   const [siteDetail, setSiteDetail] = useState<Site[] | null>(null)
-
-  const { toast: toastt } = useToast()
 
   // Keep all the useEffect and fetch functions as they were...
   const fetchData = useCallback(async () => {
@@ -208,7 +205,7 @@ export default function WeeklyCalendar({
           description: 'La duracion del servicio supera el tiempo disponible'
         })
       } else {
-        toastt({
+        toast({
           variant: "destructive",
           title: "Error",
           description: "No se pudo verificar la disponibilidad. Inténtalo nuevamente.",
@@ -239,7 +236,7 @@ export default function WeeklyCalendar({
         throw new Error("Error al crear la reserva")
       }
 
-      toastt({
+      toast({
         title: "Reserva confirmada",
         description: "Tu reserva ha sido creada exitosamente",
       })
@@ -247,7 +244,7 @@ export default function WeeklyCalendar({
       setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
-      toastt({
+      toast({
         variant: "destructive",
         title: "Error",
         description: "No se pudo crear la reserva. Por favor, intenta nuevamente.",
