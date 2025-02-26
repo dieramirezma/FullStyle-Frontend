@@ -1,4 +1,5 @@
 import { ContactTemplate } from '@/components/email-templates/contact'
+import { AutoReplyTemplate } from '@/components/email-templates/response-contact'
 import { type ContactFormData } from '@/types/contact.template'
 import { Resend } from 'resend'
 
@@ -16,6 +17,14 @@ export async function POST (request: Request) {
       to: ['soporte@full-style.com'],
       subject: 'Contacto desde el sitio web FullStyle',
       react: emailContent
+    })
+
+    const userResponseContent = await AutoReplyTemplate({ name })
+    await resend.emails.send({
+      from: 'soporte@full-style.com',
+      to: [email],
+      subject: 'Gracias por contactarnos',
+      react: userResponseContent
     })
 
     if (error !== null && error !== undefined) {
