@@ -143,36 +143,34 @@ export default function WeeklyCalendar({
     setWeekStart(addDays(weekStart, 7))
   }
 
-  const generateTimeSlots = (start: string, end: string): TimeSlot[] => {
+  const generateTimeSlots = (startTime: string, endTime: string): TimeSlot[] => {
     const slots: TimeSlot[] = []
-    let currentTime = parse(start, "HH:mm:ss", new Date())
-    const endTime = parse(end, "HH:mm:ss", new Date())
+    let current = parse(startTime, "HH:mm:ss", new Date())
+    const end = parse(endTime, "HH:mm:ss", new Date())
 
-    while (isBefore(currentTime, endTime) || isEqual(currentTime, endTime)) {
-      const slotEnd = addMinutes(currentTime, 30)
+    while (isBefore(current, end)) {
+      const next = addMinutes(current, 30)
+      if (isAfter(next, end)) break // Avoid exceeding the end time
+
       slots.push({
-        start: format(currentTime, "HH:mm"),
-        end: format(slotEnd, "HH:mm"),
+        start: format(current, "HH:mm"),
+        end: format(next, "HH:mm"),
       })
-      currentTime = slotEnd
+      current = next
     }
-
     return slots
   }
 
-  const isSlotOccupied = (slot: TimeSlot, occupiedSlots: TimeSlot[]): boolean => {
-    const slotStart = parse(slot.start, "HH:mm", new Date())
-    const slotEnd = parse(slot.end, "HH:mm", new Date())
-
+  const isSlotOccupied = (slot: TimeSlot, occupiedSlots: { start: string; end: string }[] | undefined): boolean => {
+    if (!occupiedSlots) return false
     return occupiedSlots.some((occupiedSlot) => {
+      const slotStart = parse(slot.start, "HH:mm", new Date())
+      const slotEnd = parse(slot.end, "HH:mm", new Date())
       const occupiedStart = parse(occupiedSlot.start, "HH:mm:ss", new Date())
       const occupiedEnd = parse(occupiedSlot.end, "HH:mm:ss", new Date())
 
       return (
-        ((isAfter(slotStart, occupiedStart) || isEqual(slotStart, occupiedStart)) &&
-          isBefore(slotStart, occupiedEnd)) ||
-        (isAfter(slotEnd, occupiedStart) && (isBefore(slotEnd, occupiedEnd) || isEqual(slotEnd, occupiedEnd))) ||
-        (isBefore(slotStart, occupiedStart) && isAfter(slotEnd, occupiedEnd))
+        (isEqual(slotStart, occupiedStart) || isAfter(slotStart, occupiedStart)) && isBefore(slotStart, occupiedEnd)
       )
     })
   }
@@ -240,6 +238,11 @@ export default function WeeklyCalendar({
     )
   }
 
+  const allTimeSlots = generateTimeSlots(
+    schedule.schedule[Object.keys(schedule.schedule)[0]]?.available[0]?.start || "09:00:00",
+    schedule.schedule[Object.keys(schedule.schedule)[0]]?.available[0]?.end || "17:00:00",
+  )
+
   return (
     <Card className="mt-4">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
@@ -253,46 +256,50 @@ export default function WeeklyCalendar({
           <ChevronRight className="h-4 w-4" />
         </Button>
       </CardHeader>
-      <CardContent>
-        <div className="grid grid-cols-7 gap-2">
-          {Object.entries(schedule.schedule).map(([day, daySchedule]) => {
+      <CardContent className="p-0">
+        <div className="grid grid-cols-[auto_repeat(7,1fr)]">
+          {/* Header row with days */}
+          <div className="sticky top-0 z-10 bg-background border-b">
+            <div className="h-16" /> {/* Empty space above time column */}
+          </div>
+          {Object.entries(schedule.schedule).map(([day]) => {
             const dayDate = parse(day, "EEEE", weekStart)
             const slotDate = addDays(weekStart, dayDate.getDay())
-            const timeSlots = generateTimeSlots(daySchedule.available[0]?.start, daySchedule.available[0]?.end)
-
             return (
-              <Card key={day} className="border-0 shadow-none">
-                <CardHeader className="p-2 pb-1.5">
-                  <div className="text-sm font-semibold">{day}</div>
-                  <div className="text-xs text-muted-foreground">{format(slotDate, "MMM d")}</div>
-                </CardHeader>
-                <CardContent className="p-1">
-                  <ScrollArea className="h-[300px]">
-                    <div className="space-y-1">
-                      {timeSlots.map((slot, index) => {
-                        const isOccupied = isSlotOccupied(slot, daySchedule.occupied)
-                        return (
-                          <button
-                            key={index}
-                            disabled={isOccupied}
-                            onClick={() => !isOccupied && handleSlotClick(day, slot)}
-                            className={`w-full rounded-md px-2 py-1.5 text-xs transition-colors
-                              ${
-                                isOccupied
-                                  ? "bg-muted cursor-not-allowed opacity-50"
-                                  : "bg-primary/10 hover:bg-primary/20 cursor-pointer"
-                              }`}
-                          >
-                            {slot.start} - {slot.end}
-                          </button>
-                        )
-                      })}
-                    </div>
-                  </ScrollArea>
-                </CardContent>
-              </Card>
+              <div key={day} className="border-b p-2 text-center">
+                <div className="text-sm font-semibold">{day}</div>
+                <div className="text-2xl font-semibold">{format(slotDate, "d")}</div>
+              </div>
             )
           })}
+
+          {/* Time slots column */}
+          <div className="space-y-0 border-r">
+            {allTimeSlots.map((slot, index) => (
+              <div key={index} className="h-12 -mt-[1px] border-t pr-2 text-xs text-muted-foreground">
+                <div className="relative -top-2 text-right">{slot.start}</div>
+              </div>
+            ))}
+          </div>
+
+          {/* Calendar grid */}
+          {Object.entries(schedule.schedule).map(([day, daySchedule]) => (
+            <div key={day} className="relative border-r">
+              {allTimeSlots.map((slot, index) => {
+                const isOccupied = isSlotOccupied(slot, daySchedule.occupied)
+                return (
+                  <button
+                    key={index}
+                    disabled={isOccupied}
+                    onClick={() => !isOccupied && handleSlotClick(day, slot)}
+                    className={`absolute w-full h-12 border-t -mt-[1px] transition-colors
+                      ${isOccupied ? "bg-zinc-500 cursor-not-allowed" : "hover:bg-primary/5 cursor-pointer"}`}
+                    style={{ top: `${index * 48}px` }}
+                  />
+                )
+              })}
+            </div>
+          ))}
         </div>
 
         {selectedSlot && serviceDetail && workerDetail && siteDetail && (
@@ -312,4 +319,3 @@ export default function WeeklyCalendar({
     </Card>
   )
 }
-
