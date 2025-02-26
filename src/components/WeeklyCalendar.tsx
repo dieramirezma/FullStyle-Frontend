@@ -5,11 +5,12 @@ import { format, addDays, startOfWeek, endOfWeek, parse, addMinutes, isBefore, i
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { ScrollArea } from "@/components/ui/scroll-area"
 import apiClient from "@/utils/apiClient"
 import type { Detail } from "@/app/customer/_components/site-search"
 import { AppointmentConfirmationDialog } from "./appoinment-confirmation"
 import { useToast } from "@/hooks/use-toast"
+import { toast } from 'sonner'
+
 import type { Site } from "./schedule-service"
 
 // Keep all the interfaces as they were...
@@ -54,6 +55,7 @@ export interface AppointmentData {
   site_id: number
   service_id: number
   client_id: number
+  request: boolean
 }
 
 export default function WeeklyCalendar({
@@ -73,7 +75,7 @@ export default function WeeklyCalendar({
   const [workerDetail, setWorkerDetail] = useState<Worker[] | null>(null)
   const [siteDetail, setSiteDetail] = useState<Site[] | null>(null)
 
-  const { toast } = useToast()
+  const { toast: toastt } = useToast()
 
   // Keep all the useEffect and fetch functions as they were...
   const fetchData = useCallback(async () => {
@@ -175,14 +177,45 @@ export default function WeeklyCalendar({
     })
   }
 
-  const handleSlotClick = (day: string, slot: TimeSlot) => {
+  const handleSlotClick = async (day: string, slot: TimeSlot) => {
     if (!schedule || isSlotOccupied(slot, schedule.schedule[day].occupied)) {
       return
     }
+
     const dayDate = parse(day, "EEEE", weekStart)
     const slotDate = addDays(weekStart, dayDate.getDay())
-    setSelectedSlot(`${format(slotDate, "yyyy-MM-dd")}T${slot.start}`)
-    setShowConfirmation(true)
+    const formattedSlot = `${format(slotDate, "yyyy-MM-dd")}T${slot.start}`
+
+    setSelectedSlot(formattedSlot)
+
+    const [date, time] = formattedSlot.split("T")
+    const appointmentData: AppointmentData = {
+      appointmenttime: `${date}T${time}:00`,
+      status: "paid",
+      worker_id: workerId,
+      site_id: siteId,
+      service_id: serviceId,
+      client_id: clientId,
+      request: true,
+    }
+
+    try {
+      const response = await apiClient.post("appointment", appointmentData)
+      setShowConfirmation(true)
+    } catch (error: any) {
+      if (error.response?.status === 400) {
+        toast.error('Error al reservar agenda', {
+          description: 'La duracion del servicio supera el tiempo disponible'
+        })
+      } else {
+        toastt({
+          variant: "destructive",
+          title: "Error",
+          description: "No se pudo verificar la disponibilidad. Inténtalo nuevamente.",
+        })
+      }
+      console.error("Error verifying appointment availability:", error)
+    }
   }
 
   const handleConfirmAppointment = async () => {
@@ -196,6 +229,7 @@ export default function WeeklyCalendar({
       site_id: siteId,
       service_id: serviceId,
       client_id: clientId,
+      request: true,
     }
 
     try {
@@ -205,7 +239,7 @@ export default function WeeklyCalendar({
         throw new Error("Error al crear la reserva")
       }
 
-      toast({
+      toastt({
         title: "Reserva confirmada",
         description: "Tu reserva ha sido creada exitosamente",
       })
@@ -213,7 +247,7 @@ export default function WeeklyCalendar({
       setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
-      toast({
+      toastt({
         variant: "destructive",
         title: "Error",
         description: "No se pudo crear la reserva. Por favor, intenta nuevamente.",
@@ -319,3 +353,4 @@ export default function WeeklyCalendar({
     </Card>
   )
 }
+
