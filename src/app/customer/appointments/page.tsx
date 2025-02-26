@@ -39,7 +39,7 @@ interface ApiAppointment {
   }
 }
 
-export function mapApiToCalendarEvent (apiData: ApiAppointment): CalendarEvent {
+function mapApiToCalendarEvent (apiData: ApiAppointment): CalendarEvent {
   const startDate = new Date(apiData.appointmenttime)
   startDate.setSeconds(0, 0)
 
