@@ -18,23 +18,50 @@ import { Checkbox } from './ui/checkbox'
 
 const userSchema = z.object({
   names: z.string({
-    required_error: 'El nombre es obligatorio'
-  }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+    required_error: 'Este campo es obligatorio'
+  }).min(2, {
+    message: 'El nombre debe contener como mínimo 2 caracteres'
+  }).regex(/^[ a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
     message: 'El nombre solo puede contener letras'
+  }).max(40, {
+    message: 'El limite de caracteres es de 40'
+  }).refine(val => val.trim().split(' ').length === 3, {
+    message: 'Máximo 3 nombres'
   }),
   lastName: z.string({
-    required_error: 'Los apellidos son obligatorios'
+    required_error: 'Este campo es obligatorio'
+  }).min(3, {
+    message: 'El apellido debe contener como mínimo 3 caracteres'
   }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
-    message: 'El nombre solo puede contener letras'
+    message: 'Los apellidos solo pueden contener letras'
+  }).max(40, {
+    message: 'El limite de caracteres es de 40'
+  }).refine(val => val.trim().split(' ').length === 2, {
+    message: 'Máximo 2 apellidos'
   }),
   email: z.string({
-    required_error: 'El correo electrónico es obligatorio'
+    required_error: 'Este campo es obligatorio'
   }).email({
     message: 'Ingrese un correo válido'
+  }).max(60, {
+    message: 'El límite de caracteres es de 60'
   }),
   password: z.string({
-    required_error: 'La contraseña es obligatoria'
-  }).min(8, { message: 'La contraseña debe tener al menos 8 caracteres' }),
+    required_error: 'Este campo es obligatorio'
+  }).min(8, {
+    message: 'La contraseña debe tener al menos 8 caracteres'
+  }).regex(/[A-Z]/,
+    {
+      message: 'La contraseña debe tener al menos una letra mayúscula'
+    }).regex(/[\W_]/,
+    {
+      message: 'La contraseña debe tener al menos un carácter especial'
+    }).regex(/[0-9]/,
+    {
+      message: 'La contraseña debe tener al menos un número'
+    }).max(50, {
+    message: 'La contraseña debe tener máximo 50 caracteres'
+  }),
   confirmPassword: z.string({
     required_error: 'Debe confirmar la contraseña'
   }),
@@ -151,7 +178,7 @@ export default function RegisterCustomerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Nombres</FormLabel>
+                  <FormLabel className='font-black'>Nombres<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -164,7 +191,7 @@ export default function RegisterCustomerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Apellidos</FormLabel>
+                  <FormLabel className='font-black'>Apellidos<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -177,7 +204,7 @@ export default function RegisterCustomerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Correo electrónico</FormLabel>
+                  <FormLabel className='font-black'>Correo electrónico<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <Input {...field} />
                   </FormControl>
@@ -190,7 +217,7 @@ export default function RegisterCustomerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Contraseña</FormLabel>
+                  <FormLabel className='font-black'>Contraseña<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <div className='relative'>
                       <Input
@@ -218,7 +245,7 @@ export default function RegisterCustomerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Confirmar Contraseña</FormLabel>
+                  <FormLabel className='font-black'>Confirmar Contraseña<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <Input type="password" {...field} />
                   </FormControl>
@@ -238,8 +265,9 @@ export default function RegisterCustomerForm () {
                     <FormLabel>
                       Acepto la{' '}
                       <Link href="/legal/habeas-data" className="underline">
-                        política de tratamiento de datos
+                        política de tratamiento de datos.
                       </Link>
+                       <span className="text-red-500">*</span>
                     </FormLabel>
                     <FormMessage />
                   </div>

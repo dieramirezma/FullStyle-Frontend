@@ -20,45 +20,62 @@ const bankAcountTypes = ['Ahorros', 'Corriente']
 
 const userSchema = z.object({
   name: z.string({
-    required_error: 'El nombre es obligatorio'
-  }).min(1, {
-    message: 'Este campo es obligatorio'
+    required_error: 'Este campo es obligatorio'
+  }).min(2, {
+    message: 'El nombre debe contener como mínimo 2 caracteres'
   }).regex(/^[ a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
     message: 'El nombre solo puede contener letras'
-  }).max(99, {
-    message: 'El limite de caracteres es de 99'
+  }).max(40, {
+    message: 'El limite de caracteres es de 40'
+  }).refine(val => val.trim().split(' ').length === 3, {
+    message: 'Máximo 3 nombres'
   }),
   lastName: z.string({
-    required_error: 'Los apellidos son obligatorios'
-  }).min(1, {
-    message: 'Este campo es obligatorio'
+    required_error: 'Este campo es obligatorio'
+  }).min(3, {
+    message: 'El apellido debe contener como mínimo 3 caracteres'
   }).regex(/^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
-    message: 'El nombre solo puede contener letras'
-  }).max(99, {
-    message: 'El limite de caracteres es de 99'
+    message: 'Los apellidos solo pueden contener letras'
+  }).max(40, {
+    message: 'El limite de caracteres es de 40'
+  }).refine(val => val.trim().split(' ').length === 2, {
+    message: 'Máximo 2 apellidos'
   }),
   email: z.string({
-    required_error: 'El correo electrónico es obligatorio'
+    required_error: 'Este campo es obligatorio'
   }).email({
     message: 'Ingrese un correo válido'
-  }).max(99, {
-    message: 'El limite de caracteres es de 99'
+  }).max(60, {
+    message: 'El límite de caracteres es de 60'
   }),
   phone: z.string({
-    required_error: 'El numero es obligatorio'
+    required_error: 'El número telefónico es obligatorio'
   }).min(10, {
-    message: 'Debe contener como minimo 10 dijitos'
+    message: 'Debe contener exactamente 10 dígitos'
   }).regex(/^[0-9]+$/, {
-    message: 'El numero telefonico solo puede contener numeros'
-  }).max(99, {
-    message: 'El limite de caracteres es de 99'
-  }),
+    message: 'El número telefónico solo puede contener números'
+  }).max(10, {
+    message: 'Debe contener exactamente 10 dígitos'
+  }).regex(/^3/, {
+    message: 'El número telefónico debe empezar por 3'
+  }
+  ),
   password: z.string({
-    required_error: 'La contraseña es obligatoria'
-  }).min(6, { message: 'La contraseña debe tener al menos 6 caracteres' }).regex(/[A-Z]/,
-    { message: 'La contraseña debe tener al menos una letra mayúscula' }).regex(/[\W_]/,
-    { message: 'La contraseña debe tener al menos un carácter especial' }).regex(/[0-9]/,
-    { message: 'La contraseña debe tener al menos un número' }),
+    required_error: 'Este campo es obligatorio'
+  }).min(8, {
+    message: 'La contraseña debe tener al menos 8 caracteres'
+  }).regex(/[A-Z]/,
+    {
+      message: 'La contraseña debe tener al menos una letra mayúscula'
+    }).regex(/[\W_]/,
+    {
+      message: 'La contraseña debe tener al menos un carácter especial'
+    }).regex(/[0-9]/,
+    {
+      message: 'La contraseña debe tener al menos un número'
+    }).max(50, {
+    message: 'La contraseña debe tener máximo 50 caracteres'
+  }),
   confirmPassword: z.string({
     required_error: 'Debe confirmar la contraseña'
   }),
@@ -69,22 +86,22 @@ const userSchema = z.object({
     message: 'Seleccione su tipo de cuenta'
   }),
   accountNumber: z.string({
-    required_error: 'El numero es obligatorio'
-  }).min(1, {
-    message: 'Este campo es obligatorio'
+    required_error: 'Este campo es obligatorio'
   }).regex(/^[0-9]+$/, {
-    message: 'El numero telefonico solo puede contener numeros'
+    message: 'El número de cuenta solo puede contener números'
   }).min(11, {
-    message: 'El numero de cuenta debe contener como minimo 11 digitos'
+    message: 'El número de cuenta debe contener como minimo 11 dígitos'
   }).max(19, {
-    message: 'El numero de cuenta debe contener como maximo 19 digitos'
+    message: 'El número de cuenta debe contener como maximo 19 dígitos'
   }),
   accountOwner: z.string({
-    required_error: 'El nombre es obligatorio'
-  }).min(1, {
-    message: 'Este campo es obligatorio'
+    required_error: 'El nombre del titular es obligatorio'
+  }).min(6, {
+    message: 'El nombre del titular debe contener como mínimo 6 caracteres'
   }).max(99, {
     message: 'El limite de caracteres es de 99'
+  }).regex(/^[ a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/, {
+    message: 'El nombre solo puede contener letras'
   }),
   acceptPolicy: z.boolean({
     required_error: 'Debes aceptar la política de tratamiento de datos'
@@ -171,9 +188,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Nombres</FormLabel>
+                  <FormLabel className="font-black">Nombres<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder='Ej. José Ricardo'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -184,9 +201,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Apellidos</FormLabel>
+                  <FormLabel className="font-black">Apellidos<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder='Ej. Perez Puentes'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -197,9 +214,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Correo electrónico</FormLabel>
+                  <FormLabel className="font-black">Correo electrónico<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder='Ej. tucorreo@example.com'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,9 +227,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Número telefónico</FormLabel>
+                  <FormLabel className="font-black">Número telefónico<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input type='number' {...field} placeholder='Ej. 3033044340'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -223,12 +240,12 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Contraseña</FormLabel>
+                  <FormLabel className="font-black">Contraseña<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
                     <div className='relative'>
                       <Input
                         type={showPassword ? 'text' : 'password'}
-                        {...field}
+                        {...field} placeholder='••••••••'
                       />
                       <Button
                         type="button"
@@ -251,9 +268,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Confirmar Contraseña</FormLabel>
+                  <FormLabel className="font-black">Confirmar Contraseña<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input type="password" {...field} placeholder='••••••••'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -267,11 +284,11 @@ export default function RegisterOwnerForm () {
               name="bankName"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Nombre de la entidad</FormLabel>
+                  <FormLabel className='font-black'>Nombre de la entidad<span className="text-red-500"> *</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona una entidad bancaria" />
+                  <SelectValue placeholder="Selecciona una entidad bancaria" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -293,11 +310,11 @@ export default function RegisterOwnerForm () {
               name="bankAcountType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className='font-black'>Tipo de cuenta</FormLabel>
+                  <FormLabel className='font-black'>Tipo de cuenta<span className="text-red-500"> *</span></FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
-                        <SelectValue placeholder="Selecciona el tipo de cuenta" />
+                  <SelectValue placeholder="Selecciona el tipo de cuenta" />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -306,7 +323,7 @@ export default function RegisterOwnerForm () {
                           <SelectItem key={ type } value={ type }>
                             { type }
                           </SelectItem>
-                        ))
+                      ))
                       }
                     </SelectContent>
                   </Select>
@@ -319,9 +336,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Número de cuenta</FormLabel>
+                  <FormLabel className="font-black">Número de cuenta<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder='Ej. 546653234548'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -332,9 +349,9 @@ export default function RegisterOwnerForm () {
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Nombres</FormLabel>
+                  <FormLabel className="font-black">Nombre del titular<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} />
+                    <Input {...field} placeholder='Ej. José Perez'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -353,8 +370,9 @@ export default function RegisterOwnerForm () {
                     <FormLabel>
                       Acepto la{' '}
                       <Link href="/legal/habeas-data" className="underline">
-                        política de tratamiento de datos
+                  política de tratamiento de datos
                       </Link>
+                      {' '}<span className="text-red-500">*</span>
                     </FormLabel>
                     <FormMessage />
                   </div>
@@ -366,7 +384,6 @@ export default function RegisterOwnerForm () {
               {loading ? 'Registrando...' : 'REGISTRARSE'}
             </Button>
           </form>
-
         </Form>
       </CardContent>
     </Card>
