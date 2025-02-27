@@ -223,7 +223,7 @@ export default function WeeklyCalendar({
     const [date, time] = selectedSlot.split('T')
     const appointmentData: AppointmentData = {
       appointmenttime: `${date}T${time}:00`,
-      status: "pending",
+      status: "paid",
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,

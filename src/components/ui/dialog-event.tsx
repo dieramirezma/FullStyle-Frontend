@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 import {
   Dialog,
@@ -11,7 +11,7 @@ import {
   DialogFooter
 } from '@/components/ui/dialog'
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar'
-import { Clock, Scissors, User, MapPin, Calendar, AlertTriangle } from 'lucide-react'
+import { Clock, Scissors, User, MapPin, Calendar, AlertTriangle, Info } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
 import {
@@ -25,6 +25,11 @@ import {
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
 import { type CalendarEvent } from './full-calendar'
+import { format, differenceInHours } from 'date-fns'
+import { es } from 'date-fns/locale'
+import { useSession } from 'next-auth/react'
+import apiClient from "@/utils/apiClient"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 
 interface DialogContentProps {
   isOpen: boolean
@@ -41,19 +46,83 @@ const DialogContentComponent: React.FC<DialogContentProps> = ({
 }) => {
   const [isAlertOpen, setIsAlertOpen] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
+  const [canCancelDueToTime, setCanCancelDueToTime] = useState(true)
+  const { data: session } = useSession()
+
+  // Verificar si faltan más de 24 horas para la cita
+  useEffect(() => {
+    if (selectedEvent?.start) {
+      const now = new Date()
+      const hoursDifference = differenceInHours(selectedEvent.start, now)
+      setCanCancelDueToTime(hoursDifference >= 24)
+    }
+  }, [selectedEvent])
 
   const handleCancelReservation = async () => {
     if (!selectedEvent?.id || !onCancelReservation) return
 
     setIsLoading(true)
     try {
+      // función de cancelación
+      await cancelAppointment();
+      // email de cancelación
+      await sendCancellationEmail();
       await onCancelReservation(selectedEvent.id)
+
       setIsOpen(false)
     } catch (error) {
       console.error('Error canceling reservation:', error)
     } finally {
       setIsLoading(false)
       setIsAlertOpen(false)
+    }
+  }
+
+  const cancelAppointment = async () => {
+    try {
+      const response = await apiClient.delete(`appointment?id=${selectedEvent?.id}`)
+      if (response.status !== 200) {
+        throw new Error('Error al cancelar la cita.')
+      }
+    } catch (error) {
+      console.error("Error fetching service detail:", error)
+    }
+  }
+
+  const sendCancellationEmail = async () => {
+    if (!selectedEvent || !session?.user.email) return;
+
+    try {
+      // Preparar los datos para el email
+      const values = {
+        customerName: session?.user?.name,
+        customerEmail: session?.user?.email,
+        siteName: selectedEvent.site?.name,
+        siteAddress: selectedEvent.site?.address,
+        sitePhone: selectedEvent.site?.phone,
+        serviceName: selectedEvent.service?.name,
+        workerName: selectedEvent.worker?.name,
+        appointmentDate: format(selectedEvent.start, 'EEEE, d MMMM yyyy', { locale: es }),
+        appointmentTime: format(selectedEvent.start, 'HH:mm')
+      }
+
+      // Enviar la solicitud al endpoint
+      const responseEmail = await fetch('/api/send-email/appointment-canceled', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(values)
+      })
+
+      if (!responseEmail.ok) {
+        throw new Error('Error al enviar el mensaje de cancelación.')
+      }
+
+      return await responseEmail.json();
+    } catch (error) {
+      console.error('Error enviando email de cancelación:', error);
+      throw error;
     }
   }
 
@@ -81,7 +150,7 @@ const DialogContentComponent: React.FC<DialogContentProps> = ({
 
   if (!selectedEvent) return null
 
-  const canCancel = selectedEvent?.status !== 'cancelled' && onCancelReservation
+  const canCancel = selectedEvent?.status !== 'cancelled' && onCancelReservation && canCancelDueToTime
 
   return (
     <>
@@ -224,15 +293,31 @@ const DialogContentComponent: React.FC<DialogContentProps> = ({
           </div>
 
           <DialogFooter>
-            {canCancel && (
-              <Button
-                variant="destructive"
-                onClick={() => { setIsAlertOpen(true) }}
-                disabled={isLoading}
-                className="w-full sm:w-auto text-white"
-              >
-                Cancelar reserva
-              </Button>
+            {onCancelReservation && selectedEvent?.status !== 'cancelled' && (
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div>
+                      <Button
+                        variant="destructive"
+                        onClick={() => { setIsAlertOpen(true) }}
+                        disabled={isLoading || !canCancelDueToTime}
+                        className="w-full sm:w-auto text-white"
+                      >
+                        Cancelar cita
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  {!canCancelDueToTime && (
+                    <TooltipContent className="max-w-xs">
+                      <div className="flex items-start gap-2">
+                        <Info className="h-4 w-4 text-amber-500 flex-shrink-0 mt-0.5" />
+                        <p>Las citas solo pueden cancelarse con al menos 24 horas de antelación.</p>
+                      </div>
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
             )}
           </DialogFooter>
         </DialogContent>
@@ -254,7 +339,7 @@ const DialogContentComponent: React.FC<DialogContentProps> = ({
             <AlertDialogAction
               onClick={handleCancelReservation}
               disabled={isLoading}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90 text-white"
             >
               {isLoading ? 'Cancelando...' : 'Sí, cancelar reserva'}
             </AlertDialogAction>
