@@ -6,7 +6,7 @@ import EmployeesIcon from './icons/employees-icon'
 import PaymentIcon from './icons/payment-icon'
 import { RankingIcon } from './icons/ranking-icon'
 
-function ServicesSection () {
+function ServicesSection() {
   const services = [
     {
       icon: <EmployeesIcon />,
@@ -27,7 +27,7 @@ function ServicesSection () {
   ]
 
   return (
-    <div className="p-8" id="services">
+    <div className="p-8 bg-white" id="services">
       <h2 className="subtitle text-left w-full mb-4">
         ¿Qué le ofrecemos a tu negocio?
       </h2>
@@ -50,7 +50,7 @@ function ServicesSection () {
               }
             }}
             viewport={{ once: true }}
-            className="p-6 bg-white rounded-lg shadow-lg cursor-pointer"
+            className="p-6 bg-gray-100 rounded-lg shadow-lg cursor-pointer"
           >
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="text-blue-600 w-12 h-12">

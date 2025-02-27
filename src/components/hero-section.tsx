@@ -4,8 +4,9 @@ import { motion } from 'framer-motion'
 import Link from 'next/link'
 import Fullstyle from './icons/fullstyle'
 import { buttonVariants } from './ui/button'
+import { Separator } from '@/components/ui/separator'
 
-function HeroSection () {
+function HeroSection() {
   const fadeIn = {
     initial: { opacity: 0, y: 20 },
     animate: { opacity: 1, y: 0 },
@@ -50,7 +51,7 @@ function HeroSection () {
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <Fullstyle width='200'/>
+          <Fullstyle width='200' />
         </motion.div>
         <motion.article
           className='flex flex-col gap-5'
@@ -85,6 +86,7 @@ function HeroSection () {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.8 }}
         >
+          <Separator className="my-8" />
           ¿Por qué FullStyle?
         </motion.h2>
         <motion.div
@@ -101,11 +103,10 @@ function HeroSection () {
           ].map((benefit, index) => (
             <motion.p
               key={benefit}
-              className={`p-5 ${
-                index % 2 === 0
-                  ? 'border-t-2 border-l-2'
-                  : 'border-b-2 border-r-2'
-              } border-primary`}
+              className={`p-5 ${index % 2 === 0
+                ? 'border-t-2 border-l-2'
+                : 'border-b-2 border-r-2'
+                } border-primary`}
               variants={benefitVariants}
               whileHover="hover"
             >
@@ -115,6 +116,7 @@ function HeroSection () {
         </motion.div>
       </motion.section>
 
+      <Separator className="my-4" />
       <motion.section
         className='text-center'
         initial={{ opacity: 0, y: 30 }}
@@ -122,7 +124,10 @@ function HeroSection () {
         transition={{ duration: 0.8, delay: 1.2 }}
       >
         <h2 className='subtitle mb-5'>
-          ¿Listo para transformar tu negocio? ¡Empieza hoy con FullStyle y experimenta la diferencia!
+          ¿Listo para transformar tu negocio?
+        </h2>
+        <h2 className='subtitle mb-5'>
+          ¡Empieza hoy con FullStyle y experimenta la diferencia!
         </h2>
         <motion.div
           whileHover={{ scale: 1.05 }}
