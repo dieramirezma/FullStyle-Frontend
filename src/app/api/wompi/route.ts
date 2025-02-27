@@ -9,7 +9,7 @@ async function encodeString(stringToEncode: string) {
 }
 
 export async function POST(request: Request) {
-  const { amount, paymentType, itemId, userId, serviceString } = await request.json();
+  const { amount, paymentType, paymentManner, itemId, userId, serviceString } = await request.json();
 
   const amountInCents = `${amount * 100}`;
   const currency = 'COP';
@@ -20,7 +20,7 @@ export async function POST(request: Request) {
   const uniqueId = crypto.randomUUID();
   if (serviceString === undefined) {
     reference = `${paymentType}_${userId}_${itemId}_${uniqueId}`;
-  } else { reference = `${paymentType}_${userId}_${itemId}_${serviceString}_${uniqueId}`; }
+  } else { reference = `${paymentType}_${userId}_${itemId}_${serviceString}_${paymentManner}_${uniqueId}`; }
 
   const concatenatedString = `${reference}${amountInCents}${currency}${integritySecret}`;
 

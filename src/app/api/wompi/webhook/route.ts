@@ -99,8 +99,8 @@ async function getAppointmentDetails(appointmentId: number) {
     return await response.json();
 }
 
-// Función para enviar el correo de confirmación
-async function sendConfirmationEmail(clientData: any, appointmentData: any) {
+// Función para enviar el correo de confirmación PAGO COMPLETO
+async function sendConfirmationFullPaidEmail(clientData: any, appointmentData: any) {
     try {
         const appointmentDate = new Date(appointmentData[0].appointmenttime);
 
@@ -122,7 +122,88 @@ async function sendConfirmationEmail(clientData: any, appointmentData: any) {
 
         // URL del API de envío de correo (ajustar según sea necesario)
         const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || "";
-        const emailEndpoint = `${frontendUrl}/api/send-email/appointment`;
+        const emailEndpoint = `${frontendUrl}/api/send-email/appointment-fullpaid`;
+
+        const response = await fetch(emailEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error al enviar correo: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error al enviar el correo de confirmación:', error);
+        throw error;
+    }
+}// Función para enviar el correo de confirmación PAGO PARCIAL
+async function sendConfirmationPartialPaidEmail(clientData: any, appointmentData: any, partialAmount: number) {
+    try {
+        const appointmentDate = new Date(appointmentData[0].appointmenttime);
+
+        const values = {
+            customerName: clientData?.name || "Cliente",
+            customerEmail: clientData?.email,
+            siteName: appointmentData[0].site.name,
+            siteAddress: appointmentData[0].site.address,
+            sitePhone: appointmentData[0].site.phone,
+            serviceName: appointmentData[0].service.name,
+            serviceDescription: appointmentData[0].service.description,
+            workerName: appointmentData[0].worker.name,
+            appointmentDate: format(appointmentDate, 'EEEE, d MMMM yyyy'),
+            appointmentTime: format(appointmentDate, 'HH:mm'),
+            servicePrice: appointmentData[0].service.price,
+            partialPayment: partialAmount,
+            serviceDuration: appointmentData[0].service.duration
+        };
+        console.log('email service values:', values);
+
+        // URL del API de envío de correo (ajustar según sea necesario)
+        const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+        const emailEndpoint = `${frontendUrl}/api/send-email/appointment-partialpaid`;
+
+        const response = await fetch(emailEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error al enviar correo: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error al enviar el correo de confirmación:', error);
+        throw error;
+    }
+}// Función para enviar el correo de confirmación SUBSCRIPCION
+async function sendSubscriptionConfirmationEmail(clientData: any, subscriptionData: any) {
+    try {
+        const subscriptionStartDate = new Date(subscriptionData.subscriptionstartdate);
+        const subscriptionFinishDate = new Date(subscriptionData.subscriptionfinishdate);
+
+        const values = {
+            ownerName: clientData.name,
+            ownerEmail: clientData.email,
+            subscriptionPlan: subscriptionData.subscriptiontype,
+            paymentDate: format(subscriptionStartDate, 'EEEE, d MMMM yyyy'),
+            finishDate: format(subscriptionFinishDate, 'EEEE, d MMMM yyyy'),
+        }
+        console.log('email service values:', values);
+
+        // URL del API de envío de correo (ajustar según sea necesario)
+        const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+        const emailEndpoint = `${frontendUrl}/api/send-email/subscription`;
 
         const response = await fetch(emailEndpoint, {
             method: 'POST',
@@ -143,7 +224,43 @@ async function sendConfirmationEmail(clientData: any, appointmentData: any) {
         throw error;
     }
 }
+// Función para enviar el correo notificacion de pago rechazado
+async function sendRejectedPaymentEmail(clientData: any, rejectionData: any) {
+    try {
+        const appointmentDate = new Date(rejectionData.appointmenttime);
 
+        const values = {
+            customerName: clientData?.name,
+            customerEmail: clientData?.email,
+            appointmentDate: format(appointmentDate, 'EEEE, d MMMM yyyy'),
+            appointmentTime: format(appointmentDate, 'HH:mm'),
+            servicePrice: rejectionData.price,
+        }
+        console.log('email service values:', values);
+
+        // URL del API de envío de correo (ajustar según sea necesario)
+        const frontendUrl = process.env.NEXT_PUBLIC_APP_URL || "";
+        const emailEndpoint = `${frontendUrl}/api/send-email/appointment-rejected`;
+
+        const response = await fetch(emailEndpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(values)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(`Error al enviar correo: ${response.status}`);
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error al enviar el correo de confirmación:', error);
+        throw error;
+    }
+}
 export async function POST(request: Request) {
     try {
         const headersList = headers();
@@ -176,7 +293,11 @@ export async function POST(request: Request) {
         const status = data.transaction.status;
 
         // El resto del código permanece igual
-        const [paymentType, userId, itemId, appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, finalReference] = reference.split('_');
+        const [paymentType, userId, itemId, appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, paymentManner, finalReference] = reference.split('_');
+
+        // Obtener los detalles del cliente
+        const clientDetails = await getClientDetails(parseInt(client_id));
+        console.log('clientDetails:', clientDetails);
 
         if (event === 'transaction.updated' && status === 'APPROVED') {
             // Diferentes endpoints según el tipo de pago
@@ -219,6 +340,16 @@ export async function POST(request: Request) {
 
                     if (!subResponse.ok) {
                         throw new Error(`Error en la creación de suscripción: ${subResponse.status}`);
+                    }// --- Enviar correo de confirmación ---
+                    try {
+                        // Enviar el correo de confirmación
+                        await sendSubscriptionConfirmationEmail(clientDetails, subscriptionData);
+
+                        console.log("Correo de confirmación enviado correctamente");
+
+                    } catch (emailError) {
+                        // No fallar todo el webhook si hay error en el correo
+                        console.error("Error al enviar el correo, pero el pago se procesó correctamente:", emailError);
                     }
 
                     break;
@@ -272,25 +403,32 @@ export async function POST(request: Request) {
                         throw new Error(`Error en el pago: ${paymentResponse.status}`);
                     }
 
-                    // --- NUEVO: Enviar correo de confirmación ---
+                    // --- Enviar correo de confirmación ---
                     try {
-                        // Obtener los detalles de la cita
-                        const appointmentDetails = await getAppointmentDetails(appointmentId);
-                        console.log('appointmentDetails:', appointmentDetails);
+                        if (paymentManner === 'FULL') {
+                            // Obtener los detalles de la cita
+                            const appointmentDetails = await getAppointmentDetails(appointmentId);
+                            console.log('appointmentDetails:', appointmentDetails);
 
-                        // Obtener los detalles del cliente
-                        const clientDetails = await getClientDetails(parseInt(client_id));
-                        console.log('clientDetails:', clientDetails);
+                            // Enviar el correo de confirmación
+                            await sendConfirmationFullPaidEmail(clientDetails, appointmentDetails);
 
-                        // Enviar el correo de confirmación
-                        await sendConfirmationEmail(clientDetails, appointmentDetails);
+                            console.log("Correo de confirmación enviado correctamente");
 
-                        console.log("Correo de confirmación enviado correctamente");
+                        } else if (paymentManner === 'PART') {
+                            // Obtener los detalles de la cita
+                            const appointmentDetails = await getAppointmentDetails(appointmentId);
+                            console.log('appointmentDetails:', appointmentDetails);
+
+                            // Enviar el correo de confirmación
+                            await sendConfirmationPartialPaidEmail(clientDetails, appointmentDetails, data.transaction.amount_in_cents / 100);
+
+                            console.log("Correo de confirmación enviado correctamente");
+                        }
                     } catch (emailError) {
                         // No fallar todo el webhook si hay error en el correo
                         console.error("Error al enviar el correo, pero el pago se procesó correctamente:", emailError);
                     }
-                    // --- FIN NUEVO ---
 
                     break;
 
@@ -298,7 +436,17 @@ export async function POST(request: Request) {
                     console.log(`Unknown payment type: ${paymentType}`);
             }
         } else if (status === 'DECLINED' || status === 'ERROR' || status === 'VOIDED') {
+
+            // Obtener los detalles del cliente
+            const clientDetails = await getClientDetails(parseInt(client_id));
+            console.log('clientDetails:', clientDetails);
             // Manejar fallos según el tipo de pago
+            // paymentType, userId, itemId, appointmenttime, appointmentStatus, worker_id, site_id, service_id, client_id, paymentManner
+            const rejectionData = {
+                appointmenttime: appointmenttime,
+                price: data.transaction.amount_in_cents / 100,
+            }
+            sendRejectedPaymentEmail(clientDetails, rejectionData);
             console.log(`Payment failed with status: ${status}`);
         }
 

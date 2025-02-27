@@ -13,6 +13,7 @@ interface WidgetWompiProps {
   label: string;
   className?: string;
   paymentType: 'SUB' | 'SRV';  // Tipo de pago
+  paymentManner?: 'FULL' | 'PART';  // Método de pago
   itemId: string;              // ID del item (subscripción o servicio)
   serviceString?: string;      // Cadena de servicio
   onClose: () => void;
@@ -24,6 +25,7 @@ function WidgetWompi({
   label,
   className,
   paymentType,
+  paymentManner,
   itemId,
   serviceString,
   onClose
@@ -51,6 +53,7 @@ function WidgetWompi({
           body: JSON.stringify({
             amount,
             paymentType,
+            paymentManner,
             itemId,
             userId,
             serviceString
@@ -117,7 +120,7 @@ function WidgetWompi({
         containerRef.current.innerHTML = '';
       }
     };
-  }, [isOpen, amount, label, paymentType, itemId, serviceString, onClose]);
+  }, [isOpen, amount, label, paymentType, paymentManner, itemId, serviceString, onClose]);
 
   return (
     <div className={className}>

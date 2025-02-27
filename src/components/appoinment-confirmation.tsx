@@ -120,7 +120,11 @@ export function AppointmentConfirmationDialog({
               label="Pagar reserva"
               className="w-full"
               paymentType="SRV"
+              paymentManner="PART"  // Método de pago
               itemId={serviceDetail.service_id.toString()}
+              serviceString={appointmentData
+                ? `${appointmentData.appointmenttime}_${appointmentData.status}_${appointmentData.worker_id}_${appointmentData.site_id}_${appointmentData.service_id}_${appointmentData.client_id}`
+                : ''}
               onClose={onClose}
             />
             <WidgetWompi
@@ -129,6 +133,7 @@ export function AppointmentConfirmationDialog({
               label="Pagar completo"
               className="w-full"
               paymentType="SRV"
+              paymentManner="FULL"  // Método de pago
               itemId={serviceDetail.service_id.toString()}
               serviceString={appointmentData
                 ? `${appointmentData.appointmenttime}_${appointmentData.status}_${appointmentData.worker_id}_${appointmentData.site_id}_${appointmentData.service_id}_${appointmentData.client_id}`
