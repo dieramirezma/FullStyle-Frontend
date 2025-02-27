@@ -25,7 +25,7 @@ import {
   subWeeks,
   subYears
 } from 'date-fns'
-import { enUS } from 'date-fns/locale/en-US'
+import enUS from 'date-fns/locale/en-US'
 import {
   type ReactNode,
   createContext,
@@ -188,10 +188,10 @@ const Calendar = ({
 export const useCalendar = () => useContext(Context)
 
 const CalendarViewTrigger = forwardRef<
-HTMLButtonElement,
-React.HTMLAttributes<HTMLButtonElement> & {
-  view: View
-}
+  HTMLButtonElement,
+  React.HTMLAttributes<HTMLButtonElement> & {
+    view: View
+  }
 >(({ children, view, ...props }, ref) => { // Added the ref parameter here
   const { view: currentView, setView, onChangeView } = useCalendar()
 
@@ -252,7 +252,7 @@ const EventGroup = ({
                   </div>
                 </TooltipTrigger>
                 <TooltipContent>
-                  <p>{}</p>
+                  <p>{ }</p>
                   <p>{new Date(event.start).toLocaleTimeString()} - {new Date(event.end).toLocaleTimeString()}</p>
                 </TooltipContent>
               </Tooltip>
@@ -337,7 +337,7 @@ const CalendarWeekView = () => {
               className={cn(
                 'h-6 grid place-content-center',
                 isToday(date) &&
-                  'bg-primary text-primary-foreground rounded-full size-6'
+                'bg-primary text-primary-foreground rounded-full size-6'
               )}
             >
               {format(date, 'd')}
@@ -495,8 +495,8 @@ const CalendarYearView = () => {
                     className={cn(
                       'aspect-square grid place-content-center size-full tabular-nums',
                       isSameDay(today, _date) &&
-                        getMonth(_date) === i &&
-                        'bg-primary text-primary-foreground rounded-full'
+                      getMonth(_date) === i &&
+                      'bg-primary text-primary-foreground rounded-full'
                     )}
                   >
                     {format(_date, 'd')}
@@ -512,8 +512,8 @@ const CalendarYearView = () => {
 }
 
 const CalendarNextTrigger = forwardRef<
-HTMLButtonElement,
-React.HTMLAttributes<HTMLButtonElement>
+  HTMLButtonElement,
+  React.HTMLAttributes<HTMLButtonElement>
 >(({ children, onClick, ...props }, ref) => {
   const { date, setDate, view, enableHotkeys } = useCalendar()
 
@@ -551,8 +551,8 @@ React.HTMLAttributes<HTMLButtonElement>
 CalendarNextTrigger.displayName = 'CalendarNextTrigger'
 
 const CalendarPrevTrigger = forwardRef<
-HTMLButtonElement,
-React.HTMLAttributes<HTMLButtonElement>
+  HTMLButtonElement,
+  React.HTMLAttributes<HTMLButtonElement>
 >(({ children, onClick, ...props }, ref) => {
   const { date, setDate, view, enableHotkeys } = useCalendar()
 
@@ -590,8 +590,8 @@ React.HTMLAttributes<HTMLButtonElement>
 CalendarPrevTrigger.displayName = 'CalendarPrevTrigger'
 
 const CalendarTodayTrigger = forwardRef<
-HTMLButtonElement,
-React.HTMLAttributes<HTMLButtonElement>
+  HTMLButtonElement,
+  React.HTMLAttributes<HTMLButtonElement>
 >(({ children, onClick, ...props }, ref) => {
   const { setDate, enableHotkeys, today } = useCalendar()
 

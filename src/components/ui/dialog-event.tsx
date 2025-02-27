@@ -171,20 +171,20 @@ const DialogContentComponent: React.FC<DialogContentProps> = ({
                       <div className="flex items-center gap-2 mt-1">
                         {selectedEvent.worker.profilePicture
                           ? (
-                          <Avatar className="h-10 w-10 border-2 border-green-100">
-                            <AvatarImage src={selectedEvent.worker.profilePicture} alt={selectedEvent.worker.name} />
-                            <AvatarFallback className="bg-green-100 text-green-800">
-                              {selectedEvent.worker.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                            )
+                            <Avatar className="h-10 w-10 border-2 border-green-100">
+                              <AvatarImage src={selectedEvent.worker.profilePicture} alt={selectedEvent.worker.name} />
+                              <AvatarFallback className="bg-green-100 text-green-800">
+                                {selectedEvent.worker.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          )
                           : (
-                          <Avatar className="h-10 w-10 bg-green-100">
-                            <AvatarFallback className="text-green-800">
-                              {selectedEvent.worker.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                            )}
+                            <Avatar className="h-10 w-10 bg-green-100">
+                              <AvatarFallback className="text-green-800">
+                                {selectedEvent.worker.name.charAt(0)}
+                              </AvatarFallback>
+                            </Avatar>
+                          )}
                         <p className="text-sm font-medium">{selectedEvent.worker.name}</p>
                       </div>
                       {selectedEvent.worker.description && (
@@ -229,7 +229,7 @@ const DialogContentComponent: React.FC<DialogContentProps> = ({
                 variant="destructive"
                 onClick={() => { setIsAlertOpen(true) }}
                 disabled={isLoading}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto text-white"
               >
                 Cancelar reserva
               </Button>
