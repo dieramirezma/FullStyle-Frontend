@@ -1,6 +1,5 @@
 import { getToken } from 'next-auth/jwt'
 import { type NextRequest, NextResponse } from 'next/server'
-import apiClient from './utils/apiClient'
 
 export async function middleware (req: NextRequest) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET })
@@ -8,15 +7,21 @@ export async function middleware (req: NextRequest) {
   const { pathname } = req.nextUrl
   // api/subscription
   try {
-    const response = await apiClient.get(`subscription/${token?.id as number}`)
+    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}subscription/${token?.id as number}`)
 
-    if (pathname.startsWith('/owner') && response.data.subscription_active === false) {
+    if (!response.ok) {
+      throw new Error(`Error al obtener suscripción: ${response.status}`)
+    }
+
+    const data = await response.json()
+
+    if (pathname.startsWith('/owner') && data.subscription_active === false) {
       return NextResponse.redirect(new URL('/plans', req.url))
-    } else if (response.data.subscription_active && pathname.startsWith('/plans')) {
+    } else if (data.subscription_active && pathname.startsWith('/plans')) {
       return NextResponse.redirect(new URL('/owner', req.url))
     }
   } catch (error) {
-    console.error('Error al obtener la suscripción:', error)
+    console.error('Error en el middleware:', error)
   }
 
   // Si no hay token, redirige al login

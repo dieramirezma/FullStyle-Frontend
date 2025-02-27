@@ -60,7 +60,7 @@ const userSchema = z.object({
   })
 })
 
-export default function RegisterOwnerForm ({ urlCallback, siteId }: { urlCallback: string, siteId: string }) {
+export default function RegisterOwnerForm ({ urlCallback, siteId }: { urlCallback?: string, siteId?: string }) {
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -79,6 +79,9 @@ export default function RegisterOwnerForm ({ urlCallback, siteId }: { urlCallbac
       const items = values.items
       localStorage.setItem('categories', items.toString())
       const promises = items.map(async (categoryId) => {
+        if (siteId === undefined) {
+          throw new Error('No se ha encontrado el sitio.')
+        }
         const payload = {
           site_id: parseInt(siteId, 10),
           category_id: categoryId
@@ -86,7 +89,9 @@ export default function RegisterOwnerForm ({ urlCallback, siteId }: { urlCallbac
         return await axios.post(`${process.env.NEXT_PUBLIC_API_URL}site_has_category`, payload)
       })
       await Promise.all(promises)
-      router.push(urlCallback)
+      if (urlCallback !== undefined) {
+        router.push(urlCallback)
+      }
     } catch (error: any) {
       if (error.response.data.message !== undefined) {
         setError(String(error.response.data.message))

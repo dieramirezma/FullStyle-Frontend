@@ -39,8 +39,8 @@ interface Site {
 }
 
 interface DeleteWorkerProps {
-  showButton: boolean
-  setShowButton: (open: boolean) => void
+  showButton?: boolean
+  setShowButton?: (open: boolean) => void
 }
 
 export default function DeleteWorker ({ showButton, setShowButton }: DeleteWorkerProps) {
@@ -72,7 +72,7 @@ export default function DeleteWorker ({ showButton, setShowButton }: DeleteWorke
           } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 404) {
               setError({ code: 404, type: 'workers' })
-              setShowButton(false)
+              setShowButton && setShowButton(false)
             }
           }
         }
