@@ -1,190 +1,201 @@
 'use client'
 
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
+import { z } from 'zod'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useForm } from 'react-hook-form'
+
+import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Button } from '@/components/ui/button'
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card'
-import { TimeRangeInput } from './TimeRangeInput'
-import axios from 'axios'
-import Link from 'next/link'
-import { Checkbox } from './ui/checkbox'
+import { TimeRangeInput } from '@/components/TimeRangeInput'
+import apiClient from '@/utils/apiClient'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
-
-type Schedule = Record<string, { startTime: string, endTime: string }>
+import { useSession } from 'next-auth/react'
+import { Link } from 'lucide-react'
 
 interface Service {
   service_id: number
   service_name: string
 }
 
-interface WorkerData {
-  name: string
-  description: string
-  schedule: Schedule
-}
+const DAYS = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+// Definimos el esquema de validación con Zod
+const workerFormSchema = z.object({
+  name: z
+    .string()
+    .min(5, { message: 'El nombre debe tener al menos 5 caracteres.' })
+    .max(50, { message: 'El nombre no puede tener más de 50 caracteres.' })
+    .refine((val) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ\s]+$/.test(val), {
+      message: 'El nombre solo puede contener letras y espacios.'
+    }),
+  description: z
+    .string()
+    .min(10, { message: 'La descripción debe tener al menos 10 caracteres.' })
+    .max(50, { message: 'La descripción tiene un límite de 50 caracteres.' })
+    .refine((val) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ,.?¿!¡)(\s]+$/.test(val), {
+      message: 'La descripción solo puede contener letras y signos de puntuación.'
+    }),
+  services: z.array(z.number()).min(1, { message: 'Debe seleccionar mínimo un servicio' }),
+  schedule: z.record(
+    z.object({
+      startTime: z.string(),
+      endTime: z.string()
+    })
+  )
+})
+
+type WorkerFormValues = z.infer<typeof workerFormSchema>
 
 export default function WorkerScheduleForm ({ className, urlCallback }: { className?: string, urlCallback?: string }) {
-  const [workerData, setWorkerData] = useState<WorkerData>({
-    name: '',
-    description: '',
-    schedule: DAYS.reduce((acc, day) => ({
-      ...acc,
-      [day]: { startTime: '10:00', endTime: '19:00' }
-    }), {})
-  })
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
-  const [successMessage, setSuccessMessage] = useState('')
   const [services, setServices] = useState<Service[]>([])
-  const [selectedServices, setSelectedServices] = useState<number[]>([])
+  const [siteId, setSiteId] = useState<number | null>(null)
 
+  const { data: session } = useSession()
   const router = useRouter()
 
   useEffect(() => {
-    const fetchServices = async () => {
-      const siteId = localStorage.getItem('siteId')
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}detail?site_id=${siteId}`)
-        const filteredServices = response.data.map((service: any) => ({
-          service_id: service.service_id,
-          service_name: service.service_name
-        }))
-        setServices(filteredServices)
-      } catch (error) {
-        console.error('Error fetching services:', error)
+    const fetchSiteAndServices = async () => {
+      if (session?.user.id) {
+        try {
+          const siteResponse = await apiClient.get(`site?manager_id=${session.user.id}`)
+          const site = siteResponse.data[0]
+          setSiteId(site.id as number)
+
+          try {
+            const servicesResponse = await apiClient.get(`detail?site_id=${site.id}`)
+            const servicesData: Service[] = servicesResponse.data.map((detail: any) => ({
+              service_id: detail.service_id,
+              service_name: detail.service_name
+            }))
+            setServices(servicesData)
+          } catch (error) {
+            console.log(error)
+          }
+        } catch (error) {
+          console.log(error)
+        } finally {
+          setLoading(false)
+        }
       }
     }
-    fetchServices()
-  }, [])
 
-  const handleServiceChange = (serviceId: number) => {
-    setSelectedServices(prev =>
-      prev.includes(serviceId) ? prev.filter(id => id !== serviceId) : [...prev, serviceId]
-    )
-  }
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target
-    setWorkerData(prev => ({ ...prev, [name]: value }))
-    setError(null)
+    fetchSiteAndServices()
+  }, [session?.user.id])
+
+  // Inicializamos el formulario con React Hook Form y Zod
+  const form = useForm<WorkerFormValues>({
+    resolver: zodResolver(workerFormSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+      services: [],
+      schedule: DAYS.reduce(
+        (acc, day) => ({
+          ...acc,
+          [day]: { startTime: '10:00', endTime: '19:00' }
+        }),
+        {}
+      )
+    }
+  })
+
+  const resetForm = () => {
+    form.reset({
+      name: '',
+      description: '',
+      services: [],
+      schedule: DAYS.reduce(
+        (acc, day) => ({
+          ...acc,
+          [day]: { startTime: '10:00', endTime: '19:00' }
+        }),
+        {}
+      )
+    })
   }
 
   const handleTimeChange = (day: string, startTime: string, endTime: string) => {
-    setWorkerData(prev => ({
-      ...prev,
-      schedule: {
-        ...prev.schedule,
+    const currentSchedule = form.getValues('schedule')
+    form.setValue(
+      'schedule',
+      {
+        ...currentSchedule,
         [day]: { startTime, endTime }
-      }
-    }))
-    setError(null)
+      },
+      { shouldValidate: true }
+    )
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const onSubmit = async (data: WorkerFormValues) => {
     setLoading(true)
-    setSuccessMessage('')
-    e.preventDefault()
-
-    if (workerData.name.trim().length === 0) {
-      setError('El nombre del trabajador es requerido.')
-      setLoading(false)
-      return
-    }
-    for (const day of DAYS) {
-      const { startTime, endTime } = workerData.schedule[day]
-      if ((startTime.length > 0) && (endTime.length > 0) && startTime >= endTime) {
-        setError(`Para ${day}, la hora de fin debe ser posterior a la hora de inicio.`)
-        setLoading(false)
-        return
-      }
-    }
-    if (selectedServices.length < 1) {
-      setError('Debe seleccionar minimo un servicio')
-      setLoading(false)
-      return
-    }
-    const siteId = localStorage.getItem('siteId')
-    if (siteId == null) {
-      setError('No se encontró el site_id en el localStorage.')
-      return
-    }
-
-    const payload = {
-      name: workerData.name,
-      site_id: parseInt(siteId, 10),
-      description: workerData.description,
-      services: selectedServices
-    }
 
     try {
-      const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}worker`, payload)
-      localStorage.setItem('workerId', String(response.data.id))
-      setError(null)
-    } catch (error: any) {
-      setSuccessMessage('')
-      if (error.response.data.message !== undefined) {
-        toast.error(String(error.response.data.message))
-      } else {
-        toast.error('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
+      // Validación adicional para las horas
+      for (const day of DAYS) {
+        const { startTime, endTime } = data.schedule[day]
+        if (startTime.length > 0 && endTime.length > 0 && startTime >= endTime) {
+          throw new Error(`Para ${day}, la hora de fin debe ser posterior a la hora de inicio.`)
+        }
       }
-    }
-    try {
-      const workerId = localStorage.getItem('workerId')
-      if (workerId == null) {
-        throw new Error('El workerId no se encuentra en el localStorage.')
-      }
-      const requests = selectedServices.map(serviceId => ({
-        worker_id: parseInt(workerId, 10),
-        service_id: serviceId
-      }))
+
+      // Crear trabajador
+      const workerResponse = await apiClient.post('worker', {
+        name: data.name,
+        site_id: siteId,
+        description: data.description,
+        services: data.services
+      })
+
+      const workerId = workerResponse.data.id
+
+      // Asignar servicios
       await Promise.all(
-        requests.map(async data =>
-          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}worker_has_service`, data)
+        data.services.map(
+          async (serviceId) =>
+            await apiClient.post('worker_has_service', {
+              worker_id: workerId,
+              service_id: serviceId
+            })
         )
       )
-      toast.success('Servicios asignados correctamente')
-    } catch (error: any) {
-      setSuccessMessage('')
-      if (error.response.data.message !== undefined) {
-        toast.error(String(error.response.data.message))
-      } else {
-        toast.error('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
-      }
-    }
 
-    try {
-      const workerId = localStorage.getItem('workerId')
-      if (workerId == null) {
-        throw new Error('El workerId no se encuentra en el localStorage.')
-      }
-      const requests = Object.entries(workerData.schedule).map(([day, time]) => ({
-        worker_id: parseInt(workerId, 10),
-        weekday: day,
-        starttime: time.startTime,
-        endtime: time.endTime
-      }))
-      const responses = await Promise.all(
-        requests.map(async data =>
-          await axios.post(`${process.env.NEXT_PUBLIC_API_URL}availability`, data)
+      // Asignar horarios
+      await Promise.all(
+        Object.entries(data.schedule).map(
+          async ([day, time]) =>
+            await apiClient.post('availability', {
+              worker_id: workerId,
+              weekday: day,
+              starttime: time.startTime,
+              endtime: time.endTime
+            })
         )
       )
-      toast.success('Trabajador registrado de manera exitosa')
+
       if (urlCallback) {
         router.push(urlCallback)
       }
+
+      toast.success('Éxito', {
+        description: 'Trabajador agregado correctamente'
+      })
+
+      resetForm()
     } catch (error: any) {
-      setSuccessMessage('')
-      if (error.response.data.message !== undefined) {
-        toast.error(String(error.response.data.message))
-      } else {
-        toast.error('Ocurrió un error inesperado. Inténtalo de nuevo más tarde.')
-      }
+      toast.error('Error', {
+        description: error.response?.data?.message || error.message || 'Ocurrió un error inesperado'
+      })
+    } finally {
+      setLoading(false)
     }
-    setLoading(false)
   }
 
   return (
@@ -195,79 +206,95 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name" className="text-base font-medium">
-                Nombre del trabajador
-              </Label>
-              <Input
-                id="name"
-                name="name"
-                value={workerData.name}
-                onChange={handleInputChange}
-                className="w-full"
-                required
-              />
-            </div>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nombre del trabajador<span className="text-red-500"> *</span></FormLabel>
+                  <FormControl>
+                    <Input {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Descripción<span className="text-red-500"> *</span></FormLabel>
+                  <FormControl>
+                    <Textarea {...field} rows={3} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="space-y-2">
-              <Label htmlFor="description" className="text-base font-medium">
-                Descripción
-              </Label>
-              <Textarea
-                id="description"
-                name="description"
-                value={workerData.description}
-                onChange={handleInputChange}
-                className="w-full min-h-[100px]"
-                rows={3}
-              />
+              <Label>Horario de trabajo<span className="text-red-500"> *</span></Label>
+              {DAYS.map((day) => (
+                <TimeRangeInput
+                  key={day}
+                  day={day}
+                  startTime={form.getValues().schedule[day]?.startTime || '10:00'}
+                  endTime={form.getValues().schedule[day]?.endTime || '19:00'}
+                  onChange={handleTimeChange}
+                />
+              ))}
             </div>
 
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Horario de trabajo</Label>
-              <div className="grid gap-4">
-                {DAYS.map((day) => (
-                  <TimeRangeInput
-                    key={day}
-                    day={day}
-                    startTime={workerData.schedule[day].startTime}
-                    endTime={workerData.schedule[day].endTime}
-                    onChange={handleTimeChange}
-                  />
-                ))}
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              <Label className="text-base font-medium">Servicios que realizará</Label>
-              <div className="grid gap-2 md:grid-cols-2">
-                {services.map((service) => (
-                  <div key={service.service_id} className="flex items-center space-x-2">
-                    <Checkbox
-                      id={`service-${service.service_id}`}
-                      checked={selectedServices.includes(service.service_id)}
-                      onCheckedChange={() => { handleServiceChange(service.service_id) }}
-                    />
-                    <Label htmlFor={`service-${service.service_id}`} className="text-sm">
-                      {service.service_name}
-                    </Label>
+            <FormField
+              control={form.control}
+              name="services"
+              render={() => (
+                <FormItem>
+                  <div className="mb-4">
+                    <FormLabel>Servicios que realizará<span className="text-red-500"> *</span></FormLabel>
                   </div>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {successMessage && !loading && (
-            <p className="text-sm font-medium text-green-600 text-center">{successMessage}</p>
-          )}
-
-          {error && <p className="text-sm font-medium text-destructive text-center">{error}</p>}
-        </form>
+                  <div className="grid grid-cols-2 gap-2">
+                    {services.map((service) => (
+                      <FormField
+                        key={service.service_id}
+                        control={form.control}
+                        name="services"
+                        render={({ field }) => {
+                          return (
+                            <FormItem
+                              key={service.service_id}
+                              className="flex flex-row items-start space-x-3 space-y-0"
+                            >
+                              <FormControl>
+                                <Checkbox
+                                  checked={field.value?.includes(service.service_id)}
+                                  onCheckedChange={(checked) => {
+                                    checked
+                                      ? field.onChange([...field.value, service.service_id])
+                                      : field.onChange(field.value?.filter((value) => value !== service.service_id))
+                                  }}
+                                />
+                              </FormControl>
+                              <FormLabel className="font-normal">{service.service_name}</FormLabel>
+                            </FormItem>
+                          )
+                        }}
+                      />
+                    ))}
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </form>
+        </Form>
       </CardContent>
       <CardFooter className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
-        <Button type="submit" onClick={handleSubmit} disabled={loading} className="w-full sm:w-auto">
+        <Button type="submit" disabled={loading} className="w-full sm:w-auto">
           {loading ? 'Agregando...' : 'AGREGAR TRABAJADOR'}
         </Button>
         {!urlCallback && (

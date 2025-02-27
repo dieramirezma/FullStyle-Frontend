@@ -13,6 +13,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from './ui/form'
 import { Input } from './ui/input'
+import LoadingSpinner from "./loading-spinner"
 
 interface Worker {
   worker_id: number
@@ -94,7 +95,15 @@ export default function EditWorker () {
     }
   }, [session])
 
-  if (status === "loading") return <p>Cargando...</p>
+  if (status === "loading") {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner
+          size='xl'
+        />
+      </div>
+    )
+  }
   if (status !== "authenticated") return <a href="/api/auth/signin">Iniciar sesión</a>
   if (!session.user.active) {
     return <p>Usuario no activo</p>

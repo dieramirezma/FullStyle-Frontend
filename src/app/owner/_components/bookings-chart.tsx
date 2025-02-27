@@ -8,17 +8,7 @@ export function BookingsChart ({ data }: { data: BookingsData[] }) {
   if (data.length === 0) {
     data = [
       { name: 'Enero', Reservas: 0 },
-      { name: 'Febrero', Reservas: 0 },
-      { name: 'Marzo', Reservas: 0 },
-      { name: 'Abril', Reservas: 0 },
-      { name: 'Mayo', Reservas: 0 },
-      { name: 'Junio', Reservas: 0 },
-      { name: 'Julio', Reservas: 0 },
-      { name: 'Agosto', Reservas: 0 },
-      { name: 'Septiembre', Reservas: 0 },
-      { name: 'Octubre', Reservas: 0 },
-      { name: 'Noviembre', Reservas: 0 },
-      { name: 'Diciembre', Reservas: 0 }
+      { name: 'Febrero', Reservas: 0 }
     ]
   }
   return (

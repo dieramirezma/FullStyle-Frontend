@@ -13,6 +13,7 @@ import { useRouter } from 'next/navigation'
 import axios from 'axios'
 import { MapPin, Loader2 } from 'lucide-react'
 import GoogleMapComponent from '@/components/map'
+import { useSession } from 'next-auth/react'
 
 const businessTypes = ['Barbería', 'Peluquería', 'Salon de estética']
 
@@ -74,7 +75,7 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
   const [coords, setCoords] = useState<{ lat: number, lng: number } | null>(null)
   const [showMap, setShowMap] = useState(false)
   const router = useRouter()
-
+  const { data: session } = useSession()
   async function validateAddress (address: string) {
     setAddressLoading(true)
     setError('')
@@ -109,12 +110,11 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
 
     setError('')
     setLoading(true)
-    const id = localStorage.getItem('userId')
     const payload = {
       name: values.name.trim(),
       address: values.address,
       phone: values.phone,
-      manager_id: id
+      manager_id: session?.user?.id
     }
 
     try {

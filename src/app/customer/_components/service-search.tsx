@@ -1,27 +1,9 @@
 'use client'
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from '@/components/ui/sheet'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 import { Filter, X } from 'lucide-react'
 
@@ -75,11 +57,22 @@ interface ErrorMessage {
 // Form schema using zod
 const formSchema = z.object({
   name: z.string(),
-  category_id: z.string().transform((val) => parseInt(val)).optional(),
-  site_id: z.string().transform((val) => parseInt(val)).optional(),
-  service_id: z.string().transform((val) => parseInt(val)).optional(),
-  price: z.string().transform((val) => parseInt(val)).optional()
-
+  category_id: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional(),
+  site_id: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional(),
+  service_id: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional(),
+  price: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional()
 })
 
 const prices = [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000]
@@ -161,7 +154,22 @@ function ServiceSearch () {
   }, [])
 
   const handleReset = () => {
-    form.reset()
+    form.reset({
+      name: '',
+      category_id: undefined,
+      site_id: undefined,
+      service_id: undefined,
+      price: undefined
+    })
+
+    // Realizar una búsqueda sin filtros
+    onSubmit({
+      name: '',
+      category_id: undefined,
+      site_id: undefined,
+      service_id: undefined,
+      price: undefined
+    })
   }
 
   return (
@@ -195,8 +203,8 @@ function ServiceSearch () {
                 control={form.control}
                 name="category_id"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
-                    <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''} >
+                  <FormItem className="w-full">
+                    <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Categoría" />
@@ -218,7 +226,7 @@ function ServiceSearch () {
                 control={form.control}
                 name="site_id"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
+                  <FormItem className="w-full">
                     <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
@@ -241,7 +249,7 @@ function ServiceSearch () {
                 control={form.control}
                 name="service_id"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
+                  <FormItem className="w-full">
                     <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
@@ -264,7 +272,7 @@ function ServiceSearch () {
                 control={form.control}
                 name="price"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
+                  <FormItem className="w-full">
                     <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>

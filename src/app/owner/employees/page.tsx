@@ -7,8 +7,8 @@ import apiClient from '@/utils/apiClient'
 import { useSession } from 'next-auth/react'
 import axios from 'axios'
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { ArrowRight, Building2, Scissors } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { ArrowRight, Building2, Plus, Scissors } from 'lucide-react'
 import LoadingSpinner from '@/components/loading-spinner'
 
 interface Service {
@@ -22,6 +22,8 @@ function Page () {
   const [siteId, setSiteId] = useState<number | null>(null)
   const [error, setError] = useState<{ code: number, type: string } | null>(null)
   const [loading, setLoading] = useState(true)
+  const [open, setOpen] = useState(false)
+  const [showButton, setShowButton] = useState(true)
 
   useEffect(() => {
     const fetchSiteAndServices = async () => {
@@ -78,7 +80,7 @@ function Page () {
 
   if (error?.code === 404 && error.type === 'services') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl w-full">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}
@@ -119,7 +121,7 @@ function Page () {
 
   if (error?.code === 404 && error.type === 'site') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}
@@ -161,10 +163,29 @@ function Page () {
   return (
     <div className="space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="title">Gestiona tus empleados</h1>
-        {siteId && <AddWorkerDialog siteId={siteId} services={services} onWorkerAdded={handleWorkerAdded} />}
+        <div className='flex flex-col justify-between w-full sm:flex-row sm:items-center'>
+          <h1 className="title">Gestiona tus empleados</h1>
+          { showButton && (
+            <Button onClick={() => { setOpen(true) }}>
+              <Plus className="mr-2 h-4 w-4" />
+              Agregar Trabajador
+            </Button>
+          )}
+        </div>
+        {siteId && (
+          <AddWorkerDialog
+            siteId={siteId}
+            services={services}
+            onWorkerAdded={handleWorkerAdded}
+            open={open}
+            setOpen={setOpen}
+          />
+        )}
       </div>
-      <DeleteWorker />
+      <DeleteWorker
+        showButton={showButton}
+        setShowButton={setShowButton}
+      />
     </div>
   )
 }
