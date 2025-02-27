@@ -11,6 +11,7 @@ import axios from 'axios'
 import Link from 'next/link'
 import { Checkbox } from './ui/checkbox'
 import { toast } from 'sonner'
+import { useRouter } from 'next/navigation'
 
 type Schedule = Record<string, { startTime: string, endTime: string }>
 
@@ -27,7 +28,7 @@ interface WorkerData {
 
 const DAYS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
 
-export default function WorkerScheduleForm () {
+export default function WorkerScheduleForm ({ className, urlCallback }: { className?: string, urlCallback?: string }) {
   const [workerData, setWorkerData] = useState<WorkerData>({
     name: '',
     description: '',
@@ -41,6 +42,8 @@ export default function WorkerScheduleForm () {
   const [successMessage, setSuccessMessage] = useState('')
   const [services, setServices] = useState<Service[]>([])
   const [selectedServices, setSelectedServices] = useState<number[]>([])
+
+  const router = useRouter()
 
   useEffect(() => {
     const fetchServices = async () => {
@@ -170,6 +173,9 @@ export default function WorkerScheduleForm () {
         )
       )
       toast.success('Trabajador registrado de manera exitosa')
+      if (urlCallback) {
+        router.push(urlCallback)
+      }
     } catch (error: any) {
       setSuccessMessage('')
       if (error.response.data.message !== undefined) {
@@ -182,7 +188,7 @@ export default function WorkerScheduleForm () {
   }
 
   return (
-    <Card className="w-full max-w-2xl mx-auto">
+    <Card className={className ?? 'w-full max-w-2xl mx-auto'}>
       <CardHeader>
         <CardTitle className="subtitle text-center">
           Registro de Trabajador y Horario
@@ -264,11 +270,13 @@ export default function WorkerScheduleForm () {
         <Button type="submit" onClick={handleSubmit} disabled={loading} className="w-full sm:w-auto">
           {loading ? 'Agregando...' : 'AGREGAR TRABAJADOR'}
         </Button>
-        <Button variant="outline" className="w-full sm:w-auto">
-          <Link href="/login" className="w-full">
-            Finalizar registro
-          </Link>
-        </Button>
+        {!urlCallback && (
+          <Button variant="outline" className="w-full sm:w-auto">
+            <Link href="/login" className="w-full">
+              Finalizar registro
+            </Link>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   )

@@ -16,8 +16,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle
 } from '@/components/ui/alert-dialog'
-import { UserCircle2, Trash2 } from 'lucide-react'
+import { UserCircle2, Trash2, ArrowRight, Users } from 'lucide-react'
 import Image from 'next/image'
+import axios from 'axios'
+import WorkerScheduleForm from './WorkerScheduleForm'
 
 interface Worker {
   id: number
@@ -37,12 +39,11 @@ interface Site {
 
 export default function DeleteWorker () {
   const { data: session, status } = useSession()
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
   const [workers, setWorkers] = useState<Worker[]>([])
   const [site, setSite] = useState<Site | null>(null)
   const [workerToDelete, setWorkerToDelete] = useState<Worker | null>(null)
-
+  const [error, setError] = useState<{ code: number, type: string } | null>(null)
   useEffect(() => {
     const fetchData = async () => {
       setLoading(true)
@@ -59,14 +60,19 @@ export default function DeleteWorker () {
             phone: siteData.phone
           })
 
-          const workersResponse = await apiClient.get(`worker?site_id=${siteData.id}`)
-          setWorkers(workersResponse.data)
-        } else {
-          setError('No se encontró información del negocio.')
+          try {
+            const workersResponse = await apiClient.get(`worker?site_id=${siteData.id}`)
+            setWorkers(workersResponse.data)
+          } catch (error) {
+            if (axios.isAxiosError(error) && error.response?.status === 404) {
+              setError({ code: 404, type: 'workers' })
+            }
+          }
         }
       } catch (error) {
-        console.error('Error al obtener datos:', error)
-        setError('Error al obtener la información.')
+        if (axios.isAxiosError(error) && error.response?.status === 404) {
+          setError({ code: 404, type: 'site' })
+        }
       } finally {
         setLoading(false)
       }
@@ -96,9 +102,46 @@ export default function DeleteWorker () {
   }
 
   if (status === 'loading') return <p>Cargando...</p>
-  if (status !== 'authenticated') return <a href="/api/auth/signin">Iniciar sesión</a>
-  if (!session.user.active) {
-    return <p>Usuario no activo</p>
+
+  if (error?.code === 404 && error.type === 'workers') {
+    return (
+      <div className="container mx-auto px-4 max-w-4xl">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="p-8 sm:p-12">
+            {/* Top illustration */}
+            <div className="flex justify-center mb-8">
+              <div className="relative">
+                <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                  <Users className="h-12 w-12 text-primary" />
+                </div>
+                <span className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                  <ArrowRight className="h-4 w-4" />
+                </span>
+              </div>
+            </div>
+
+            {/* Content */}
+            <div className="space-y-6 max-w-lg mx-auto text-center">
+              <h1 className="title">
+                No tienes ningún empleado creado
+              </h1>
+
+              <p className="text-gray-500 text-lg">
+                Crea tu primer empleado para comenzar a gestionar tu negocio
+              </p>
+
+              <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8" />
+              <div className="bg-gray-50 rounded-lg p-6 sm:p-8 text-left">
+                <WorkerScheduleForm
+                  className="w-full"
+                  urlCallback="/owner"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -164,7 +207,7 @@ export default function DeleteWorker () {
 
       {error && (
         <div className="col-span-full text-center text-red-500">
-          {error}
+          {error.type}
         </div>
       )}
 

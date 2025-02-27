@@ -4,11 +4,11 @@ import apiClient from '@/utils/apiClient'
 import { useSession } from 'next-auth/react'
 import Image from 'next/image'
 import React, { useEffect, useState } from 'react'
-import { Button, buttonVariants } from '@/components/ui/button'
+import { Button } from '@/components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Pencil, Save, X, Trash2 } from 'lucide-react'
+import { Pencil, Save, X, Trash2, ArrowRight, Building2 } from 'lucide-react'
 import { toast } from 'sonner'
 import {
   AlertDialog,
@@ -22,7 +22,8 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
-import Link from 'next/link'
+import RegisterBusinessForm from '@/components/register-business-form'
+import LoadingSpinner from '@/components/loading-spinner'
 
 interface Site {
   id: number
@@ -134,19 +135,53 @@ function Page () {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner
+          size='xl'
+        />
       </div>
     )
   }
 
   if (error === 404) {
     return (
-      <div className='container mx-auto px-4 py-8 max-w-4xl text-center'>
-        <h1 className='title text-center'>No tienes ningún negocio creado</h1>
-        <p className='text-center'>Crea tu negocio para comenzar a recibir reservas</p>
-        <Link className={buttonVariants({ variant: 'default' })} href='/owner'>Ir al dashboard</Link>
+      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+        <div className="p-8 sm:p-12">
+          {/* Top illustration */}
+          <div className="flex justify-center mb-8">
+            <div className="relative">
+              <div className="w-24 h-24 rounded-full bg-primary/10 flex items-center justify-center">
+                <Building2 className="h-12 w-12 text-primary" />
+              </div>
+              <span className="absolute -bottom-1 -right-1 flex h-8 w-8 items-center justify-center rounded-full bg-primary text-white">
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </div>
+          </div>
+
+          {/* Content */}
+          <div className="space-y-6 max-w-lg mx-auto text-center">
+            <h1 className="title">
+              No tienes ningún negocio creado
+            </h1>
+
+            <p className="text-gray-500 text-lg">
+              Crea tu primer negocio para comenzar a recibir reservas y gestionar tus servicios
+            </p>
+
+            <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8" />
+
+            <div className="bg-gray-50 rounded-lg p-6 sm:p-8">
+                <RegisterBusinessForm
+                  className="w-full"
+                  urlCallback="/owner"
+                />
+            </div>
+          </div>
+        </div>
       </div>
+    </div>
     )
   }
 
