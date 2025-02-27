@@ -8,7 +8,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useState } from 'react'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 import apiClient from '@/utils/apiClient'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from '@/components/ui/form'
 import { Mail, User2, Eye, EyeOff } from 'lucide-react'
@@ -34,6 +34,7 @@ const formSchema = z
 
 export default function ProfilePage () {
   const { data: session } = useSession()
+  const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -55,13 +56,16 @@ export default function ProfilePage () {
         email: session?.user.email
       })
 
-      toast.success('Contraseña actualizada', {
+      toast({
+        title: 'Contraseña actualizada',
         description: 'Tu contraseña ha sido actualizada exitosamente'
       })
 
       form.reset()
     } catch (error) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: 'No se pudo actualizar la contraseña. Intenta nuevamente.'
       })
     } finally {

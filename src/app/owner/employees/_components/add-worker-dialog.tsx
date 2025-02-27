@@ -151,7 +151,8 @@ export function AddWorkerDialog ({ siteId, services, onWorkerAdded, open, setOpe
         )
       )
 
-      toast.success('Éxito', {
+      toast({
+        title: 'Éxito',
         description: 'Trabajador agregado correctamente'
       })
 
@@ -159,7 +160,9 @@ export function AddWorkerDialog ({ siteId, services, onWorkerAdded, open, setOpe
       setOpen(false)
       resetForm()
     } catch (error: any) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: error.response?.data?.message || error.message || 'Ocurrió un error inesperado'
       })
     } finally {

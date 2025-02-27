@@ -3,22 +3,21 @@ import Link from 'next/link'
 
 function RegisterNavBar () {
   return (
-    <header className="w-full border-b-2 bg-background">
-      <div className="container mx-auto flex items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="/" className="title tracking-tight hover:text-primary/90">
+    <header className='flex w-full justify-between items-center bg-background rounded-lg mx-4 mt-4 px-8 border-b-2 mb-6'>
+      <div className='hidden md:block'>
+        <Link
+          href='/'
+          className='title'
+        >
           FullStyle
         </Link>
-
-        <Link
-          href={'/'}
-          className={buttonVariants({
-            variant: 'default',
-            className: 'whitespace-nowrap text-sm sm:text-base'
-          })}
-        >
-          Regresa al inicio
-        </Link>
       </div>
+      <Link
+        href={'/'}
+        className={buttonVariants({ variant: 'default' })}
+      >
+        Regresa al inicio
+      </Link>
     </header>
   )
 }

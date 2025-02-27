@@ -241,14 +241,17 @@ export default function WeeklyCalendar ({
         throw new Error('Error al crear la reserva')
       }
 
-      toast.success('Reserva confirmada', {
+      toast({
+        title: 'Reserva confirmada',
         description: 'Tu reserva ha sido creada exitosamente'
       })
 
       setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: 'No se pudo crear la reserva. Por favor, intenta nuevamente.'
       })
       console.error('Error scheduling appointment:', error)

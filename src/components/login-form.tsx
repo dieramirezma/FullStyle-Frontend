@@ -12,29 +12,28 @@ import { GoogleIcon } from './icons/LogosGoogleIcon'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSession, signIn } from 'next-auth/react'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 import { Eye, EyeOff } from 'lucide-react'
 
 const userSchema = z.object({
-  email: z
-    .string({
-      required_error: 'El correo electrónico es obligatorio'
-    })
-    .min(1, {
-      message: 'Ingresa el correo'
-    }),
-  password: z
-    .string({
-      required_error: 'La contraseña es obligatoria'
-    })
-    .min(1, {
-      message: 'Ingresa la contraseña'
-    })
+  email: z.string({
+    required_error: 'El correo electrónico es obligatorio'
+  }).min(1, {
+    message: 'Ingresa el correo'
+  }),
+  password: z.string({
+    required_error: 'La contraseña es obligatoria'
+  }).min(1, {
+    message: 'Ingresa la contraseña'
+  })
 })
 
 export default function LoginForm () {
+  const { toast } = useToast()
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+
   const [showPassword, setShowPassword] = useState(false)
 
   const togglePasswordVisibility = () => {
@@ -50,7 +49,7 @@ export default function LoginForm () {
     }
   })
 
-  const onSubmit = async (values: z.infer<typeof userSchema>) => {
+  async function onSubmit (values: z.infer<typeof userSchema>) {
     setLoading(true)
     setError('')
     try {
@@ -66,8 +65,9 @@ export default function LoginForm () {
       } else {
         const session = await getSession()
 
-        toast.success('Éxito', {
-          description: 'Inicio de sesión exitoso'
+        toast({
+          title: 'Inicio de sesión exitoso',
+          description: 'Bienvenido de nuevo'
         })
         if (session?.user) {
           const isManager = (session.user as any).is_manager
@@ -76,8 +76,10 @@ export default function LoginForm () {
       }
     } catch (err) {
       setError('Error al iniciar sesión. Inténtalo de nuevo')
-      toast.error('Error al iniciar sesión', {
-        description: 'Inténtalo de nuevo'
+      toast({
+        title: 'Error al iniciar sesión',
+        description: 'Inténtalo de nuevo',
+        variant: 'destructive'
       })
     } finally {
       setLoading(false)
@@ -85,8 +87,6 @@ export default function LoginForm () {
   }
 
   const handleGoogleSignIn = async () => {
-    setLoading(true)
-    setError('')
     try {
       const result = await signIn('google', {
         callbackUrl: '/customer',
@@ -98,32 +98,32 @@ export default function LoginForm () {
         throw new Error('Error al iniciar sesión con Google')
       }
     } catch (error) {
-      setError('Ocurrió un error al iniciar sesión con Google')
-      toast.error('Error', {
-        description: 'Ocurrió un error al iniciar sesión con Google'
-      })
-    } finally {
-      setLoading(false)
+      console.error('Error al iniciar sesión:', error)
+      setError('Ocurrió un error al intentar iniciar sesión con Google')
     }
   }
 
   return (
-    <Card className="w-full shadow-lg">
-      <CardHeader className="space-y-2">
-        <CardTitle className="subtitle self-center">Iniciar Sesión</CardTitle>
-        <CardDescription className="text-center">Ingresa tu correo y contraseña para iniciar</CardDescription>
+    <Card className='w-full max-w-md'>
+      <CardHeader>
+        <CardTitle className="subtitle self-center">
+          Iniciar Sesión
+        </CardTitle>
+        <CardDescription>Ingresa tu correo y contraseña para iniciar</CardDescription>
       </CardHeader>
       <CardContent>
         <Form {...form}>
-          <form className="space-y-4" onSubmit={form.handleSubmit(onSubmit)}>
+          <form className='flex flex-col gap-y-4' onSubmit={form.handleSubmit(onSubmit)}>
             <FormField
               name="email"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-semibold">Correo electrónico</FormLabel>
+                  <FormLabel className='font-black'>Correo electrónico</FormLabel>
                   <FormControl>
-                    <Input {...field} className="w-full" />
+                    <Input
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -138,26 +138,25 @@ export default function LoginForm () {
                     <div className="flex items-center justify-between">
                       <FormLabel className="font-semibold">Contraseña</FormLabel>
                       <Link href="/password_reset" className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4">
+
                         ¿Olvidaste tu contraseña?
                       </Link>
                     </div>
                     <FormControl>
-                      <div className="relative">
-                        <Input type={showPassword ? 'text' : 'password'} {...field} className="w-full pr-10" />
+                      <div className='relative'>
+                        <Input
+                          type={showPassword ? 'text' : 'password'}
+                          {...field}
+                        />
                         <Button
                           type="button"
                           variant="ghost"
                           size="icon"
                           className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
                           onClick={togglePasswordVisibility}
+                          aria-label={showPassword ? 'Ocultar contraseña' : 'Mostrar contraseña'}
                         >
-                          {showPassword
-                            ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                              )
-                            : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                              )}
+                          {showPassword ? <EyeOff className="h-4 w-4 text-gray-500" /> : <Eye className="h-4 w-4 text-gray-500" />}
                         </Button>
                       </div>
                     </FormControl>
@@ -166,22 +165,24 @@ export default function LoginForm () {
                 </FormItem>
               )}
             />
-            {error && <p className="text-sm font-medium text-destructive">{error}</p>}
-            <div className="text-center text-sm">
+            {(error !== '') && <p className="text-red-500 text-sm">{error}</p>}
+            <div className="mt-2 text-center text-sm">
               ¿No tienes cuenta?{' '}
               <Link href="/register" className="underline underline-offset-4">
                 ¡Registrate!
               </Link>
             </div>
-            <div className="space-y-3">
-              <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? 'Cargando...' : 'Iniciar Sesión'}
-              </Button>
-              <Button variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn}>
-                <GoogleIcon className="mr-2 h-5 w-5" />
-                Iniciar con Google
-              </Button>
-            </div>
+            <Button type="submit" disabled={loading}>
+              {loading ? 'Cargando...' : 'Iniciar Sesión'}
+            </Button>
+            <Button
+              variant='outline'
+              type="button"
+              onClick={handleGoogleSignIn}
+            >
+              <GoogleIcon></GoogleIcon>
+              Iniciar con Google
+            </Button>
           </form>
         </Form>
       </CardContent>

@@ -4,7 +4,7 @@ import Image from 'next/image'
 
 export default function Page () {
   return (
-    <div className="min-h-screen bg-background">
+    <div>
       <RegisterNavBar />
       <main className="container mx-auto py-6 sm:px-6 lg:px-8 flex items-center justify-center">
         <div className="w-full max-w-4xl">
@@ -26,7 +26,7 @@ export default function Page () {
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   )
 }

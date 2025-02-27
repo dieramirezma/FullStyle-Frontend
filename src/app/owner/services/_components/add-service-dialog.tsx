@@ -29,6 +29,7 @@ const durationOptions = [
   { value: '180', label: '3 horas' }
 ]
 
+
 const serviceSchema = z.object({
   description: z.string({
     required_error: 'Este campo es requerido'
@@ -66,6 +67,7 @@ interface AddServiceDialogProps {
 
 export function AddServiceDialog ({ siteId, services, onServiceAdded, open, setOpen }: AddServiceDialogProps) {
   const [loading, setLoading] = useState(false)
+  const { toast } = useToast()
 
   const form = useForm<z.infer<typeof serviceSchema>>({
     resolver: zodResolver(serviceSchema),
@@ -88,7 +90,8 @@ export function AddServiceDialog ({ siteId, services, onServiceAdded, open, setO
         duration: values.duration
       })
 
-      toast.success('Servicio agregado', {
+      toast({
+        title: 'Servicio agregado',
         description: 'El servicio ha sido agregado exitosamente'
       })
 
@@ -96,7 +99,9 @@ export function AddServiceDialog ({ siteId, services, onServiceAdded, open, setO
       setOpen(false)
       onServiceAdded()
     } catch (error: any) {
-      toast.error('Error', {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
         description: error.response?.data?.message || 'Ocurrió un error inesperado. Inténtalo de nuevo más tarde.'
       })
     } finally {

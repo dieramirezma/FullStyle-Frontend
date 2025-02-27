@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
-import { toast } from 'sonner'
+import { useToast } from '@/hooks/use-toast'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -38,6 +38,8 @@ const formSchema = z.object({
 })
 
 function ContactSection () {
+  const { toast } = useToast()
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -62,12 +64,15 @@ function ContactSection () {
         throw new Error('Error al enviar el mensaje.')
       }
 
-      toast.success('Mensaje enviado con éxito', {
+      toast({
+        title: 'Mensaje enviado con éxito',
         description: new Date().toLocaleString()
       })
     } catch (error) {
-      toast.error('Error al enviar el mensaje', {
-        description: 'Por favor intenta más tarde.'
+      toast({
+        title: 'Error al enviar el mensaje',
+        description: 'Por favor intenta más tarde.',
+        variant: 'destructive'
       })
     }
   }

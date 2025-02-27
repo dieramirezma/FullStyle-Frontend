@@ -54,6 +54,7 @@ const workerFormSchema = z.object({
 type WorkerFormValues = z.infer<typeof workerFormSchema>
 
 export default function WorkerScheduleForm ({ className, urlCallback }: { className?: string, urlCallback?: string }) {
+
   const [loading, setLoading] = useState(false)
   const [services, setServices] = useState<Service[]>([])
   const [siteId, setSiteId] = useState<number | null>(null)
@@ -154,6 +155,7 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
         services: data.services
       })
 
+
       const workerId = workerResponse.data.id
 
       // Asignar servicios
@@ -201,9 +203,7 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
   return (
     <Card className={className ?? 'w-full max-w-2xl mx-auto'}>
       <CardHeader>
-        <CardTitle className="subtitle text-center">
-          Registro de Trabajador y Horario
-        </CardTitle>
+        <CardTitle>Registro de Trabajador y Horario</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
