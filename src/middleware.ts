@@ -6,27 +6,16 @@ export async function middleware (req: NextRequest) {
 
   const { pathname } = req.nextUrl
   // api/subscription
-  try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}subscription/${token?.id as number}`)
-
-    if (!response.ok) {
-      throw new Error(`Error al obtener suscripción: ${response.status}`)
-    }
-
-    const data = await response.json()
-
-    if (pathname.startsWith('/owner') && data.subscription_active === false) {
-      return NextResponse.redirect(new URL('/plans', req.url))
-    } else if (data.subscription_active && pathname.startsWith('/plans')) {
-      return NextResponse.redirect(new URL('/owner', req.url))
-    }
-  } catch (error) {
-    console.error('Error en el middleware:', error)
-  }
 
   // Si no hay token, redirige al login
   if (token == null) {
     return NextResponse.redirect(new URL('/login', req.url))
+  }
+
+  if (pathname.startsWith('/owner') && token.subscriptionactive === false) {
+    return NextResponse.redirect(new URL('/plans', req.url))
+  } else if (token.subscriptionactive && pathname.startsWith('/plans')) {
+    return NextResponse.redirect(new URL('/owner', req.url))
   }
 
   console.log('Token:', pathname.startsWith('/plans'))
