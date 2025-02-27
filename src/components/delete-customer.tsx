@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
 import { useSession } from 'next-auth/react'
 import { Label } from '@radix-ui/react-label'
 import router from 'next/router'
+import LoadingSpinner from './loading-spinner'
 
 export default function DeleteAccount () {
   const { data: session, status } = useSession()
@@ -13,7 +14,15 @@ export default function DeleteAccount () {
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  if (status === 'loading') return <p>Cargando...</p>
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner
+          size='xl'
+        />
+      </div>
+    )
+  }
   if (status !== 'authenticated') return <a href="/api/auth/signin">Iniciar sesión</a>
   if (!session.user.active) {
     setLoading(false)

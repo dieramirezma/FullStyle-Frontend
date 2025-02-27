@@ -8,6 +8,7 @@ import { Label } from '@radix-ui/react-label'
 import axios from 'axios'
 import { Button } from './ui/button'
 import router from 'next/router'
+import LoadingSpinner from './loading-spinner'
 
 export default function DeleteSite() {
   const { data: session, status } = useSession()
@@ -16,7 +17,7 @@ export default function DeleteSite() {
   const [loading, setLoading] = useState(false)
   const [site, setSite] = useState<{ id: number; name: string; address: string; phone: string } | null>(null)
 
-  
+
   useEffect(() => {
     const fetchSite = async () => {
       setError('')
@@ -25,7 +26,7 @@ export default function DeleteSite() {
         const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}site?manager_id=${manager_id}`)
         console.log("Datos del sitio:", response.data)
 
-        
+
         if (Array.isArray(response.data) && response.data.length > 0) {
           setSite({
             id: response.data[0].id,
@@ -46,8 +47,15 @@ export default function DeleteSite() {
     fetchSite()
   }, [session, status])
 
-
-  if (status === 'loading') return <p>Cargando...</p>
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner
+          size='xl'
+        />
+      </div>
+    )
+  }
   if (status !== 'authenticated') return <a href="/api/auth/signin">Iniciar sesión</a>
   if(!session.user.active) {
     setLoading(false)

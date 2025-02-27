@@ -1,5 +1,5 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card'
-import { Clock, MapPin } from 'lucide-react'
+import { Building, Clock, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import { type Detail } from './site-search'
 
@@ -14,6 +14,24 @@ const images: Record<number, string> = {
   8: '/images/services/afeitado.jpg',
   9: '/images/services/extensiones.jpg',
   10: '/images/services/tratamientos-faciales.jpg'
+}
+
+function approximateMinutesToHours (minutes: number) {
+  const durationOptions = [
+    { value: '30', label: '30 minutos' },
+    { value: '60', label: '1 hora' },
+    { value: '90', label: '1 hora y 30 minutos' },
+    { value: '120', label: '2 horas' },
+    { value: '150', label: '2 horas y 30 minutos' },
+    { value: '180', label: '3 horas' }
+  ]
+
+  return durationOptions.reduce((closest, option) => {
+    const optionValue = parseInt(option.value, 10)
+    return Math.abs(optionValue - minutes) < Math.abs(parseInt(closest.value, 10) - minutes)
+      ? option
+      : closest
+  }, durationOptions[0])
 }
 
 function ServiceCard ({ detail }: { detail: Detail }) {
@@ -40,12 +58,16 @@ function ServiceCard ({ detail }: { detail: Detail }) {
       <CardContent>
         <div className="space-y-2 text-muted-foreground">
           <div className="flex items-center gap-2">
+            <Building className="h-4 w-4" />
+            <span className="text-sm">{detail.site_name}</span>
+          </div>
+          <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
             <span className="text-sm">{detail.site_address}</span>
           </div>
           <div className="flex items-center gap-2">
             <Clock className="h-4 w-4" />
-            <span className="text-sm">{detail.duration} minutos</span>
+            <span className="text-sm">{approximateMinutesToHours(detail.duration).label}</span>
           </div>
         </div>
       </CardContent>

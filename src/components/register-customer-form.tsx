@@ -25,7 +25,7 @@ const userSchema = z.object({
     message: 'El nombre solo puede contener letras'
   }).max(40, {
     message: 'El limite de caracteres es de 40'
-  }).refine(val => val.trim().split(' ').length === 3, {
+  }).refine(val => val.trim().split(' ').length <= 3, {
     message: 'Máximo 3 nombres'
   }),
   lastName: z.string({
@@ -36,7 +36,7 @@ const userSchema = z.object({
     message: 'Los apellidos solo pueden contener letras'
   }).max(40, {
     message: 'El limite de caracteres es de 40'
-  }).refine(val => val.trim().split(' ').length === 2, {
+  }).refine(val => val.trim().split(' ').length <= 2, {
     message: 'Máximo 2 apellidos'
   }),
   email: z.string({
