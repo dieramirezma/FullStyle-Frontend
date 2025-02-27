@@ -13,6 +13,16 @@ import { format } from 'date-fns'
 import { CalendarDays, Clock, User2, MapPin, Phone, Scissors } from 'lucide-react'
 import type { Detail } from '@/app/customer/_components/site-search'
 import type { Site } from './schedule-service'
+import WidgetWompi from '@/components/widget-wompi';
+
+export interface AppointmentData {
+  appointmenttime: string
+  status: string
+  worker_id: number
+  site_id: number
+  service_id: number
+  client_id: number
+}
 
 interface AppointmentConfirmationDialogProps {
   isOpen: boolean
@@ -21,16 +31,18 @@ interface AppointmentConfirmationDialogProps {
   serviceDetail: Detail
   workerName: string
   siteDetail: Site
+  appointmentData: AppointmentData | null
   onConfirm: () => Promise<void>
 }
 
-export function AppointmentConfirmationDialog ({
+export function AppointmentConfirmationDialog({
   isOpen,
   onClose,
   selectedSlot,
   serviceDetail,
   workerName,
   onConfirm,
+  appointmentData,
   siteDetail
 }: AppointmentConfirmationDialogProps) {
   return (
@@ -101,10 +113,34 @@ export function AppointmentConfirmationDialog ({
         </div>
 
         <DialogFooter>
-          <Button variant="outline" onClick={onClose}>
-            Cancelar
-          </Button>
-          <Button onClick={onConfirm}>Proceder al pago</Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 w-full">
+            <WidgetWompi
+              amount={Math.max(5000, serviceDetail.price * 0.1)}
+              isOpen={isOpen}
+              label="Pagar reserva"
+              className="w-full"
+              paymentType="SRV"
+              paymentManner="PART"  // Método de pago
+              itemId={serviceDetail.service_id.toString()}
+              serviceString={appointmentData
+                ? `${appointmentData.appointmenttime}_${appointmentData.status}_${appointmentData.worker_id}_${appointmentData.site_id}_${appointmentData.service_id}_${appointmentData.client_id}`
+                : ''}
+              onClose={onClose}
+            />
+            <WidgetWompi
+              amount={serviceDetail.price}
+              isOpen={isOpen}
+              label="Pagar completo"
+              className="w-full"
+              paymentType="SRV"
+              paymentManner="FULL"  // Método de pago
+              itemId={serviceDetail.service_id.toString()}
+              serviceString={appointmentData
+                ? `${appointmentData.appointmenttime}_${appointmentData.status}_${appointmentData.worker_id}_${appointmentData.site_id}_${appointmentData.service_id}_${appointmentData.client_id}`
+                : ''}
+              onClose={onClose}
+            />
+          </div>
         </DialogFooter>
       </DialogContent>
     </Dialog>
