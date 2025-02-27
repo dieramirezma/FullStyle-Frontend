@@ -6,7 +6,7 @@ export default function RegisterPage () {
   return (
     <div className="min-h-screen bg-background">
       <RegisterNavBar />
-      <main className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <main className="container mx-auto py-8 sm:px-6 lg:px-8">
         <div className="flex flex-col items-center gap-8 lg:flex-row lg:justify-around lg:gap-12">
           <div className="w-full max-w-[280px] sm:max-w-[320px] lg:max-w-[400px]">
             <Fullstyle className="h-auto w-full" />

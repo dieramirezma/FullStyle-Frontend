@@ -8,7 +8,6 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import apiClient from "@/utils/apiClient"
 import type { Detail } from "@/app/customer/_components/site-search"
 import { AppointmentConfirmationDialog } from "./appoinment-confirmation"
-import { useToast } from "@/hooks/use-toast"
 import { toast } from 'sonner'
 
 import type { Site } from "./schedule-service"
@@ -75,8 +74,6 @@ export default function WeeklyCalendar({
   const [workerDetail, setWorkerDetail] = useState<Worker[] | null>(null)
   const [siteDetail, setSiteDetail] = useState<Site[] | null>(null)
 
-  const { toast: toastt } = useToast()
-
   // Keep all the useEffect and fetch functions as they were...
   const fetchData = useCallback(async () => {
     setLoading(true)
@@ -120,7 +117,8 @@ export default function WeeklyCalendar({
           date: format(weekStart, "yyyy-MM-dd"),
         },
       })
-
+      console.log(weekStart)
+      console.log(response.data)
       setSchedule(response.data)
     } catch (error) {
       console.error("Error fetching schedule:", error)
@@ -208,7 +206,7 @@ export default function WeeklyCalendar({
           description: 'La duracion del servicio supera el tiempo disponible'
         })
       } else {
-        toastt({
+        toast({
           variant: "destructive",
           title: "Error",
           description: "No se pudo verificar la disponibilidad. Inténtalo nuevamente.",
@@ -246,7 +244,7 @@ export default function WeeklyCalendar({
         throw new Error("Error al crear la reserva")
       }
 
-      toastt({
+      toast({
         title: "Reserva confirmada",
         description: "Tu reserva ha sido creada exitosamente",
       })
@@ -254,7 +252,7 @@ export default function WeeklyCalendar({
       setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
-      toastt({
+      toast({
         variant: "destructive",
         title: "Error",
         description: "No se pudo crear la reserva. Por favor, intenta nuevamente.",
@@ -304,15 +302,18 @@ export default function WeeklyCalendar({
             <div className="h-16" /> {/* Empty space above time column */}
           </div>
           {Object.entries(schedule.schedule).map(([day]) => {
-            const dayDate = parse(day, "EEEE", weekStart)
-            const slotDate = addDays(weekStart, dayDate.getDay())
+            // Usamos el día de la semana para obtener el desplazamiento correcto desde weekStart
+            const dayIndex = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+              .findIndex(d => d.toLowerCase() === day.toLowerCase())
+            const slotDate = addDays(weekStart, dayIndex)
             return (
               <div key={day} className="border-b p-2 text-center">
                 <div className="text-sm font-semibold">{day}</div>
                 <div className="text-2xl font-semibold">{format(slotDate, "d")}</div>
               </div>
-            )
+            );
           })}
+
 
           {/* Time slots column */}
           <div className="space-y-0 border-r">

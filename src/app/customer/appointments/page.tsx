@@ -79,7 +79,7 @@ function mapApiToCalendarEvent (apiData: ApiAppointment): CalendarEvent {
 function Page () {
   const [isClient, setIsClient] = useState(false)
   const [appointments, setAppointments] = useState<CalendarEvent[]>([])
-
+  const [loading, setLoading] = useState(true)
   const { data: session } = useSession()
 
   useEffect(() => {
@@ -96,6 +96,8 @@ function Page () {
         console.log('Appointments:', mappedAppointments)
       } catch (error) {
         console.error('Error fetching appointments:', error)
+      } finally {
+        setLoading(false)
       }
     }
     fetchAppointments()
@@ -177,8 +179,12 @@ function Page () {
   //   }
   // ]
 
-  if (!isClient || !appointments) {
+  if (!isClient || loading) {
     return <div className="h-dvh flex items-center justify-center">Cargando calendario de citas...</div>
+  }
+
+  if (!loading && appointments.length === 0) {
+    return <div className="title h-dvh flex items-center justify-center">En este momento no cuentas con citas agendadas</div>
   }
 
   return (

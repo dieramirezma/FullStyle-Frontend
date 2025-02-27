@@ -62,7 +62,7 @@ const formSchema = z.object({
 
 function SiteSearch () {
   // const [services, setServices] = useState<Service[]>([])
-  const { setSites, setError } = useSearch()
+  const { setSites } = useSearch()
   const [isOpen, setIsOpen] = useState(false)
 
   // Form hook
@@ -85,13 +85,12 @@ function SiteSearch () {
       })
       const data: Site[] = response.data
       setSites(data)
-      setError(null)
       setIsOpen(false)
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const response = error.response
         const data: ErrorMessage = response?.data
-        setError(data.message)
+        console.error(data.message)
         setSites([])
       }
       setIsOpen(false)

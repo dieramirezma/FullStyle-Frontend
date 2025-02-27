@@ -158,7 +158,7 @@ export function Dashboard () {
 
   if (error === '404') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}

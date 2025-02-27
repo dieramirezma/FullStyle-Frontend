@@ -27,7 +27,7 @@ const userSchema = z.object({
     message: 'El nombre solo puede contener letras'
   }).max(40, {
     message: 'El limite de caracteres es de 40'
-  }).refine(val => val.trim().split(' ').length === 3, {
+  }).refine(val => val.trim().split(' ').length <= 3, {
     message: 'Máximo 3 nombres'
   }),
   lastName: z.string({
@@ -38,7 +38,7 @@ const userSchema = z.object({
     message: 'Los apellidos solo pueden contener letras'
   }).max(40, {
     message: 'El limite de caracteres es de 40'
-  }).refine(val => val.trim().split(' ').length === 2, {
+  }).refine(val => val.trim().split(' ').length <= 2, {
     message: 'Máximo 2 apellidos'
   }),
   email: z.string({
@@ -155,7 +155,7 @@ export default function RegisterOwnerForm () {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}manager_register`, payload)
       localStorage.setItem('userId', String(response.data.user.id))
-      router.push('/register/business')
+      router.push('/login')
       console.log(localStorage.getItem('userId'))
     } catch (error: any) {
       if (error.response?.data?.message !== undefined) {
@@ -323,7 +323,7 @@ export default function RegisterOwnerForm () {
                           <SelectItem key={ type } value={ type }>
                             { type }
                           </SelectItem>
-                      ))
+                        ))
                       }
                     </SelectContent>
                   </Select>
@@ -338,7 +338,7 @@ export default function RegisterOwnerForm () {
                 <FormItem>
                   <FormLabel className="font-black">Número de cuenta<span className="text-red-500"> *</span></FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Ej. 546653234548'/>
+                    <Input type='number' {...field} placeholder='Ej. 546653234548'/>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
