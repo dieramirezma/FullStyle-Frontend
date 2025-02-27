@@ -60,7 +60,7 @@ const userSchema = z.object({
   })
 })
 
-export default function RegisterOwnerForm () {
+export default function RegisterOwnerForm ({ urlCallback, siteId }: { urlCallback: string, siteId: string }) {
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -76,10 +76,6 @@ export default function RegisterOwnerForm () {
     setError('')
     setLoading(true)
     try {
-      const siteId = localStorage.getItem('siteId')
-      if (siteId == null) {
-        throw new Error('No se encontró siteId en el localStorage')
-      }
       const items = values.items
       localStorage.setItem('categories', items.toString())
       const promises = items.map(async (categoryId) => {
@@ -90,7 +86,7 @@ export default function RegisterOwnerForm () {
         return await axios.post(`${process.env.NEXT_PUBLIC_API_URL}site_has_category`, payload)
       })
       await Promise.all(promises)
-      router.push('/register/services')
+      router.push(urlCallback)
     } catch (error: any) {
       if (error.response.data.message !== undefined) {
         setError(String(error.response.data.message))

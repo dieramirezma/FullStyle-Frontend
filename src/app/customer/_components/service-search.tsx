@@ -17,6 +17,7 @@ import { Button } from '../../../components/ui/button'
 import { useEffect, useState } from 'react'
 import { useSearch } from '@/context/search-context'
 import apiClient from '@/utils/apiClient'
+import { toast } from 'sonner'
 
 interface Service {
   id: number
@@ -81,7 +82,7 @@ function ServiceSearch () {
   const [services, setServices] = useState<Service[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [sites, setSites] = useState<Site[]>([])
-  const { setDetails, setError } = useSearch()
+  const { fetchServices } = useSearch()
   const [isOpen, setIsOpen] = useState(false)
 
   // Form hook
@@ -99,27 +100,13 @@ function ServiceSearch () {
   // Action when the form is submitted
   async function onSubmit (values: z.infer<typeof formSchema>) {
     try {
-      const response = await apiClient.get('detail', {
-        params: {
-          name: values.name,
-          category_id: values.category_id === 0 ? undefined : values.category_id,
-          site_id: values.site_id === 0 ? undefined : values.site_id,
-          service_id: values.service_id === 0 ? undefined : values.service_id,
-          price: values.price === 1 ? undefined : values.price
-        }
-      })
-      console.log('Request URL:', response.config.url)
-      const data: Detail[] = response.data
-      console.log(data)
-      setDetails(data)
-      setError(null)
+      fetchServices(1, values)
       setIsOpen(false)
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const response = error.response
         const data: ErrorMessage = response?.data
-        setError(data.message)
-        setDetails([])
+        toast.error('Error al buscar servicios: ' + data.message)
       }
       setIsOpen(false)
     }

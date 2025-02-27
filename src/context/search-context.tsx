@@ -19,6 +19,14 @@ interface SearchContextType {
   handlePageChange: (page: number) => void
 }
 
+interface Filters {
+  name: string
+  category_id: number | undefined
+  site_id: number | undefined
+  service_id: number | undefined
+  price: number | undefined
+}
+
 const SearchContext = createContext<SearchContextType | undefined>(undefined)
 
 const PAGE_SIZE = 9
@@ -31,7 +39,13 @@ export function SearchProvider ({ children }: { children: ReactNode }) {
   const [currentPage, setCurrentPage] = useState(1)
   const [totalPages, setTotalPages] = useState(1)
   const [isLoading, setIsLoading] = useState(false)
-  const [currentFilters, setCurrentFilters] = useState({})
+  const [currentFilters, setCurrentFilters] = useState<Filters>({
+    name: '',
+    category_id: undefined,
+    site_id: undefined,
+    service_id: undefined,
+    price: undefined
+  })
   const [isInitialized, setIsInitialized] = useState(false)
 
   const updatePaginatedData = useCallback((data: Detail[], page: number) => {
@@ -55,7 +69,7 @@ export function SearchProvider ({ children }: { children: ReactNode }) {
   }
 
   const fetchServices = useCallback(
-    async (page = 1, filters = {}) => {
+    async (page = 1, filters: Filters) => {
       setIsLoading(true)
       try {
         const response = await apiClient.get<Detail[]>('detail', { params: filters })
@@ -86,7 +100,13 @@ export function SearchProvider ({ children }: { children: ReactNode }) {
         const data = JSON.parse(savedDetails)
         updatePaginatedData(data, 1)
       } else {
-        fetchServices(1, {})
+        fetchServices(1, {
+          name: '',
+          category_id: undefined,
+          site_id: undefined,
+          service_id: undefined,
+          price: undefined
+        })
       }
 
       if (savedSites) {
@@ -106,6 +126,8 @@ export function SearchProvider ({ children }: { children: ReactNode }) {
 
   const value = {
     details,
+    setDetails,
+    setError,
     sites,
     setSites,
     error,
@@ -114,6 +136,7 @@ export function SearchProvider ({ children }: { children: ReactNode }) {
     pageSize: PAGE_SIZE,
     isLoading,
     currentFilters,
+    setCurrentFilters,
     fetchServices,
     handlePageChange
   }

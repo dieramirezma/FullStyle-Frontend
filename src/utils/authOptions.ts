@@ -6,6 +6,7 @@ interface LoginResponse {
   access_token: string
   refresh_token: string
   manager: boolean
+  subscription_active: boolean
   user: {
     id: number
     email: string
@@ -48,7 +49,8 @@ export const authOptions: NextAuthOptions = {
             name: user.user.name,
             active: user.user.active,
             token: user.access_token,
-            is_manager: user.manager
+            is_manager: user.manager,
+            subscriptionactive: user.subscription_active
           }
         } else {
           return null
@@ -80,6 +82,7 @@ export const authOptions: NextAuthOptions = {
           token.accessToken = userData.access_token
           token.refreshToken = userData.refresh_token
           token.user = userData.user
+          token.id = userData.user.id
         } catch (error) {
           console.log('error', error)
         }
@@ -87,6 +90,8 @@ export const authOptions: NextAuthOptions = {
         token.accessToken = user.token
         token.user = user
         token.is_manager = user.is_manager
+        token.id = user.id
+        token.subscriptionactive = user.subscriptionactive
       }
       return token
     },

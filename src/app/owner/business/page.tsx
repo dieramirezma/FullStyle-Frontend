@@ -22,8 +22,8 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
-import RegisterBusinessForm from '@/components/register-business-form'
 import LoadingSpinner from '@/components/loading-spinner'
+import MultiStepRegistrationForm from '@/components/multi-step-register'
 
 interface Site {
   id: number
@@ -173,9 +173,8 @@ function Page () {
             <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8" />
 
             <div className="bg-gray-50 rounded-lg">
-              <RegisterBusinessForm
-                className="w-full"
-                urlCallback="/owner"
+              <MultiStepRegistrationForm
+
               />
             </div>
           </div>

@@ -43,23 +43,36 @@ const userSchema = z.object({
     .min(1, {
       message: 'La direccion es obligatoria'
     }),
-  phone: z.string({
-    required_error: 'Este campo es obligatorio'
-  }).min(10, {
-    message: 'Debe contener exactamente 10 dígitos'
-  }).regex(/^[0-9]+$/, {
-    message: 'El número telefónico solo puede contener números'
-  }).max(10, {
-    message: 'Debe contener exactamente 10 dígitos'
-  }).regex(/^3/, {
-    message: 'El número telefónico debe empezar por 3'
-  }),
+  phone: z
+    .string({
+      required_error: 'Este campo es obligatorio'
+    })
+    .min(10, {
+      message: 'Debe contener exactamente 10 dígitos'
+    })
+    .regex(/^[0-9]+$/, {
+      message: 'El número telefónico solo puede contener números'
+    })
+    .max(10, {
+      message: 'Debe contener exactamente 10 dígitos'
+    })
+    .regex(/^3/, {
+      message: 'El número telefónico debe empezar por 3'
+    }),
   businessType: z.enum(['Barbería', 'Peluquería', 'Salón de estética'], {
     message: 'Seleccione el tipo de negocio'
   })
 })
 
-export default function RegisterBusinessForm ({ className, urlCallback }: { className?: string, urlCallback?: string }) {
+export default function RegisterBusinessForm ({
+  className,
+  urlCallback,
+  onRegistrationComplete
+}: {
+  className?: string
+  urlCallback?: string
+  onRegistrationComplete?: (siteId: string) => void
+}) {
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -119,8 +132,14 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
 
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}site`, payload)
-      localStorage.setItem('siteId', String(response.data.id))
-      router.push(urlCallback ?? '/register/categories')
+      const siteId = String(response.data.id)
+      localStorage.setItem('siteId', siteId)
+
+      if (onRegistrationComplete) {
+        onRegistrationComplete(siteId)
+      } else {
+        router.push(urlCallback ?? '/owner')
+      }
     } catch (error: any) {
       if (error.response?.data?.message) {
         setError(String(error.response.data.message))
@@ -145,9 +164,11 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Nombre del negocio<span className="text-red-500"> *</span></FormLabel>
+                  <FormLabel className="font-black">
+                    Nombre del negocio<span className="text-red-500"> *</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input {...field} placeholder='Ej. FullStyle' />
+                    <Input {...field} placeholder="Ej. FullStyle" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -159,15 +180,19 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Direccion del negocio<span className="text-red-500"> *</span></FormLabel>
+                  <FormLabel className="font-black">
+                    Direccion del negocio<span className="text-red-500"> *</span>
+                  </FormLabel>
                   <div className="flex gap-2">
                     <FormControl>
-                      <Input className='h-auto' {...field} placeholder="Ej: Calle 123 #45-67" />
+                      <Input className="h-auto" {...field} placeholder="Ej: Calle 123 #45-67" />
                     </FormControl>
                     <Button
                       type="button"
                       variant="outline"
-                      onClick={async () => { await validateAddress(field.value) }}
+                      onClick={async () => {
+                        await validateAddress(field.value)
+                      }}
                       disabled={!field.value || addressLoading}
                     >
                       {addressLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <MapPin className="h-4 w-4" />}
@@ -190,9 +215,11 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Número telefónico<span className="text-red-500"> *</span></FormLabel>
+                  <FormLabel className="font-black">
+                    Número telefónico<span className="text-red-500"> *</span>
+                  </FormLabel>
                   <FormControl>
-                    <Input type='number' {...field} placeholder='Ej. 3033044340' />
+                    <Input type="number" {...field} placeholder="Ej. 3033044340" />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -204,7 +231,9 @@ export default function RegisterBusinessForm ({ className, urlCallback }: { clas
               name="businessType"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="font-black">Tipo de negocio<span className="text-red-500"> *</span></FormLabel>
+                  <FormLabel className="font-black">
+                    Tipo de negocio<span className="text-red-500"> *</span>
+                  </FormLabel>
                   <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>

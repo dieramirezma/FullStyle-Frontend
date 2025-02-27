@@ -155,7 +155,7 @@ export default function RegisterOwnerForm () {
     try {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_API_URL}manager_register`, payload)
       localStorage.setItem('userId', String(response.data.user.id))
-      router.push('/register/business')
+      router.push('/login')
       console.log(localStorage.getItem('userId'))
     } catch (error: any) {
       if (error.response?.data?.message !== undefined) {
