@@ -117,7 +117,8 @@ export default function WeeklyCalendar({
           date: format(weekStart, "yyyy-MM-dd"),
         },
       })
-
+      console.log(weekStart)
+      console.log(response.data)
       setSchedule(response.data)
     } catch (error) {
       console.error("Error fetching schedule:", error)
@@ -294,15 +295,18 @@ export default function WeeklyCalendar({
             <div className="h-16" /> {/* Empty space above time column */}
           </div>
           {Object.entries(schedule.schedule).map(([day]) => {
-            const dayDate = parse(day, "EEEE", weekStart)
-            const slotDate = addDays(weekStart, dayDate.getDay())
+            // Usamos el día de la semana para obtener el desplazamiento correcto desde weekStart
+            const dayIndex = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+              .findIndex(d => d.toLowerCase() === day.toLowerCase())
+            const slotDate = addDays(weekStart, dayIndex)
             return (
               <div key={day} className="border-b p-2 text-center">
                 <div className="text-sm font-semibold">{day}</div>
                 <div className="text-2xl font-semibold">{format(slotDate, "d")}</div>
               </div>
-            )
+            );
           })}
+
 
           {/* Time slots column */}
           <div className="space-y-0 border-r">
