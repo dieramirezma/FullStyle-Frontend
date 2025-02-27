@@ -1,16 +1,16 @@
-"use client"
+'use client'
 
-import { useState, useEffect, useCallback } from "react"
-import { format, addDays, startOfWeek, endOfWeek, parse, addMinutes, isBefore, isAfter, isEqual } from "date-fns"
-import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import apiClient from "@/utils/apiClient"
-import type { Detail } from "@/app/customer/_components/site-search"
-import { AppointmentConfirmationDialog } from "./appoinment-confirmation"
+import { useState, useEffect, useCallback } from 'react'
+import { format, addDays, startOfWeek, endOfWeek, parse, addMinutes, isBefore, isAfter, isEqual } from 'date-fns'
+import { ChevronLeft, ChevronRight, Loader2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import apiClient from '@/utils/apiClient'
+import type { Detail } from '@/app/customer/_components/site-search'
+import { AppointmentConfirmationDialog } from './appoinment-confirmation'
 import { toast } from 'sonner'
 
-import type { Site } from "./schedule-service"
+import type { Site } from './schedule-service'
 
 // Keep all the interfaces as they were...
 interface WeeklyCalendarProps {
@@ -57,12 +57,12 @@ export interface AppointmentData {
   request: boolean
 }
 
-export default function WeeklyCalendar({
+export default function WeeklyCalendar ({
   workerId,
   siteId,
   serviceId,
   clientId,
-  onAppointmentScheduled,
+  onAppointmentScheduled
 }: WeeklyCalendarProps) {
   // Keep all the state and functions as they were...
   const [weekStart, setWeekStart] = useState(startOfWeek(new Date()))
@@ -96,7 +96,7 @@ export default function WeeklyCalendar({
       const response = await apiClient.get(`site?id=${siteId}`)
       setSiteDetail(response.data as Site[])
     } catch (error) {
-      console.error("Error fetching site detail:", error)
+      console.error('Error fetching site detail:', error)
     }
   }
 
@@ -105,23 +105,23 @@ export default function WeeklyCalendar({
       const response = await apiClient.get(`worker?id=${workerId}`)
       setWorkerDetail(response.data as Worker[])
     } catch (error) {
-      console.error("Error fetching worker detail:", error)
+      console.error('Error fetching worker detail:', error)
     }
   }
 
   const fetchWeeklySchedule = async () => {
     try {
-      const response = await apiClient.get<WeeklySchedule>("worker/weekly_schedule", {
+      const response = await apiClient.get<WeeklySchedule>('worker/weekly_schedule', {
         params: {
           worker_id: workerId,
-          date: format(weekStart, "yyyy-MM-dd"),
-        },
+          date: format(weekStart, 'yyyy-MM-dd')
+        }
       })
       console.log(weekStart)
       console.log(response.data)
       setSchedule(response.data)
     } catch (error) {
-      console.error("Error fetching schedule:", error)
+      console.error('Error fetching schedule:', error)
     }
   }
 
@@ -131,7 +131,7 @@ export default function WeeklyCalendar({
       const data = response.data as Detail[]
       setServiceDetail(data)
     } catch (error) {
-      console.error("Error fetching service detail:", error)
+      console.error('Error fetching service detail:', error)
     }
   }
 
@@ -145,29 +145,29 @@ export default function WeeklyCalendar({
 
   const generateTimeSlots = (startTime: string, endTime: string): TimeSlot[] => {
     const slots: TimeSlot[] = []
-    let current = parse(startTime, "HH:mm:ss", new Date())
-    const end = parse(endTime, "HH:mm:ss", new Date())
+    let current = parse(startTime, 'HH:mm:ss', new Date())
+    const end = parse(endTime, 'HH:mm:ss', new Date())
 
     while (isBefore(current, end)) {
       const next = addMinutes(current, 30)
       if (isAfter(next, end)) break // Avoid exceeding the end time
 
       slots.push({
-        start: format(current, "HH:mm"),
-        end: format(next, "HH:mm"),
+        start: format(current, 'HH:mm'),
+        end: format(next, 'HH:mm')
       })
       current = next
     }
     return slots
   }
 
-  const isSlotOccupied = (slot: TimeSlot, occupiedSlots: { start: string; end: string }[] | undefined): boolean => {
+  const isSlotOccupied = (slot: TimeSlot, occupiedSlots: Array<{ start: string, end: string }> | undefined): boolean => {
     if (!occupiedSlots) return false
     return occupiedSlots.some((occupiedSlot) => {
-      const slotStart = parse(slot.start, "HH:mm", new Date())
-      const slotEnd = parse(slot.end, "HH:mm", new Date())
-      const occupiedStart = parse(occupiedSlot.start, "HH:mm:ss", new Date())
-      const occupiedEnd = parse(occupiedSlot.end, "HH:mm:ss", new Date())
+      const slotStart = parse(slot.start, 'HH:mm', new Date())
+      const slotEnd = parse(slot.end, 'HH:mm', new Date())
+      const occupiedStart = parse(occupiedSlot.start, 'HH:mm:ss', new Date())
+      const occupiedEnd = parse(occupiedSlot.end, 'HH:mm:ss', new Date())
 
       return (
         (isEqual(slotStart, occupiedStart) || isAfter(slotStart, occupiedStart)) && isBefore(slotStart, occupiedEnd)
@@ -180,25 +180,25 @@ export default function WeeklyCalendar({
       return
     }
 
-    const dayDate = parse(day, "EEEE", weekStart)
+    const dayDate = parse(day, 'EEEE', weekStart)
     const slotDate = addDays(weekStart, dayDate.getDay())
-    const formattedSlot = `${format(slotDate, "yyyy-MM-dd")}T${slot.start}`
+    const formattedSlot = `${format(slotDate, 'yyyy-MM-dd')}T${slot.start}`
 
     setSelectedSlot(formattedSlot)
 
-    const [date, time] = formattedSlot.split("T")
+    const [date, time] = formattedSlot.split('T')
     const appointmentData: AppointmentData = {
       appointmenttime: `${date}T${time}:00`,
-      status: "paid",
+      status: 'paid',
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,
       client_id: clientId,
-      request: true,
+      request: true
     }
 
     try {
-      const response = await apiClient.post("appointment", appointmentData)
+      const response = await apiClient.post('appointment', appointmentData)
       setShowConfirmation(true)
     } catch (error: any) {
       if (error.response?.status === 400) {
@@ -206,13 +206,11 @@ export default function WeeklyCalendar({
           description: 'La duracion del servicio supera el tiempo disponible'
         })
       } else {
-        toast({
-          variant: "destructive",
-          title: "Error",
-          description: "No se pudo verificar la disponibilidad. Inténtalo nuevamente.",
+        toast.error('Error', {
+          description: 'No se pudo verificar la disponibilidad. Inténtalo nuevamente.'
         })
       }
-      console.error("Error verifying appointment availability:", error)
+      console.error('Error verifying appointment availability:', error)
     }
   }
 
@@ -221,7 +219,7 @@ export default function WeeklyCalendar({
     const [date, time] = selectedSlot.split('T')
     const appointmentData: AppointmentData = {
       appointmenttime: `${date}T${time}:00`,
-      status: "paid",
+      status: 'paid',
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,
@@ -233,31 +231,27 @@ export default function WeeklyCalendar({
   }
 
   const handleConfirmAppointment = async () => {
-
     const appointmentData = handleAppointmentData()
     if (appointmentData === null) return
 
     try {
-      const response = await apiClient.post("appointment", appointmentData)
+      const response = await apiClient.post('appointment', appointmentData)
 
       if (response.status !== 201) {
-        throw new Error("Error al crear la reserva")
+        throw new Error('Error al crear la reserva')
       }
 
-      toast({
-        title: "Reserva confirmada",
-        description: "Tu reserva ha sido creada exitosamente",
+      toast.success('Reserva confirmada', {
+        description: 'Tu reserva ha sido creada exitosamente'
       })
 
       setShowConfirmation(false)
       onAppointmentScheduled()
     } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "No se pudo crear la reserva. Por favor, intenta nuevamente.",
+      toast.error('Error', {
+        description: 'No se pudo crear la reserva. Por favor, intenta nuevamente.'
       })
-      console.error("Error scheduling appointment:", error)
+      console.error('Error scheduling appointment:', error)
     }
   }
 
@@ -278,8 +272,8 @@ export default function WeeklyCalendar({
   }
 
   const allTimeSlots = generateTimeSlots(
-    schedule.schedule[Object.keys(schedule.schedule)[0]]?.available[0]?.start || "09:00:00",
-    schedule.schedule[Object.keys(schedule.schedule)[0]]?.available[0]?.end || "17:00:00",
+    schedule.schedule[Object.keys(schedule.schedule)[0]]?.available[0]?.start || '09:00:00',
+    schedule.schedule[Object.keys(schedule.schedule)[0]]?.available[0]?.end || '17:00:00'
   )
 
   return (
@@ -289,7 +283,7 @@ export default function WeeklyCalendar({
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <span className="text-sm font-medium">
-          {format(weekStart, "MMMM d, yyyy")} - {format(endOfWeek(weekStart), "MMMM d, yyyy")}
+          {format(weekStart, 'MMMM d, yyyy')} - {format(endOfWeek(weekStart), 'MMMM d, yyyy')}
         </span>
         <Button variant="outline" size="icon" onClick={handleNextWeek}>
           <ChevronRight className="h-4 w-4" />
@@ -303,17 +297,16 @@ export default function WeeklyCalendar({
           </div>
           {Object.entries(schedule.schedule).map(([day]) => {
             // Usamos el día de la semana para obtener el desplazamiento correcto desde weekStart
-            const dayIndex = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+            const dayIndex = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
               .findIndex(d => d.toLowerCase() === day.toLowerCase())
             const slotDate = addDays(weekStart, dayIndex)
             return (
               <div key={day} className="border-b p-2 text-center">
                 <div className="text-sm font-semibold">{day}</div>
-                <div className="text-2xl font-semibold">{format(slotDate, "d")}</div>
+                <div className="text-2xl font-semibold">{format(slotDate, 'd')}</div>
               </div>
-            );
+            )
           })}
-
 
           {/* Time slots column */}
           <div className="space-y-0 border-r">
@@ -334,9 +327,9 @@ export default function WeeklyCalendar({
                     <button
                       key={index}
                       disabled={isOccupied}
-                      onClick={() => !isOccupied && handleSlotClick(day, slot)}
+                      onClick={async () => await (!isOccupied && handleSlotClick(day, slot))}
                       className={`absolute w-full h-12 border-t -mt-[1px] transition-colors
-                      ${isOccupied ? "bg-zinc-500 cursor-not-allowed" : "hover:bg-primary/5 cursor-pointer"}`}
+                      ${isOccupied ? 'bg-zinc-500 cursor-not-allowed' : 'hover:bg-primary/5 cursor-pointer'}`}
                       style={{ top: `${index * 48}px` }}
                     />
                   )
@@ -364,4 +357,3 @@ export default function WeeklyCalendar({
     </Card>
   )
 }
-
