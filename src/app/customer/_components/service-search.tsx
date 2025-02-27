@@ -1,27 +1,9 @@
 'use client'
 
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormMessage
-} from '@/components/ui/form'
+import { Form, FormControl, FormField, FormItem, FormMessage } from '@/components/ui/form'
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue
-} from '@/components/ui/select'
-import {
-  Sheet,
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-  SheetTrigger
-} from '@/components/ui/sheet'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet'
 
 import { Filter, X } from 'lucide-react'
 
@@ -35,6 +17,7 @@ import { Button } from '../../../components/ui/button'
 import { useEffect, useState } from 'react'
 import { useSearch } from '@/context/search-context'
 import apiClient from '@/utils/apiClient'
+import { toast } from 'sonner'
 
 interface Service {
   id: number
@@ -75,11 +58,22 @@ interface ErrorMessage {
 // Form schema using zod
 const formSchema = z.object({
   name: z.string(),
-  category_id: z.string().transform((val) => parseInt(val)).optional(),
-  site_id: z.string().transform((val) => parseInt(val)).optional(),
-  service_id: z.string().transform((val) => parseInt(val)).optional(),
-  price: z.string().transform((val) => parseInt(val)).optional()
-
+  category_id: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional(),
+  site_id: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional(),
+  service_id: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional(),
+  price: z
+    .string()
+    .transform((val) => Number.parseInt(val))
+    .optional()
 })
 
 const prices = [10000, 20000, 30000, 40000, 50000, 60000, 70000, 80000, 90000, 100000]
@@ -88,7 +82,7 @@ function ServiceSearch () {
   const [services, setServices] = useState<Service[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [sites, setSites] = useState<Site[]>([])
-  const { setDetails, setError } = useSearch()
+  const { fetchServices } = useSearch()
   const [isOpen, setIsOpen] = useState(false)
 
   // Form hook
@@ -106,27 +100,13 @@ function ServiceSearch () {
   // Action when the form is submitted
   async function onSubmit (values: z.infer<typeof formSchema>) {
     try {
-      const response = await apiClient.get('detail', {
-        params: {
-          name: values.name,
-          category_id: values.category_id === 0 ? undefined : values.category_id,
-          site_id: values.site_id === 0 ? undefined : values.site_id,
-          service_id: values.service_id === 0 ? undefined : values.service_id,
-          price: values.price === 1 ? undefined : values.price
-        }
-      })
-      console.log('Request URL:', response.config.url)
-      const data: Detail[] = response.data
-      console.log(data)
-      setDetails(data)
-      setError(null)
+      fetchServices(1, values)
       setIsOpen(false)
     } catch (error) {
       if (axios.isAxiosError(error)) {
         const response = error.response
         const data: ErrorMessage = response?.data
-        setError(data.message)
-        setDetails([])
+        toast.error('Error al buscar servicios: ' + data.message)
       }
       setIsOpen(false)
     }
@@ -161,7 +141,22 @@ function ServiceSearch () {
   }, [])
 
   const handleReset = () => {
-    form.reset()
+    form.reset({
+      name: '',
+      category_id: undefined,
+      site_id: undefined,
+      service_id: undefined,
+      price: undefined
+    })
+
+    // Realizar una búsqueda sin filtros
+    onSubmit({
+      name: '',
+      category_id: undefined,
+      site_id: undefined,
+      service_id: undefined,
+      price: undefined
+    })
   }
 
   return (
@@ -195,14 +190,14 @@ function ServiceSearch () {
                 control={form.control}
                 name="category_id"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
-                    <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''} >
+                  <FormItem className="w-full">
+                    <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Categoría" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {categories.map((category) => (
                           <SelectItem key={category.id} value={category.id.toString()}>
                             {category.name}
@@ -218,14 +213,14 @@ function ServiceSearch () {
                 control={form.control}
                 name="site_id"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
+                  <FormItem className="w-full">
                     <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Sitio" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {sites.map((site) => (
                           <SelectItem key={site.id} value={site.id.toString()}>
                             {site.name}
@@ -241,14 +236,14 @@ function ServiceSearch () {
                 control={form.control}
                 name="service_id"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
+                  <FormItem className="w-full">
                     <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Servicio" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {services.map((service) => (
                           <SelectItem key={service.id} value={service.id.toString()}>
                             {service.name}
@@ -264,14 +259,14 @@ function ServiceSearch () {
                 control={form.control}
                 name="price"
                 render={({ field }) => (
-                  <FormItem className='w-full'>
+                  <FormItem className="w-full">
                     <Select onValueChange={field.onChange} value={field.value != null ? field.value.toString() : ''}>
                       <FormControl>
                         <SelectTrigger>
                           <SelectValue placeholder="Precio" />
                         </SelectTrigger>
                       </FormControl>
-                      <SelectContent>
+                      <SelectContent className='max-h-64'>
                         {prices.map((price) => (
                           <SelectItem key={price} value={price.toString()}>
                             ${price}

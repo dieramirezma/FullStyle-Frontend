@@ -8,8 +8,8 @@ import { AddServiceDialog } from './_components/add-service-dialog'
 import { CATEGORIES } from '@/components/register-categories-form'
 import axios from 'axios'
 import Link from 'next/link'
-import { buttonVariants } from '@/components/ui/button'
-import { ArrowRight, Building2, Scissors } from 'lucide-react'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { ArrowRight, Building2, Plus, Scissors } from 'lucide-react'
 import RegisterServiceForm from '@/components/register-services-form'
 import LoadingSpinner from '@/components/loading-spinner'
 
@@ -78,7 +78,7 @@ function Page () {
   )
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<{ code: number, type: string } | null>(null)
-
+  const [open, setOpen] = useState(false)
   const managerId = session?.user.id
 
   const fetchSiteAndDetails = useCallback(async () => {
@@ -163,7 +163,7 @@ function Page () {
 
   if (error?.code === 404 && error.type === 'site') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}
@@ -204,7 +204,7 @@ function Page () {
 
   if (error?.code === 404 && error.type === 'site') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}
@@ -245,7 +245,7 @@ function Page () {
 
   if (error?.code === 404 && error.type === 'services') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}
@@ -271,7 +271,7 @@ function Page () {
               </p>
 
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8" />
-              <div className="bg-gray-50 rounded-lg p-6 sm:p-8 text-left">
+              <div className="bg-gray-50 rounded-lg text-left">
                 <RegisterServiceForm
                   className="w-full"
                   urlCallback="/owner/employees"
@@ -285,11 +285,21 @@ function Page () {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="title">Servicios</h1>
-        <AddServiceDialog siteId={site.id} services={availableServices} onServiceAdded={fetchSiteAndDetails} />
+    <div className="container mx-auto py-8">
+      <div className='flex flex-col justify-between w-full sm:flex-row sm:items-center'>
+        <h1 className="title">Gestiona tus servicios</h1>
+        <Button onClick={() => { setOpen(true) }}>
+          <Plus className="mr-2 h-4 w-4" />
+          Agregar servicio
+        </Button>
       </div>
+      <AddServiceDialog
+        siteId={site.id}
+        services={availableServices}
+        onServiceAdded={fetchSiteAndDetails}
+        open={open}
+        setOpen={setOpen}
+      />
       <ServiceList
         services={details.map((detail) => ({
           service_id: detail.service_id,

@@ -20,6 +20,7 @@ import { UserCircle2, Trash2, ArrowRight, Users } from 'lucide-react'
 import Image from 'next/image'
 import axios from 'axios'
 import WorkerScheduleForm from './WorkerScheduleForm'
+import LoadingSpinner from './loading-spinner'
 
 interface Worker {
   id: number
@@ -37,7 +38,12 @@ interface Site {
   phone: string
 }
 
-export default function DeleteWorker () {
+interface DeleteWorkerProps {
+  showButton?: boolean
+  setShowButton?: (open: boolean) => void
+}
+
+export default function DeleteWorker ({ showButton, setShowButton }: DeleteWorkerProps) {
   const { data: session, status } = useSession()
   const [loading, setLoading] = useState(false)
   const [workers, setWorkers] = useState<Worker[]>([])
@@ -66,6 +72,7 @@ export default function DeleteWorker () {
           } catch (error) {
             if (axios.isAxiosError(error) && error.response?.status === 404) {
               setError({ code: 404, type: 'workers' })
+              setShowButton && setShowButton(false)
             }
           }
         }
@@ -101,11 +108,19 @@ export default function DeleteWorker () {
     }
   }
 
-  if (status === 'loading') return <p>Cargando...</p>
+  if (status === 'loading') {
+    return (
+      <div className="flex items-center justify-center h-full">
+        <LoadingSpinner
+          size='xl'
+        />
+      </div>
+    )
+  }
 
   if (error?.code === 404 && error.type === 'workers') {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="p-8 sm:p-12">
             {/* Top illustration */}
@@ -131,7 +146,7 @@ export default function DeleteWorker () {
               </p>
 
               <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8" />
-              <div className="bg-gray-50 rounded-lg p-6 sm:p-8 text-left">
+              <div className="bg-gray-50 rounded-lg text-left">
                 <WorkerScheduleForm
                   className="w-full"
                   urlCallback="/owner"

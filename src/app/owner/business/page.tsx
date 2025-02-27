@@ -22,8 +22,8 @@ import {
   AlertDialogTrigger
 } from '@/components/ui/alert-dialog'
 import { useRouter } from 'next/navigation'
-import RegisterBusinessForm from '@/components/register-business-form'
 import LoadingSpinner from '@/components/loading-spinner'
+import MultiStepRegistrationForm from '@/components/multi-step-register'
 
 interface Site {
   id: number
@@ -145,7 +145,7 @@ function Page () {
 
   if (error === 404) {
     return (
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto max-w-4xl">
       <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
         <div className="p-8 sm:p-12">
           {/* Top illustration */}
@@ -172,11 +172,10 @@ function Page () {
 
             <div className="h-px bg-gradient-to-r from-transparent via-gray-200 to-transparent my-8" />
 
-            <div className="bg-gray-50 rounded-lg p-6 sm:p-8">
-                <RegisterBusinessForm
-                  className="w-full"
-                  urlCallback="/owner"
-                />
+            <div className="bg-gray-50 rounded-lg">
+              <MultiStepRegistrationForm
+
+              />
             </div>
           </div>
         </div>
@@ -186,7 +185,7 @@ function Page () {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto py-8 max-w-4xl">
       <h1 className="title tracking-tight">Tu negocio</h1>
       <Card>
         <CardHeader className="flex flex-row items-center justify-between">

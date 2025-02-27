@@ -6,7 +6,7 @@ export default function Page () {
   return (
     <div className="min-h-screen bg-background">
       <RegisterNavBar />
-      <main className="container mx-auto px-4 py-6 sm:px-6 lg:px-8 flex items-center justify-center">
+      <main className="container mx-auto py-6 sm:px-6 lg:px-8 flex items-center justify-center">
         <div className="w-full max-w-4xl">
           <div className="overflow-hidden rounded-xl shadow-lg bg-white">
             <div className="grid grid-cols-1 lg:grid-cols-2">

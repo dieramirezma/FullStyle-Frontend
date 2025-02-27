@@ -216,19 +216,26 @@ export default function WeeklyCalendar({
     }
   }
 
-  const handleConfirmAppointment = async () => {
-    if (!selectedSlot) return
-
-    const [date, time] = selectedSlot.split("T")
+  const handleAppointmentData = () => {
+    if (!selectedSlot) return null
+    const [date, time] = selectedSlot.split('T')
     const appointmentData: AppointmentData = {
       appointmenttime: `${date}T${time}:00`,
-      status: "pending",
+      status: "paid",
       worker_id: workerId,
       site_id: siteId,
       service_id: serviceId,
       client_id: clientId,
-      request: true,
+      request: true
     }
+    console.log('weekly', appointmentData)
+    return appointmentData
+  }
+
+  const handleConfirmAppointment = async () => {
+
+    const appointmentData = handleAppointmentData()
+    if (appointmentData === null) return
 
     try {
       const response = await apiClient.post("appointment", appointmentData)
@@ -318,23 +325,25 @@ export default function WeeklyCalendar({
           </div>
 
           {/* Calendar grid */}
-          {Object.entries(schedule.schedule).map(([day, daySchedule]) => (
-            <div key={day} className="relative border-r">
-              {allTimeSlots.map((slot, index) => {
-                const isOccupied = isSlotOccupied(slot, daySchedule.occupied)
-                return (
-                  <button
-                    key={index}
-                    disabled={isOccupied}
-                    onClick={() => !isOccupied && handleSlotClick(day, slot)}
-                    className={`absolute w-full h-12 border-t -mt-[1px] transition-colors
+          {
+            Object.entries(schedule.schedule).map(([day, daySchedule]) => (
+              <div key={day} className="relative border-r">
+                {allTimeSlots.map((slot, index) => {
+                  const isOccupied = isSlotOccupied(slot, daySchedule.occupied)
+                  return (
+                    <button
+                      key={index}
+                      disabled={isOccupied}
+                      onClick={() => !isOccupied && handleSlotClick(day, slot)}
+                      className={`absolute w-full h-12 border-t -mt-[1px] transition-colors
                       ${isOccupied ? "bg-zinc-500 cursor-not-allowed" : "hover:bg-primary/5 cursor-pointer"}`}
-                    style={{ top: `${index * 48}px` }}
-                  />
-                )
-              })}
-            </div>
-          ))}
+                      style={{ top: `${index * 48}px` }}
+                    />
+                  )
+                })}
+              </div>
+            ))
+          }
         </div>
 
         {selectedSlot && serviceDetail && workerDetail && siteDetail && (
@@ -347,6 +356,7 @@ export default function WeeklyCalendar({
             serviceDetail={serviceDetail[0]}
             workerName={workerDetail[0].name}
             siteDetail={siteDetail[0]}
+            appointmentData={handleAppointmentData()}
             onConfirm={handleConfirmAppointment}
           />
         )}

@@ -1,52 +1,135 @@
-import Script from 'next/script'
+'use client';
+
+import { useEffect, useRef } from 'react';
+import { Button } from '@/components/ui/button';
+
+import { getServerSession } from 'next-auth'
+import { useSession } from 'next-auth/react'
+
 
 interface WidgetWompiProps {
-  amount: number
+  amount: number;
+  isOpen: boolean;
+  label: string;
+  className?: string;
+  paymentType: 'SUB' | 'SRV';  // Tipo de pago
+  paymentManner?: 'FULL' | 'PART';  // Método de pago
+  itemId: string;              // ID del item (subscripción o servicio)
+  serviceString?: string;      // Cadena de servicio
+  onClose: () => void;
 }
 
-async function encodeString (stringToEncode: string) {
-  const encondedText = new TextEncoder().encode(stringToEncode)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', encondedText)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map((b) => b.toString(16).padStart(2, '0')).join('')
-  return hashHex
-}
+function WidgetWompi({
+  amount,
+  isOpen,
+  label,
+  className,
+  paymentType,
+  paymentManner,
+  itemId,
+  serviceString,
+  onClose
+}: WidgetWompiProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+  const { data: session } = useSession()
 
-async function WidgetWompi ({ amount }: WidgetWompiProps) {
-  const amountInCents = `${amount * 100}`
-  const currency = 'COP'
-  const integritySecret = process.env.WOMPI_INTEGRITY_KEY
-  const reference = crypto.randomUUID()
-  const concatenatedString = `${reference}${amountInCents}${currency}${integritySecret}`
+  useEffect(() => {
+    if (!isOpen || !containerRef.current) return;
 
-  const hash = await encodeString(concatenatedString)
+    const loadWompiWidget = async () => {
+      try {
+
+        const userId = session?.user?.id;
+
+
+        console.log('widget', serviceString)
+
+        const response = await fetch('/api/wompi', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            amount,
+            paymentType,
+            paymentManner,
+            itemId,
+            userId,
+            serviceString
+          }),
+        });
+        const data = await response.json();
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL;
+
+        const script = document.createElement('script');
+        script.id = 'wompi-script';
+        script.src = 'https://checkout.wompi.co/widget.js';
+        script.setAttribute('data-render', 'button');
+        script.setAttribute('data-public-key', data.publicKey);
+        script.setAttribute('data-currency', data.currency);
+        script.setAttribute('data-amount-in-cents', data.amountInCents);
+        script.setAttribute('data-reference', data.reference);
+        script.setAttribute('data-signature:integrity', data.hash);
+        script.setAttribute('data-redirection-url', `${baseUrl}/customer/appointments`);
+
+        if (containerRef.current) {
+          containerRef.current.innerHTML = '';
+          containerRef.current.appendChild(script);
+
+          setTimeout(() => {
+            const wompiButton = containerRef.current?.querySelector('button');
+            if (wompiButton && buttonRef.current) {
+              const styles = window.getComputedStyle(buttonRef.current);
+              wompiButton.addEventListener('click', () => {
+                setTimeout(onClose, 500);
+              });
+              Object.assign(wompiButton.style, {
+                backgroundColor: styles.backgroundColor,
+                color: styles.color,
+                border: styles.border,
+                borderRadius: styles.borderRadius,
+                padding: styles.padding,
+                fontSize: '0.875rem',
+                fontFamily: styles.fontFamily,
+                width: '100%',
+                height: '40px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                whiteSpace: 'nowrap',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                lineHeight: '1.25rem',
+                fontWeight: '800',
+                transition: 'all 0s',
+              });
+              wompiButton.textContent = label;
+            }
+          }, 100);
+        }
+      } catch (error) {
+        console.error('Error loading Wompi widget:', error);
+      }
+    };
+
+    loadWompiWidget();
+
+    return () => {
+      if (containerRef.current) {
+        containerRef.current.innerHTML = '';
+      }
+    };
+  }, [isOpen, amount, label, paymentType, paymentManner, itemId, serviceString, onClose]);
 
   return (
-    <div >
-      <form className='flex w-full'>
-        <Script
-          id="wompi-widget"
-          strategy="afterInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `
-                  (function() {
-                      var script = document.createElement('script');
-                      script.src = "https://checkout.wompi.co/widget.js";
-                      script.setAttribute("data-render", "button");
-                      script.setAttribute("data-public-key", "${process.env.WOMPI_PUBLIC_TEST_KEY ?? ''}");
-                      script.setAttribute("data-currency", "${currency}");
-                      script.setAttribute("data-amount-in-cents", "${amountInCents}");
-                      script.setAttribute("data-reference", "${reference}");
-                      script.setAttribute("data-signature:integrity", "${hash}");
-                      script.async = true;
-                      document.body.appendChild(script);
-                  })();
-              `
-          }}
-      />
-      </form>
+    <div className={className}>
+      <div ref={containerRef} className="w-full"></div>
+      <Button ref={buttonRef} variant='default' className="hidden text-sm h-10 font-bold">
+        {label}
+      </Button>
     </div>
-  )
+  );
 }
 
-export default WidgetWompi
+export default WidgetWompi;

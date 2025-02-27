@@ -137,7 +137,7 @@ export default function LoginForm () {
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <FormLabel className="font-semibold">Contraseña</FormLabel>
-                      <Link href="/password_reset" className="text-sm text-muted-foreground hover:text-primary">
+                      <Link href="/password_reset" className="text-sm text-muted-foreground hover:text-primary underline underline-offset-4">
                         ¿Olvidaste tu contraseña?
                       </Link>
                     </div>
