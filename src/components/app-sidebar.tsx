@@ -42,8 +42,8 @@ export function AppSidebar ({ items }: SidebarProps) {
                   <Settings className="size-4" />
                 </div>
                 <div className="flex flex-col gap-0.5 leading-none">
-                  <span className="font-semibold">{session?.user.name}</span>
-                  <span className="text-xs text-muted-foreground">Panel de Control { session?.user.is_manager ? 'Gerente' : 'Cliente' }</span>
+                  <span className="font-semibold">{session?.user?.name}</span>
+                  <span className="text-xs text-muted-foreground">Panel de Control { session?.user?.is_manager ? 'Gerente' : 'Cliente' }</span>
                 </div>
               </Link>
             </SidebarMenuButton>

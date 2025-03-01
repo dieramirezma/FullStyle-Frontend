@@ -31,7 +31,7 @@ interface Site {
   address: string
   phone: string
   manager_id: number
-  photos?: string
+  photos?: Record<string, string>
 }
 
 function Page () {
@@ -58,6 +58,7 @@ function Page () {
     try {
       const response = await apiClient.get(`site?manager_id=${managerId}`)
       const data: Site[] = response.data
+      console.log(data)
       setSite(data[0])
       setFormData(data[0])
     } catch (error: any) {
@@ -220,7 +221,7 @@ function Page () {
         <CardContent>
           <div className="space-y-6">
             <div className="relative aspect-video w-full overflow-hidden rounded-lg h-36">
-              <Image src="/images/sites/site-example.png" fill alt={site.name} className="object-cover" />
+              <Image src={site?.photos?.photo1 ?? '/images/sites/site-example.png'} fill alt={site.name} className="object-cover" />
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-4">

@@ -10,6 +10,7 @@
     "lint --fix": "next lint ./ --fix"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.758.0",
     "@devexpress/dx-react-scheduler": "^4.0.10",
     "@devexpress/dx-react-scheduler-material-ui": "^4.0.10",
     "@emotion/react": "^11.14.0",
@@ -40,6 +41,7 @@
     "cmdk": "^1.0.0",
     "cookies-next": "^5.0.2",
     "date-fns": "^2.30.0",
+    "formidable": "^3.5.2",
     "lucide-react": "^0.469.0",
     "motion": "^12.4.3",
     "next": "15.1.2",
@@ -55,10 +57,12 @@
     "sonner": "^1.7.4",
     "tailwind-merge": "^2.5.5",
     "tailwindcss-animate": "^1.0.7",
+    "uuid": "^11.1.0",
     "zod": "^3.24.1"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/formidable": "^3.4.5",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",

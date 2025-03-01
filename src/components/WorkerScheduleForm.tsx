@@ -17,7 +17,10 @@ import { Checkbox } from '@/components/ui/checkbox'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
 import { useSession } from 'next-auth/react'
-import { Link } from 'lucide-react'
+import { ImageIcon, Loader2, X } from 'lucide-react'
+import axios from 'axios'
+import Image from 'next/image'
+import Link from 'next/link'
 
 interface Service {
   service_id: number
@@ -38,17 +41,15 @@ const workerFormSchema = z.object({
   description: z
     .string()
     .min(10, { message: 'La descripción debe tener al menos 10 caracteres.' })
-    .max(50, { message: 'La descripción tiene un límite de 50 caracteres.' })
-    .refine((val) => /^[a-zA-ZáéíóúÁÉÍÓÚñÑ,.?¿!¡)(\s]+$/.test(val), {
-      message: 'La descripción solo puede contener letras y signos de puntuación.'
-    }),
+    .max(100, { message: 'La descripción tiene un límite de 100 caracteres.' }),
   services: z.array(z.number()).min(1, { message: 'Debe seleccionar mínimo un servicio' }),
   schedule: z.record(
     z.object({
       startTime: z.string(),
       endTime: z.string()
     })
-  )
+  ),
+  profilepicture: z.string().optional()
 })
 
 type WorkerFormValues = z.infer<typeof workerFormSchema>
@@ -57,6 +58,9 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
   const [loading, setLoading] = useState(false)
   const [services, setServices] = useState<Service[]>([])
   const [siteId, setSiteId] = useState<number | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [photos, setPhotos] = useState<string>('')
+  const [error, setError] = useState('')
 
   const { data: session } = useSession()
   const router = useRouter()
@@ -103,7 +107,8 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
           [day]: { startTime: '10:00', endTime: '19:00' }
         }),
         {}
-      )
+      ),
+      profilepicture: ''
     }
   })
 
@@ -118,8 +123,53 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
           [day]: { startTime: '10:00', endTime: '19:00' }
         }),
         {}
-      )
+      ),
+      profilepicture: ''
     })
+  }
+
+  async function handleImageUpload (e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Verificar que sea una imagen
+    if (!file.type.startsWith('image/')) {
+      setError('El archivo debe ser una imagen')
+      return
+    }
+
+    setUploadingImage(true)
+    setError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await axios.post('/api/upload-media', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      const url: string = response.data.url
+      if (response.data.success) {
+        setPhotos(url)
+        form.setValue('profilepicture', url)
+      } else {
+        setError('Error al subir la imagen: ' + response.data.message)
+      }
+    } catch (err: any) {
+      setError('Error al subir la imagen: ' + (err.message || 'Error desconocido'))
+    } finally {
+      setUploadingImage(false)
+      // Limpiar el input para permitir subir la misma imagen nuevamente
+      e.target.value = ''
+    }
+  }
+
+  function removePhoto () {
+    setPhotos('')
+    form.setValue('profilepicture', '')
   }
 
   const handleTimeChange = (day: string, startTime: string, endTime: string) => {
@@ -151,7 +201,8 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
         name: data.name,
         site_id: siteId,
         description: data.description,
-        services: data.services
+        services: data.services,
+        profilepicture: photos
       })
 
       const workerId = workerResponse.data.id
@@ -290,9 +341,69 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
                 </FormItem>
               )}
             />
-          </form>
-        </Form>
-      </CardContent>
+            <FormField
+              name="profilepicture"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-black">
+                    Foto del trabajador
+                  </FormLabel>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-4">
+                        {photos && (
+                          <div className="relative w-24 h-24 rounded-md overflow-hidden border">
+                            <Image
+                              src={photos || '/placeholder.svg'}
+                              alt={'Foto perfil'}
+                              fill
+                              className="object-cover"
+                            />
+                            <Button
+                              type="button"
+                              variant="destructive"
+                              size="icon"
+                              className="absolute top-1 right-1 h-6 w-6"
+                              onClick={() => { removePhoto() }}
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        )}
+
+                      <div className="w-24 h-24 flex items-center justify-center border border-dashed rounded-md">
+                        <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                          {uploadingImage
+                            ? (
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                              )
+                            : (
+                            <>
+                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground mt-1">Subir foto</span>
+                            </>
+                              )}
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Sube una foto de tu trabajador para que los clientes lo reconozcan
+                    </p>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            {(error.length > 0) && <p className="text-red-500 text-sm self-center">{error}</p>}
       <CardFooter className="flex flex-col items-center justify-center space-y-4 sm:flex-row sm:space-y-0 sm:space-x-4">
         <Button type="submit" disabled={loading} className="w-full sm:w-auto">
           {loading ? 'Agregando...' : 'AGREGAR TRABAJADOR'}
@@ -305,6 +416,9 @@ export default function WorkerScheduleForm ({ className, urlCallback }: { classN
           </Button>
         )}
       </CardFooter>
+        </form>
+      </Form>
+    </CardContent>
     </Card>
   )
 }

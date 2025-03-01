@@ -10,7 +10,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'example.com' // <--- Agrega el dominio aquí
+        hostname: 'pub-d585d94603de45d289b5d891f8c5d079.r2.dev'
       }
     ]
   }
