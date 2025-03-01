@@ -14,6 +14,8 @@ import Link from 'next/link'
 import { CATEGORIES } from './register-categories-form'
 import { toast } from 'sonner'
 import { useRouter } from 'next/navigation'
+import { ImageIcon, Loader2, X } from 'lucide-react'
+import Image from 'next/image'
 
 const durationOptions = [
   { value: '30', label: '30 minutos' },
@@ -48,7 +50,8 @@ const userSchema = z.object({
   }),
   duration: z.enum(durationOptions.map(option => option.value) as [string, ...string[]], {
     message: 'Selecciona una duración'
-  })
+  }),
+  photos: z.record(z.string().url()).optional()
 })
 
 const fetchServices = async () => {
@@ -83,7 +86,8 @@ export default function RegisterServiceForm ({ className, urlCallback }: { class
     defaultValues: {
       description: '',
       price: '',
-      duration: ''
+      duration: '',
+      photos: {}
     }
   })
 
@@ -91,8 +95,60 @@ export default function RegisterServiceForm ({ className, urlCallback }: { class
   const [loading, setLoading] = useState(false)
   const [successMessage, setSuccessMessage] = useState('')
   const [services, setServices] = useState<Array<{ id: number, category_id: number, name: string }>>([])
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [photos, setPhotos] = useState<Record<string, string>>({})
+  const [photoCount, setPhotoCount] = useState(0)
 
   const router = useRouter()
+
+  async function handleImageUpload (e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Verificar que sea una imagen
+    if (!file.type.startsWith('image/')) {
+      setError('El archivo debe ser una imagen')
+      return
+    }
+
+    setUploadingImage(true)
+    setError('')
+
+    try {
+      const formData = new FormData()
+      formData.append('image', file)
+
+      const response = await axios.post('/api/upload-media', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      })
+
+      if (response.data.success) {
+        const photoKey = `photo${photoCount + 1}`
+        const newPhotos = { ...photos, [photoKey]: response.data.url }
+        setPhotos(newPhotos)
+        setPhotoCount(prev => prev + 1)
+        form.setValue('photos', newPhotos)
+      } else {
+        setError('Error al subir la imagen: ' + response.data.message)
+      }
+    } catch (err: any) {
+      setError('Error al subir la imagen: ' + (err.message || 'Error desconocido'))
+    } finally {
+      setUploadingImage(false)
+      // Limpiar el input para permitir subir la misma imagen nuevamente
+      e.target.value = ''
+    }
+  }
+
+  function removePhoto (key: string) {
+    const newPhotos = Object.fromEntries(
+      Object.entries(photos).filter(([k]) => k !== key)
+    )
+    setPhotos(newPhotos)
+    form.setValue('photos', newPhotos)
+  }
 
   useEffect(() => {
     const getServices = async () => {
@@ -112,7 +168,8 @@ export default function RegisterServiceForm ({ className, urlCallback }: { class
       service_id: values.service,
       description: values.description,
       price: values.price,
-      duration: values.duration
+      duration: values.duration,
+      photos: values.photos
     }
 
     try {
@@ -226,6 +283,68 @@ export default function RegisterServiceForm ({ className, urlCallback }: { class
                 </FormItem>
               )}
             />
+            <FormField
+              name="photos"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="font-black">
+                    Foto del servicio
+                  </FormLabel>
+                  <div className="space-y-4">
+                    <div className="flex flex-wrap gap-4">
+                      {Object.entries(photos).map(([key, url]) => (
+                        <div key={key} className="relative w-24 h-24 rounded-md overflow-hidden border">
+                          <Image
+                            src={url || '/placeholder.svg'}
+                            alt={`Foto ${key}`}
+                            fill
+                            className="object-cover"
+                          />
+                          <Button
+                            type="button"
+                            variant="destructive"
+                            size="icon"
+                            className="absolute top-1 right-1 h-6 w-6"
+                            onClick={() => { removePhoto(key) }}
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ))}
+
+                      <div className="w-24 h-24 flex items-center justify-center border border-dashed rounded-md">
+                        <label htmlFor="image-upload" className="cursor-pointer flex flex-col items-center justify-center w-full h-full">
+                          {uploadingImage
+                            ? (
+                            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                              )
+                            : (
+                            <>
+                              <ImageIcon className="h-6 w-6 text-muted-foreground" />
+                              <span className="text-xs text-muted-foreground mt-1">Subir foto</span>
+                            </>
+                              )}
+                          <input
+                            id="image-upload"
+                            type="file"
+                            accept="image/*"
+                            className="hidden"
+                            onChange={handleImageUpload}
+                            disabled={uploadingImage}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Sube una foto de tu servicio para que los clientes puedan verlo
+                    </p>
+                  </div>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
             {(successMessage.length > 0) && !loading && (
               <p className="text-green-500 text-sm self-center">{successMessage}</p>
             )}

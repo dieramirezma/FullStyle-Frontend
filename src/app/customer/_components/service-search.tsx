@@ -49,6 +49,7 @@ export interface Detail {
   price: number
   duration: number
   description: string
+  photos: Record<string, string>
 }
 
 interface ErrorMessage {

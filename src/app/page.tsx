@@ -11,7 +11,6 @@ export default function Home () {
       <NavBar />
       <main className='flex flex-col gap-20 px-10 md:px-28'>
         <HeroSection />
-        <ServicesSection />
         <BlogSection />
         <ContactSection />
       </main>

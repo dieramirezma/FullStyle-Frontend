@@ -7,14 +7,7 @@ import Image from 'next/image'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useState } from 'react'
 import { EditServiceForm } from './edit-service-form'
-
-interface Service {
-  service_id: number
-  site_id: number
-  service_name: string
-  price: number
-  duration: number
-}
+import { type Service } from '../page'
 
 interface ServiceListProps {
   services: Service[]
@@ -45,7 +38,7 @@ export function ServiceList ({ services, onServiceClick, onServiceUpdate }: Serv
             <CardContent className="p-4 hover:cursor-pointer" onClick={() => { onServiceClick(service.service_id) }}>
               <div className="relative w-full aspect-video rounded-md overflow-hidden mb-2">
                 <Image
-                  src={'/images/services/afeitado.jpg'}
+                  src={service.photos?.photo1 ?? '/images/services/afeitado.jpg'}
                   alt={service.service_name}
                   fill
                   className="object-cover rounded-lg"
@@ -54,6 +47,7 @@ export function ServiceList ({ services, onServiceClick, onServiceUpdate }: Serv
               <div className='flex justify-between items-end'>
                 <div>
                   <h3 className="text-lg font-semibold">{service.service_name}</h3>
+                  <p className="text-sm">{service.description}</p>
                   <p className="text-sm text-muted-foreground">Precio: ${service.price}</p>
                   <p className="text-sm text-muted-foreground">Duración: {service.duration} minutos</p>
                 </div>

@@ -33,15 +33,17 @@ interface Detail {
   price: number
   duration: number
   description: string | null
-  photos: string | null
+  photos?: Record<string, string>
 }
 
-interface Service {
+export interface Service {
   service_id: number
   site_id: number
   service_name: string
   price: number
   duration: number
+  photos?: Record<string, string>
+  description?: string
 }
 
 const fetchServices = async () => {
@@ -306,7 +308,9 @@ function Page () {
           site_id: detail.site_id,
           service_name: detail.service_name,
           price: detail.price,
-          duration: detail.duration
+          duration: detail.duration,
+          photos: detail?.photos,
+          description: detail?.description ?? undefined
         }))}
         onServiceClick={handleServiceClick}
         onServiceUpdate={handleServiceUpdate}

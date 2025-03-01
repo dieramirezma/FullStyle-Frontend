@@ -5,38 +5,34 @@ import Link from 'next/link'
 import Fullstyle from './icons/fullstyle'
 import { buttonVariants } from './ui/button'
 import { Separator } from '@/components/ui/separator'
+import AppointmentIcon from './icons/appointment-icon'
+import EmployeesIcon from './icons/employees-icon'
+import PaymentIcon from './icons/payment-icon'
+import { RankingIcon } from './icons/ranking-icon'
 
-function HeroSection() {
-  const fadeIn = {
-    initial: { opacity: 0, y: 20 },
-    animate: { opacity: 1, y: 0 },
-    transition: { duration: 0.6 }
-  }
-
-  const staggerContainer = {
-    animate: {
-      transition: {
-        staggerChildren: 0.2
-      }
-    }
-  }
-
-  const benefitVariants = {
-    initial: { opacity: 0, scale: 0.9 },
-    animate: {
-      opacity: 1,
-      scale: 1,
-      transition: {
-        duration: 0.5
-      }
+function HeroSection () {
+  const services = [
+    {
+      icon: <EmployeesIcon />,
+      title: 'Gestión de empleados',
+      description: 'Administra fácilmente los horarios, turnos y disponibilidad de tu equipo en un solo lugar.'
     },
-    hover: {
-      scale: 1.05,
-      transition: {
-        duration: 0.3
-      }
+    {
+      icon: <AppointmentIcon />,
+      title: 'Agenda de citas para clientes',
+      description: 'Ofrece a tus clientes una forma rápida y sencilla de agendar citas, reduciendo cancelaciones y optimizando tu tiempo.'
+    },
+    {
+      icon: <PaymentIcon />,
+      title: 'Sistema de pagos integrado',
+      description: 'Facilita los pagos con opciones seguras y automatizadas, mejorando la experiencia de tus clientes y tu flujo de caja.'
+    },
+    {
+      icon: <RankingIcon />,
+      title: 'Visibilidad de tu negocio',
+      description: 'Aumenta tu presencia en línea y atrae más clientes con herramientas de marketing y promoción digital.'
     }
-  }
+  ]
 
   return (
     <div id='hero' className='flex flex-col items-center gap-10'>
@@ -60,61 +56,53 @@ function HeroSection() {
           transition={{ duration: 0.8, delay: 0.4 }}
         >
           <h1 className='title'>
-            Revoluciona tu negocio de belleza con FullStyle: La herramienta que transforma tu barbería o salón
+            Gestiona tu negocio de belleza sin complicaciones y atrae más clientes con FullStyle
           </h1>
           <p>
-            En un mundo donde el tiempo es oro, muchos negocios de barbería y estética enfrentan retos como la falta de organización, pérdida de clientes por citas mal gestionadas, y la dificultad de hacer crecer su presencia en un mercado competitivo. {' '}
-            <motion.span
-              className='text-secondary'
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 1, duration: 0.8 }}
-            >
-              FullStyle es la plataforma ideal para simplificar tus operaciones diarias, mejorar la experiencia de tus clientes y llevar tu negocio al siguiente nivel.
-            </motion.span>
+            Olvídate de las citas perdidas, el desorden en la agenda y la falta de visibilidad. Con FullStyle, simplificas la gestión de tu barbería o salón, ofreciendo a tus clientes una experiencia fácil y profesional. Automatiza tus reservas, evita cancelaciones de última hora y haz que tu negocio crezca sin esfuerzo.
           </p>
         </motion.article>
       </motion.section>
+      <div className="p-8 bg-white" id="services">
+        <h2 className="subtitle text-left w-full mb-4">
+          Convierte tu negocio en un éxito con estas herramientas
+        </h2>
 
-      <motion.section
-        className='text-center w-full'
-        {...fadeIn}
-      >
-        <motion.h2
-          className='subtitle mb-5'
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.8 }}
-        >
-          <Separator className="my-8" />
-          ¿Por qué FullStyle?
-        </motion.h2>
-        <motion.div
-          className='flex justify-between md:flex-row flex-col gap-5'
-          variants={staggerContainer}
-          initial="initial"
-          animate="animate"
-        >
-          {[
-            'Optimización de la gestión',
-            'Incremento de ingresos',
-            'Experiencia del cliente',
-            'Facilidad de uso'
-          ].map((benefit, index) => (
-            <motion.p
-              key={benefit}
-              className={`p-5 ${index % 2 === 0
-                ? 'border-t-2 border-l-2'
-                : 'border-b-2 border-r-2'
-                } border-primary`}
-              variants={benefitVariants}
-              whileHover="hover"
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {services.map((service, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileHover={{
+                scale: 1.05,
+                transition: { duration: 0.2 }
+              }}
+              whileInView={{
+                opacity: 1,
+                y: 0,
+                transition: {
+                  delay: index * 0.2,
+                  duration: 0.5
+                }
+              }}
+              viewport={{ once: true }}
+              className="p-6 bg-gray-100 rounded-lg shadow-lg cursor-pointer"
             >
-              {benefit}
-            </motion.p>
+              <div className="flex flex-col items-center text-center space-y-4">
+                <div className="text-blue-600 w-12 h-12">
+                  {service.icon}
+                </div>
+                <h3 className="font-semibold text-lg">
+                  {service.title}
+                </h3>
+                <p className='text-sm '>
+                  {service.description}
+                </p>
+              </div>
+            </motion.div>
           ))}
-        </motion.div>
-      </motion.section>
+        </div>
+      </div>
 
       <Separator className="my-4" />
       <motion.section

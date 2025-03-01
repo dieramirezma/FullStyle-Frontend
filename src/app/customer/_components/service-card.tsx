@@ -3,19 +3,6 @@ import { Building, Clock, MapPin } from 'lucide-react'
 import Image from 'next/image'
 import { type Detail } from './site-search'
 
-const images: Record<number, string> = {
-  1: '/images/services/cortes.jpg',
-  2: '/images/services/coloracion.jpg',
-  3: '/images/services/tratamientos-capilares.jpg',
-  4: '/images/services/peinados.jpg',
-  5: '/images/services/manicure.jpg',
-  6: '/images/services/tratamientos-faciales.jpg',
-  7: '/images/services/depilacion.jpg',
-  8: '/images/services/afeitado.jpg',
-  9: '/images/services/extensiones.jpg',
-  10: '/images/services/tratamientos-faciales.jpg'
-}
-
 function approximateMinutesToHours (minutes: number) {
   const durationOptions = [
     { value: '30', label: '30 minutos' },
@@ -39,7 +26,7 @@ function ServiceCard ({ detail }: { detail: Detail }) {
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="relative h-48 w-full">
         <Image
-          src={images[detail.category_id]}
+          src={detail?.photos?.photo1 ?? '/images/services/default.webp'}
           alt={detail?.description ?? 'Imagen del servicio'}
           fill
           sizes='(max-width: 768px) 100vw, 50vw'
