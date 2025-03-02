@@ -1,36 +1,114 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# FullStyle-Frontend
 
-## Getting Started
+Este es un proyecto desarrollado con [Next.js](https://nextjs.org), inicializado con [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
-First, run the development server:
+## Descripción del Proyecto
+
+FullStyle-Frontend es una aplicación web construida con Next.js, diseñada para ofrecer una experiencia de usuario fluida y optimizada. Utiliza tecnologías web modernas y mejores prácticas para garantizar alto rendimiento y escalabilidad.
+
+## Instalación y Configuración
+
+### Clonar el repositorio:
+
+```bash
+git clone https://github.com/tu-usuario/fullstyle-frontend.git
+cd fullstyle-frontend
+```
+
+### Instalar dependencias:
+
+```bash
+npm install
+# o
+yarn install
+# o
+pnpm install
+# o
+bun install
+```
+
+### Ejecutar el servidor de desarrollo:
 
 ```bash
 npm run dev
-# or
+# o
 yarn dev
-# or
+# o
 pnpm dev
-# or
+# o
 bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000) en tu navegador para ver la aplicación en funcionamiento.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Puedes comenzar a editar la página modificando `app/page.tsx`. Los cambios se reflejarán automáticamente.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Este proyecto utiliza [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) para optimizar y cargar fuentes automáticamente.
 
-## Learn More
+## Variables de Entorno
 
-To learn more about Next.js, take a look at the following resources:
+Para ejecutar este proyecto, necesitas agregar las siguientes variables de entorno en un archivo `.env`:
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Configuración General
+```
+NEXT_PUBLIC_APP_URL=http://localhost:3000
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Google Maps
+```
+NEXT_PUBLIC_GOOGLE_MAPS_API_KEY=tu_api_key_google_maps
+```
 
-## Deploy on Vercel
+### Autenticación con Google
+```
+GOOGLE_CLIENT_ID=tu_cliente_id_google
+GOOGLE_CLIENT_SECRET=tu_secreto_google
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Resend (Correo Electrónico)
+```
+RESEND_API_KEY=tu_api_key_resend
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### NextAuth (Autenticación)
+```
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=tu_secreto_nextauth
+```
+
+### Wompi Sandbox (Pasarela de pagos)
+```
+NEXT_PUBLIC_WOMPI_PUBLIC_TEST_KEY=tu_public_test_key_wompi
+NEXT_PUBLIC_WOMPI_INTEGRITY_KEY=tu_integrity_key_wompi
+WOMPI_PRIVATE_TEST_KEY=tu_private_test_key_wompi
+WOMPI_PUBLIC_TEST_KEY=tu_public_key_wompi
+WOMPI_INTEGRITY_KEY=tu_integrity_key_wompi
+WOMPI_EVENTS_KEY=tu_events_key_wompi
+WOMPI_PRIVATE_EVENTS_PROD_KEY=tu_private_events_prod_key_wompi
+```
+
+### Cloudflare R2 (Almacenamiento en la nube)
+```
+R2_CDN_URL=https://tu_url_cdn_r2
+R2_CDN_URL_DEV=https://tu_url_cdn_dev_r2
+R2_BUCKET_NAME=tu_nombre_bucket_r2
+R2_TOKEN_VALUE=tu_token_r2
+R2_ACCESS_KEY=tu_access_key_r2
+R2_SECRET_KEY=tu_secret_key_r2
+```
+
+## Más Información
+
+Para aprender más sobre Next.js, consulta los siguientes recursos:
+
+- [Documentación de Next.js](https://nextjs.org/docs) - Aprende sobre las características y la API de Next.js.
+- [Aprende Next.js](https://nextjs.org/learn) - Un tutorial interactivo sobre Next.js.
+- [Repositorio de Next.js en GitHub](https://github.com/vercel/next.js) - Tus comentarios y contribuciones son bienvenidos.
+
+## Despliegue en Vercel
+
+La forma más sencilla de desplegar esta aplicación es usando la plataforma [Vercel](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme), creada por los desarrolladores de Next.js.
+
+Consulta la [documentación de despliegue en Next.js](https://nextjs.org/docs/app/building-your-application/deploying) para obtener más detalles.
+
