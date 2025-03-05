@@ -9,12 +9,12 @@ import { Input } from './ui/input'
 import { Button } from './ui/button'
 import Link from 'next/link'
 import { GoogleIcon } from './icons/LogosGoogleIcon'
-import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { getSession, signIn } from 'next-auth/react'
 import { toast } from 'sonner'
 import { Eye, EyeOff } from 'lucide-react'
-
+import ReCAPTCHA from 'react-google-recaptcha'
+import { useRef, useState } from 'react'
 const userSchema = z.object({
   email: z
     .string({
@@ -36,6 +36,8 @@ export default function LoginForm () {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [showPassword, setShowPassword] = useState(false)
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const [isVerified, setIsVerified] = useState(false)
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
@@ -70,8 +72,7 @@ export default function LoginForm () {
           description: 'Inicio de sesión exitoso'
         })
         if (session?.user) {
-          const isManager = (session.user as any).is_manager
-          router.push(isManager ? '/owner' : '/customer')
+          router.push('/login/2fa')
         }
       }
     } catch (err) {
@@ -105,6 +106,32 @@ export default function LoginForm () {
     } finally {
       setLoading(false)
     }
+  }
+
+  async function handleCaptchaSubmission (token: string | null) {
+    try {
+      if (token) {
+        await fetch('/api/recaptcha', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token })
+        })
+        setIsVerified(true)
+      }
+    } catch (e) {
+      setIsVerified(false)
+    }
+  }
+
+  const handleChange = (token: string | null) => {
+    handleCaptchaSubmission(token)
+  }
+
+  function handleExpired () {
+    setIsVerified(false)
   }
 
   return (
@@ -173,11 +200,19 @@ export default function LoginForm () {
                 ¡Registrate!
               </Link>
             </div>
+            <div className='flex justify-center'>
+              <ReCAPTCHA
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? ''}
+                ref={recaptchaRef}
+                onChange={handleChange}
+                onExpired={handleExpired}
+              />
+            </div>
             <div className="space-y-3">
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button type="submit" className="w-full" disabled={loading || !isVerified}>
                 {loading ? 'Cargando...' : 'Iniciar Sesión'}
               </Button>
-              <Button variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn}>
+              <Button disabled={!isVerified} variant="outline" type="button" className="w-full" onClick={handleGoogleSignIn}>
                 <GoogleIcon className="mr-2 h-5 w-5" />
                 Iniciar con Google
               </Button>

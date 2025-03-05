@@ -9,7 +9,7 @@ apiClient.interceptors.request.use(
   async (config) => {
     const session = await getSession()
     const token = session?.accessToken
-
+    console.log('session:', session)
     if (token != null) {
       config.headers.Authorization = `Bearer ${token}`
     }
