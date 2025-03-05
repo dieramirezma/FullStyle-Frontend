@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import axios from 'axios'
 import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
@@ -15,6 +15,7 @@ import { GoogleIcon } from './icons/LogosGoogleIcon'
 import { Eye, EyeOff } from 'lucide-react'
 import Link from 'next/link'
 import { Checkbox } from './ui/checkbox'
+import ReCAPTCHA from 'react-google-recaptcha'
 
 const userSchema = z.object({
   names: z.string({
@@ -76,6 +77,8 @@ const userSchema = z.object({
 })
 
 export default function RegisterCustomerForm () {
+  const recaptchaRef = useRef<ReCAPTCHA>(null)
+  const [isVerified, setIsVerified] = useState(false)
   const form = useForm<z.infer<typeof userSchema>>({
     resolver: zodResolver(userSchema),
     defaultValues: {
@@ -161,6 +164,32 @@ export default function RegisterCustomerForm () {
       console.error('Error al iniciar sesión:', error)
       setError('Ocurrió un error al intentar iniciar sesión con Google')
     }
+  }
+
+  async function handleCaptchaSubmission (token: string | null) {
+    try {
+      if (token) {
+        await fetch('/api/recaptcha', {
+          method: 'POST',
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({ token })
+        })
+        setIsVerified(true)
+      }
+    } catch (e) {
+      setIsVerified(false)
+    }
+  }
+
+  const handleChange = (token: string | null) => {
+    handleCaptchaSubmission(token)
+  }
+
+  function handleExpired () {
+    setIsVerified(false)
   }
 
   return (
@@ -275,13 +304,22 @@ export default function RegisterCustomerForm () {
               )}
             />
             {error && <p className="text-red-500 text-sm">{error}</p>}
-            <Button type="submit" disabled={loading}>
+            <div className='flex justify-center'>
+              <ReCAPTCHA
+                sitekey={process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? ''}
+                ref={recaptchaRef}
+                onChange={handleChange}
+                onExpired={handleExpired}
+              />
+            </div>
+            <Button type="submit" disabled={loading || !isVerified}>
               {loading ? 'Registrando...' : 'REGISTRARSE'}
             </Button>
             <Button
               variant='outline'
               type="button"
               onClick={handleGoogleSignIn}
+              disabled={!isVerified}
             >
               <GoogleIcon/>
               CONTINUAR CON GOOGLE

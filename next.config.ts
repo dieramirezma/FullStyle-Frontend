@@ -11,6 +11,10 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: 'pub-d585d94603de45d289b5d891f8c5d079.r2.dev'
+      },
+      {
+        protocol: 'https',
+        hostname: 'chart.googleapis.com'
       }
     ]
   }
