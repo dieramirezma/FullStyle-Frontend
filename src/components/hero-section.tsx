@@ -112,9 +112,6 @@ function HeroSection () {
         transition={{ duration: 0.8, delay: 1.2 }}
       >
         <h2 className='subtitle mb-5'>
-          ¿Listo para transformar tu negocio?
-        </h2>
-        <h2 className='subtitle mb-5'>
           ¡Empieza hoy con FullStyle y experimenta la diferencia!
         </h2>
         <motion.div
